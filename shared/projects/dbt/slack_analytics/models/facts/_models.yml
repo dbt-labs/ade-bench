@@ -1,0 +1,36 @@
+version: 2
+models:
+  - name: fct_slack_message_reactions
+    description: |
+      This table expands reaction data for messages from dim_slack_messages. Contains one row per `message_reaction_id`.
+    columns:
+      - name: message_reaction_id
+        data_type: string
+        description: The surrogate key for the message reaction created using the message_id, reaction_name and reaction_user.
+        tests:
+          - unique
+          - not_null
+      - name: message_id
+        data_type: string
+        description: Unique identifier for the message. Foreign key to dim_slack_messages.
+      - name: message_date
+        data_type: date
+        description: The date the message was sent.
+      - name: message_datetime
+        data_type: timestamp
+        description: The date and time the message was sent.
+      - name: channel_name
+        data_type: string
+        description: The name of the channel the message was sent in.
+      - name: reaction_name
+        data_type: string
+        description: The name of the reaction used on the message.
+      - name: reaction_name_normalised
+        data_type: string
+        description: The generic reaction name if the `reaction_name` contains skin-tone variations.
+      - name: reaction_user
+        data_type: string
+        description: The user_id of the user who used the specified reaction to the message.
+      - name: extracted_at
+        data_type: timestamp
+        description: The date and time the message was extracted from the Slack API.

@@ -1,0 +1,8 @@
+version: 2
+
+sources:
+  - name: slack_analytics
+    schema: main
+    tables:
+      - name: channel_messages
+        identifier: src_channel_messages
