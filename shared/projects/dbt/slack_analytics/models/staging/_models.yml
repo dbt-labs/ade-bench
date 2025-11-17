@@ -1,0 +1,40 @@
+version: 2
+models:
+- name: stg_channel_messages
+  description: |
+    This contains one row per 'Slack message extracted on `extracted_at` date' for all messages from all channels in the Slack workspace that are being ingested.
+  columns:
+  - name: message_id
+    data_type: string
+    description: Unique identifier for the message. Part of combined primary key.
+    tests:
+    - not_null
+  - name: user_id
+    data_type: string
+    description: The user ID of the person who sent the message.
+  - name: channel_name
+    data_type: string
+    description: The name of the channel the message was sent in.
+  - name: reply_count
+    data_type: bigint
+    description: The number of replies to the message.
+  - name: reply_users_count
+    data_type: bigint
+    description: The number of users who replied to the message.
+  - name: reply_users
+    data_type: ARRAY<STRING>
+    description: An array of the users who replied to the message.
+  - name: reactions
+    data_type: array<struct<name:string, users:array<string>, count:int>>
+    description: |
+      An array of the reactions to the message including the reaction type and the user who reacted.
+      Contains:
+      - An array of the users who used the specified reaction to the message.
+      - The name of the reaction used on the message.
+      - The number of times the reaction was used on the message.
+  - name: message_datetime
+    data_type: timestamp
+    description: The date and time the message was sent.
+  - name: extracted_at
+    data_type: timestamp
+    description: The date and time the message was extracted from the Slack API. Part of combined primary key.

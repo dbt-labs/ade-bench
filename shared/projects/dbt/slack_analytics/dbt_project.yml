@@ -1,0 +1,34 @@
+name: 'slack_analytics'
+version: '1.0.0'
+config-version: 2
+
+profile: 'slack-analytics-duckdb'
+
+# These configurations specify where dbt should look for different types of files.
+model-paths:
+  - models
+analysis-paths:
+  - analyses
+test-paths:
+  - tests
+seed-paths:
+  - seeds
+macro-paths:
+  - macros
+snapshot-paths:
+  - snapshots
+
+clean-targets:         # Directories to be removed by `dbt clean`
+  - dbt_packages
+  - state
+  - target
+
+# Configuring models
+# Full documentation: https://docs.getdbt.com/docs/configuring-models
+
+models:
+  slack_analytics:
+    +materialized: table
+
+vars:
+  local_timezone: 'UTC'
