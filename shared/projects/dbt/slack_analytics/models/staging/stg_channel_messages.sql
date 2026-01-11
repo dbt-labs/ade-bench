@@ -11,7 +11,7 @@ renamed as (
         channel_name,
         reply_count, 
         reply_users_count,
-        {{ parse_json('reply_users') }} as reply_users,
+        {{ parse_json('reply_users') }} as reply_users, --TODO: this is an array of strings, how do we handle this?
         {{ parse_json('reactions') }} as reactions,
         message_datetime,
         extracted_at
