@@ -11,5 +11,5 @@
 {% endmacro %}
 
 {% macro duckdb__unnest_array(array_column, alias) %}
-    cross join unnest({{ array_column }}) as t({{ alias }})
+    , unnest(from_json({{ array_column }}, '["JSON"]')) as t({{ alias }})
 {% endmacro %}

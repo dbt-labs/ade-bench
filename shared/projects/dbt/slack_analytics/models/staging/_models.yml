@@ -35,6 +35,6 @@ models:
   - name: message_datetime
     data_type: timestamp
     description: The date and time the message was sent.
-  - name: extracted_at
+  - name: extracted_datetime
     data_type: timestamp
     description: The date and time the message was extracted from the Slack API. Part of combined primary key.
