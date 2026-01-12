@@ -31,6 +31,6 @@ models:
       - name: reaction_user
         data_type: string
         description: The user_id of the user who used the specified reaction to the message.
-      - name: extracted_at
+      - name: extracted_datetime
         data_type: timestamp
         description: The date and time the message was extracted from the Slack API.

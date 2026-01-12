@@ -3,7 +3,7 @@
         materialized='incremental',
         unique_key='message_reaction_id',
         partition_by=['message_date'],
-        incremental_strategy='merge'
+        incremental_strategy='delete+insert'
     )
 }}
 
@@ -11,8 +11,8 @@
 with dim_messages as (
     select * from {{ ref('dim_slack_messages') }}
     {% if is_incremental() %}
-        where extracted_at > (
-            select max(extracted_at) from {{ this }}
+        where extracted_datetime > (
+            select max(extracted_datetime) from {{ this }}
         )
     {% endif %}
 )
@@ -25,7 +25,7 @@ with dim_messages as (
         reaction.name as reaction_name,
         message_date,
         message_datetime,
-        extracted_at
+        extracted_datetime
     from dim_messages
     {{ unnest_array('reactions', 'reaction') }}
 )
@@ -38,7 +38,7 @@ with dim_messages as (
         reaction_user,
         message_date,
         message_datetime,
-        extracted_at
+        extracted_datetime
     from semi_expanded_reactions
     {{ unnest_array('reaction_users', 'reaction_user') }}
 )
@@ -57,7 +57,7 @@ with dim_messages as (
             else reaction_name 
             end as reaction_name_normalised,
         reaction_user,
-        extracted_at
+        extracted_datetime  
     from expanded_reactions s
 )
 

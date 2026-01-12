@@ -7,6 +7,7 @@ and outputs a new CSV with a generated 'reactions' column containing realistic m
 """
 
 import argparse
+import json
 import random
 from pathlib import Path
 
@@ -178,13 +179,9 @@ def process_csv(input_path: Path, output_path: Path) -> None:
     """
     Read input CSV, generate reactions for each row, and write output CSV.
     """
-    # Read input CSV
+    
     df = pd.read_csv(input_path)
-    
-    # Generate reactions for each row
-    df['reactions'] = [str(generate_reactions()) for _ in range(len(df))]
-    
-    # Write output CSV
+    df['reactions'] = [json.dumps(generate_reactions()) for _ in range(len(df))]
     df.to_csv(output_path, index=False)
     
     print(f"Processed {len(df)} rows")

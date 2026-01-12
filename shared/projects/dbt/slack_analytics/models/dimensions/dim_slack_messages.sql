@@ -3,7 +3,7 @@
         materialized='incremental',
         unique_key='message_id',
         partition_by=['message_date'],
-        incremental_strategy='merge'
+        incremental_strategy='delete+insert'
     )
 }}
 
@@ -20,11 +20,11 @@ with staging as (
         reactions,
         {{ to_date('message_datetime', localize=True, timezone=var('local_timezone')) }} as message_date,
         message_datetime,
-        extracted_at
+        extracted_datetime
     from {{ ref('stg_channel_messages') }}
     {% if is_incremental() %}
-        where extracted_at > (
-            select max(extracted_at) from {{ this }}
+        where extracted_datetime > (
+            select max(extracted_datetime) from {{ this }}
         )
     {% endif %}        
 )
@@ -42,11 +42,11 @@ with staging as (
         reactions,
         message_date,
         message_datetime,
-        extracted_at
+        extracted_datetime
 
     from staging 
     where 1=1
-    qualify row_number() over (partition by message_id order by extracted_at desc) = 1
+    qualify row_number() over (partition by message_id order by extracted_datetime desc) = 1
 )
 
 select * from dimension
