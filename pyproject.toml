@@ -3,6 +3,7 @@ name = "ade-bench"
 version = "0.1.0"
 description = "A benchmarking framework for data analyst tasks using dbt and SQL"
 readme = "README.md"
+license = { file = "LICENSE" }
 requires-python = ">=3.10"
 dependencies = [
     "pydantic>=2.0",
@@ -42,6 +43,9 @@ dev = [
 wizard = "ade_bench.cli.wizard:main"
 ade-bench = "ade_bench.cli.ab.main:app"
 ade = "ade_bench.cli.ab.main:app"
+
+[project.urls]
+Source = "https://github.com/dbt-labs/ade-bench"
 
 [build-system]
 requires = ["hatchling"]
