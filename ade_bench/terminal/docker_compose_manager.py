@@ -12,6 +12,9 @@ from docker.models.containers import Container
 from ade_bench.utils.env_model import EnvModel
 from ade_bench.utils.logger import logger
 
+# Repo root is always two levels up from this file (ade_bench/terminal/docker_compose_manager.py)
+REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
+
 
 class DockerComposeEnvVars(EnvModel):
     task_docker_client_container_name: str | None = None
@@ -21,6 +24,7 @@ class DockerComposeEnvVars(EnvModel):
     test_dir: str | None = None
     task_build_context_dir: str | None = None
     task_logs_path: str | None = None
+    repo_root: str | None = None
 
 
 class DockerComposeManager:
@@ -83,6 +87,7 @@ class DockerComposeManager:
             task_logs_path=(
                 str(self._logs_path.absolute()) if self._logs_path is not None else None
             ),
+            repo_root=str(REPO_ROOT),
         ).to_env_dict(include_os_env=True)
 
         full_command = [

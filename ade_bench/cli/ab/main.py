@@ -1,5 +1,6 @@
 """Main entry point for the ADE-bench CLI."""
 
+import os
 import typer
 import logging
 from datetime import datetime
@@ -16,6 +17,9 @@ from scripts_python.summarize_results import display_detailed_results
 from ade_bench.cli.ab import migrate, check, tasks, view, save, interact as interact_module
 import click
 from typer import rich_utils
+
+# Default tasks directory - can be overridden via environment variable
+DEFAULT_TASKS_DIR = Path(os.environ.get("ADE_TASKS_DIR", "tasks"))
 
 # Store the original error formatter
 _original_rich_format_error = rich_utils.rich_format_error
@@ -162,6 +166,11 @@ def run(
         False,
         "--with-profiling",
         help="Run the harness with a python profiler",
+    ),
+    tasks_dir: Path = typer.Option(
+        DEFAULT_TASKS_DIR,
+        "--tasks-dir",
+        help="Path to the tasks directory (default: ADE_TASKS_DIR env var or 'tasks')"
     )
 ):
     """
@@ -197,7 +206,7 @@ def run(
         raise typer.Exit(code=1)
 
     # Setup path variables
-    dataset_path = Path("tasks")
+    dataset_path = tasks_dir
     task_ids = tasks
 
     if len(tasks) == 1 and tasks[0].lower() == "all":
@@ -270,9 +279,9 @@ def interact(
         case_sensitive=False
     ),
     tasks_dir: Path = typer.Option(
-        Path("tasks"),
+        DEFAULT_TASKS_DIR,
         "--tasks-dir",
-        help="The path to the tasks directory."
+        help="Path to the tasks directory (default: ADE_TASKS_DIR env var or 'tasks')"
     ),
     include_all: bool = typer.Option(
         False,

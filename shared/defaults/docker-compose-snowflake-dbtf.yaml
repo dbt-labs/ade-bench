@@ -1,7 +1,7 @@
 services:
   client:
     build:
-      context: ${T_BENCH_TASK_BUILD_CONTEXT_DIR}/../..
+      context: ${T_BENCH_REPO_ROOT}
       dockerfile: docker/base/Dockerfile.snowflake-dbtf
     image: ${T_BENCH_TASK_DOCKER_CLIENT_IMAGE_NAME}
     container_name: ${T_BENCH_TASK_DOCKER_CLIENT_CONTAINER_NAME}

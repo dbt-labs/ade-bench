@@ -1,4 +1,5 @@
 import json
+import os
 import subprocess
 from enum import Enum
 from importlib.resources import files
@@ -13,6 +14,11 @@ from ade_bench.parsers.parser_factory import ParserFactory
 from ade_bench.utils.logger import logger
 from ade_bench.harness_models import SolutionSeedConfig, VariantConfig
 from ade_bench.config import config
+
+# Default directories - can be overridden via environment variables
+_PACKAGE_ROOT = Path(str(files("ade_bench"))).parent
+DEFAULT_DATABASES_DIR = Path(os.environ.get("ADE_DATABASES_DIR", _PACKAGE_ROOT / "shared" / "databases"))
+DEFAULT_PROJECTS_DIR = Path(os.environ.get("ADE_PROJECTS_DIR", _PACKAGE_ROOT / "shared" / "projects"))
 
 
 class TaskPrompt(BaseModel):
@@ -449,14 +455,39 @@ class TrialHandler:
         """Path to the run_sql.sh utility script."""
         return self._shared_path / "scripts" / "run_sql.sh"
 
-    def get_duckdb_file_path(self, db_name: str) -> Path:
-        """Get the path to a specific DuckDB database file."""
-        return self.shared_duckdb_path / f"{db_name}.duckdb"
+    def get_duckdb_file_path(self, db_name: str, db_dir: str | None = None) -> Path:
+        """Get the path to a specific DuckDB database file.
 
-    def get_dbt_project_path(self, project_name: str, project_type: str = "dbt") -> Path:
-        """Get the path to a specific dbt project directory."""
-        project_type_path = 'dbt' if project_type == 'dbt-fusion' else project_type
-        return self.shared_projects_path / project_type_path / project_name
+        Args:
+            db_name: Name of the database file (without .duckdb extension)
+            db_dir: Optional directory containing the database file (overrides default)
+
+        Returns:
+            Path to the DuckDB database file
+        """
+        if db_dir is not None:
+            base_dir = Path(db_dir)
+        else:
+            base_dir = DEFAULT_DATABASES_DIR / "duckdb"
+        return (base_dir / f"{db_name}.duckdb").resolve()
+
+    def get_dbt_project_path(self, project_name: str, project_type: str = "dbt", project_dir: str | None = None) -> Path:
+        """Get the path to a specific dbt project directory.
+
+        Args:
+            project_name: Name of the project directory
+            project_type: Type of project (dbt or dbt-fusion)
+            project_dir: Optional directory containing the project (overrides default)
+
+        Returns:
+            Path to the dbt project directory
+        """
+        if project_dir is not None:
+            base_dir = Path(project_dir)
+        else:
+            project_type_path = 'dbt' if project_type == 'dbt-fusion' else project_type
+            base_dir = DEFAULT_PROJECTS_DIR / project_type_path
+        return (base_dir / project_name).resolve()
 
     def get_migration_path(self, migration_directory: str) -> Path:
         """Get the path to a specific migration directory."""

@@ -160,6 +160,7 @@ ade run \
   --no-diffs \ # Optional; disables taking snapshots of diffs for faster performance.
   --persist \ # Optional; keeps the container alive after the trial is over or is aborted.
   --use-mcp \ # Optional; creates an dbt MCP server for the agent. Note: Not all agents and databases are supported.
+  --tasks-dir /absolute/path/to/tasks \ # Optional; path to an external tasks directory. Defaults to 'tasks' in the current directory.
 ```
 
 See also: [complete usage documentation](/docs/CLI.md).
@@ -268,8 +269,10 @@ solution_seeds:
 variants:
 - db_type: duckdb
   db_name: enron
+  db_dir: /path/to/databases  # Optional, directory containing enron.duckdb
   project_type: dbt
   project_name: enron
+  project_dir: /path/to/projects  # Optional, directory containing 'enron' project folder
 
 - db_type: snowflake
   db_name: enron
@@ -304,6 +307,8 @@ ADE-bench currently supports these database types:
 #### DuckDB
 
 DuckDB databases should be stored in `shared/databases/duckdb`. When a task is run against a DuckDB database, ADE-bench simply copies the `.duckdb` file from the shared directory into the task container.
+
+Alternatively, you can use the `db_dir` field in the variant configuration to specify a different directory containing the database file. You can also set the `ADE_DATABASES_DIR` environment variable to change the default location for all tasks.
 
 #### Snowflake
 
@@ -435,6 +440,11 @@ SETUP_TIMEOUT_SEC=120 # How long setup tasks can run
 DEFAULT_AGENT_TIMEOUT_SEC=300 # How long the agent can run
 DEFAULT_TEST_TIMEOUT_SEC=180 # How long test scripts can run
 CLEANUP_TIMEOUT_SEC=60 # How long cleanup scripts can run
+
+# Directory Configuration (optional, defaults shown)
+# ADE_TASKS_DIR=tasks # Path to directory where tasks are located
+# ADE_DATABASES_DIR=shared/databases # Path to directory where DuckDB databases are located
+# ADE_PROJECTS_DIR=shared/projects # Path to directory where dbt projects are located
 
 # Docker Configuration
 DOCKER_DEFAULT_PLATFORM=linux/amd64

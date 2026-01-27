@@ -32,7 +32,10 @@ class SetupOrchestrator:
         project_type = variant.get('project_type')
         if project_type in ['dbt', 'dbt-fusion']:
             log_harness_info(self.logger, task_id, "setup", f"Setting up dbt project...")
-            setup_dbt_project(self.terminal, self.session, task_id, variant, self.trial_handler)
+            success, error_msg = setup_dbt_project(self.terminal, self.session, task_id, variant, self.trial_handler)
+            if not success:
+                log_harness_info(self.logger, task_id, "done", f"SETUP_FAILED - {error_msg}")
+                return False
 
 
         # Setup agent-specific configuration files
@@ -44,7 +47,10 @@ class SetupOrchestrator:
         db_type = variant.get('db_type')
         if db_type == 'duckdb':
             log_harness_info(self.logger, task_id, "setup", f"Setting up DuckDB database...")
-            setup_duckdb(self.terminal, self.session, variant, self.trial_handler)
+            success, error_msg = setup_duckdb(self.terminal, self.session, variant, self.trial_handler)
+            if not success:
+                log_harness_info(self.logger, task_id, "done", f"SETUP_FAILED - {error_msg}")
+                return False
         elif db_type == 'snowflake':
             log_harness_info(self.logger, task_id, "setup", f"Setting up Snowflake database from {variant.get('db_name')}...")
             success, error_msg = setup_snowflake(self.terminal, self.session, task_id, variant, self.trial_handler, self.logger)
