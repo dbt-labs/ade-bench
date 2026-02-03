@@ -152,15 +152,10 @@ def run(
         "--log-level",
         help="Set the logging level"
     ),
-    use_mcp: bool = typer.Option(
-        False,
-        "--use-mcp",
-        help="Enable MCP (Model Context Protocol) for the agent"
-    ),
-    use_skills: bool = typer.Option(
-        False,
-        "--use-skills",
-        help="Enable skills for the agent (e.g., dbt-debugging skill)"
+    plugin_set: Optional[List[str]] = typer.Option(
+        None,
+        "--plugin-set",
+        help="Skill set names from skill-sets.yaml (default: use all default sets)"
     ),
     with_profiling: bool = typer.Option(
         False,
@@ -241,8 +236,7 @@ def run(
         db_type=db,
         project_type=project_type,
         keep_alive=persist,
-        use_mcp=use_mcp,
-        use_skills=use_skills,
+        plugin_set_names=plugin_set,
         with_profiling=with_profiling
     )
 
