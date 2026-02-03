@@ -1,5 +1,5 @@
 """Plugin system for ADE-Bench."""
 
-from .loader import SkillSetLoader
+from .loader import PluginSetLoader
 
-__all__ = ["SkillSetLoader"]
+__all__ = ["PluginSetLoader"]

@@ -1,23 +1,23 @@
 import pytest
 from unittest.mock import MagicMock, call
 from ade_bench.plugins.skills_handler import SkillsHandler
-from ade_bench.models.skill_set import SkillSet
+from ade_bench.models.plugin_set import PluginSet
 
 
 def test_skills_handler_install_no_skills():
-    """No-op when skill set has no skills."""
-    skill_set = SkillSet(name="test", skills=[], allowed_tools=["Bash"])
+    """No-op when plugin set has no skills."""
+    plugin_set = PluginSet(name="test", skills=[], allowed_tools=["Bash"])
     terminal = MagicMock()
 
     handler = SkillsHandler()
-    handler.install(skill_set, terminal)
+    handler.install(plugin_set, terminal)
 
     terminal.container.exec_run.assert_not_called()
 
 
 def test_skills_handler_install_single_skill():
     """Installs a single skill repo."""
-    skill_set = SkillSet(
+    plugin_set = PluginSet(
         name="test",
         skills=["dbt-labs/dbt-agent-skills"],
         allowed_tools=["Bash"]
@@ -26,7 +26,7 @@ def test_skills_handler_install_single_skill():
     terminal.container.exec_run.return_value = MagicMock(exit_code=0, output=b"Success")
 
     handler = SkillsHandler()
-    handler.install(skill_set, terminal)
+    handler.install(plugin_set, terminal)
 
     terminal.container.exec_run.assert_called_once()
     call_args = terminal.container.exec_run.call_args
@@ -38,7 +38,7 @@ def test_skills_handler_install_single_skill():
 
 def test_skills_handler_install_multiple_skills():
     """Installs multiple skill repos."""
-    skill_set = SkillSet(
+    plugin_set = PluginSet(
         name="test",
         skills=["repo/a", "repo/b"],
         allowed_tools=["Bash"]
@@ -47,14 +47,14 @@ def test_skills_handler_install_multiple_skills():
     terminal.container.exec_run.return_value = MagicMock(exit_code=0, output=b"Success")
 
     handler = SkillsHandler()
-    handler.install(skill_set, terminal)
+    handler.install(plugin_set, terminal)
 
     assert terminal.container.exec_run.call_count == 2
 
 
 def test_skills_handler_install_failure_logs_warning():
     """Logs warning but doesn't raise on install failure."""
-    skill_set = SkillSet(
+    plugin_set = PluginSet(
         name="test",
         skills=["repo/failing"],
         allowed_tools=["Bash"]
@@ -67,4 +67,4 @@ def test_skills_handler_install_failure_logs_warning():
 
     handler = SkillsHandler()
     # Should not raise, just log warning
-    handler.install(skill_set, terminal)
+    handler.install(plugin_set, terminal)

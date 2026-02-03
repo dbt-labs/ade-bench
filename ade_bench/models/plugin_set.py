@@ -1,4 +1,4 @@
-"""Pydantic models for skill set configuration."""
+"""Pydantic models for plugin set configuration."""
 
 from pydantic import BaseModel
 
@@ -10,8 +10,8 @@ class McpServerConfig(BaseModel):
     env: dict[str, str] = {}
 
 
-class SkillSet(BaseModel):
-    """Configuration for a set of skills and tools."""
+class PluginSet(BaseModel):
+    """Configuration for a set of plugins (skills and MCP servers)."""
     name: str
     description: str = ""
     default: bool = False
@@ -21,36 +21,36 @@ class SkillSet(BaseModel):
     allowed_tools: list[str] = []
 
     def is_compatible_with_agent(self, agent_name: str) -> bool:
-        """Check if this skill set is compatible with the given agent."""
+        """Check if this plugin set is compatible with the given agent."""
         if self.agents is None:
             return True
         return agent_name in self.agents
 
 
-class SkillSetsConfig(BaseModel):
-    """Root configuration containing all skill sets."""
-    sets: list[SkillSet]
+class PluginSetsConfig(BaseModel):
+    """Root configuration containing all plugin sets."""
+    sets: list[PluginSet]
 
-    def get_defaults(self) -> list[SkillSet]:
-        """Get all skill sets marked as default."""
+    def get_defaults(self) -> list[PluginSet]:
+        """Get all plugin sets marked as default."""
         return [s for s in self.sets if s.default]
 
-    def get_by_name(self, name: str) -> SkillSet | None:
-        """Get a skill set by name."""
+    def get_by_name(self, name: str) -> PluginSet | None:
+        """Get a plugin set by name."""
         for s in self.sets:
             if s.name == name:
                 return s
         return None
 
-    def get_by_names(self, names: list[str]) -> list[SkillSet]:
-        """Get multiple skill sets by name. Raises if any not found."""
+    def get_by_names(self, names: list[str]) -> list[PluginSet]:
+        """Get multiple plugin sets by name. Raises if any not found."""
         result = []
         for name in names:
-            skill_set = self.get_by_name(name)
-            if skill_set is None:
+            plugin_set = self.get_by_name(name)
+            if plugin_set is None:
                 available = [s.name for s in self.sets]
                 raise ValueError(
-                    f"Unknown skill set '{name}'. Available: {', '.join(available)}"
+                    f"Unknown plugin set '{name}'. Available: {', '.join(available)}"
                 )
-            result.append(skill_set)
+            result.append(plugin_set)
         return result

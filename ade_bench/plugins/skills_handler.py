@@ -1,27 +1,27 @@
 """Handler for installing skills via Vercel Skills CLI."""
 
 import logging
-from ade_bench.models.skill_set import SkillSet
+from ade_bench.models.plugin_set import PluginSet
 from ade_bench.terminal.docker_compose_manager import DockerComposeManager
 
 logger = logging.getLogger(__name__)
 
 
 class SkillsHandler:
-    """Installs skills from skill set configuration."""
+    """Installs skills from plugin set configuration."""
 
-    def install(self, skill_set: SkillSet, terminal: DockerComposeManager) -> None:
-        """Install skills from the skill set into the container.
+    def install(self, plugin_set: PluginSet, terminal: DockerComposeManager) -> None:
+        """Install skills from the plugin set into the container.
 
         Args:
-            skill_set: The skill set configuration
+            plugin_set: The plugin set configuration
             terminal: The Docker container manager
         """
-        if not skill_set.skills:
-            logger.debug(f"[SkillsHandler] No skills to install for '{skill_set.name}'")
+        if not plugin_set.skills:
+            logger.debug(f"[SkillsHandler] No skills to install for '{plugin_set.name}'")
             return
 
-        for repo in skill_set.skills:
+        for repo in plugin_set.skills:
             cmd = f"npx --yes skills add {repo} --all"
             logger.info(f"[SkillsHandler] Installing skills from {repo}...")
 

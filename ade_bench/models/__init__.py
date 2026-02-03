@@ -1,5 +1,5 @@
 """Models for ADE-Bench configuration."""
 
-from .skill_set import McpServerConfig, SkillSet, SkillSetsConfig
+from .plugin_set import McpServerConfig, PluginSet, PluginSetsConfig
 
-__all__ = ["McpServerConfig", "SkillSet", "SkillSetsConfig"]
+__all__ = ["McpServerConfig", "PluginSet", "PluginSetsConfig"]

@@ -10,7 +10,7 @@ from .dbt_setup import setup_dbt_project
 from .migration_setup import setup_migration
 from .agent_setup import setup_agent_config
 from ..utils.logger import log_harness_info
-from ..models.skill_set import SkillSet
+from ..models.plugin_set import PluginSet
 from ..plugins.skills_handler import SkillsHandler
 from ..plugins.mcp_handler import McpHandler
 
@@ -18,13 +18,13 @@ from ..plugins.mcp_handler import McpHandler
 class SetupOrchestrator:
     """Orchestrator that calls setup functions and configures plugins."""
 
-    def __init__(self, logger=None, terminal=None, session=None, file_diff_handler=None, trial_handler=None, skill_set: SkillSet | None = None):
+    def __init__(self, logger=None, terminal=None, session=None, file_diff_handler=None, trial_handler=None, plugin_set: PluginSet | None = None):
         self.logger = logger
         self.terminal = terminal
         self.session = session
         self.file_diff_handler = file_diff_handler
         self.trial_handler = trial_handler
-        self.skill_set = skill_set
+        self.plugin_set = plugin_set
         self._skills_handler = SkillsHandler()
         self._mcp_handler = McpHandler()
 
@@ -47,17 +47,17 @@ class SetupOrchestrator:
         # Logging is in the setup_agent_config function
         setup_agent_config(self.terminal, task_id, self.trial_handler, self.logger)
 
-        # Install skills and configure MCP if skill set specified
-        if self.skill_set:
-            if self.skill_set.skills:
+        # Install skills and configure MCP if plugin set specified
+        if self.plugin_set:
+            if self.plugin_set.skills:
                 log_harness_info(self.logger, task_id, "setup", "Installing skills...")
-                self._skills_handler.install(self.skill_set, self.terminal)
+                self._skills_handler.install(self.plugin_set, self.terminal)
                 log_harness_info(self.logger, task_id, "setup", "Skills installed")
 
-            if self.skill_set.mcp_servers:
+            if self.plugin_set.mcp_servers:
                 log_harness_info(self.logger, task_id, "setup", "Configuring MCP servers...")
                 agent_name = self.trial_handler.agent_name.value
-                self._mcp_handler.configure(self.skill_set, agent_name, self.terminal)
+                self._mcp_handler.configure(self.plugin_set, agent_name, self.terminal)
                 log_harness_info(self.logger, task_id, "setup", "MCP servers configured")
 
 

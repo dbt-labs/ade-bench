@@ -1,28 +1,28 @@
 """Handler for configuring MCP servers."""
 
 import logging
-from ade_bench.models.skill_set import SkillSet
+from ade_bench.models.plugin_set import PluginSet
 from ade_bench.terminal.docker_compose_manager import DockerComposeManager
 
 logger = logging.getLogger(__name__)
 
 
 class McpHandler:
-    """Configures MCP servers from skill set configuration."""
+    """Configures MCP servers from plugin set configuration."""
 
-    def configure(self, skill_set: SkillSet, agent_name: str, terminal: DockerComposeManager) -> None:
+    def configure(self, plugin_set: PluginSet, agent_name: str, terminal: DockerComposeManager) -> None:
         """Configure MCP servers for the agent.
 
         Args:
-            skill_set: The skill set configuration
+            plugin_set: The plugin set configuration
             agent_name: The agent CLI name (claude, gemini, codex)
             terminal: The Docker container manager
         """
-        if not skill_set.mcp_servers:
-            logger.debug(f"[McpHandler] No MCP servers to configure for '{skill_set.name}'")
+        if not plugin_set.mcp_servers:
+            logger.debug(f"[McpHandler] No MCP servers to configure for '{plugin_set.name}'")
             return
 
-        for server_name, config in skill_set.mcp_servers.items():
+        for server_name, config in plugin_set.mcp_servers.items():
             logger.info(f"[McpHandler] Configuring MCP server '{server_name}'...")
 
             # Write env file if env vars specified

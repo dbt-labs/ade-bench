@@ -28,8 +28,8 @@ from ade_bench.harness_models import (
     RunMetadata,
     TrialResults,
 )
-from ade_bench.models.skill_set import SkillSet
-from ade_bench.plugins.loader import SkillSetLoader
+from ade_bench.models.plugin_set import PluginSet
+from ade_bench.plugins.loader import PluginSetLoader
 from ade_bench.setup.setup_orchestrator import SetupOrchestrator
 from ade_bench.llms.base_llm import ContextLengthExceededError, ParseError
 from ade_bench.parsers.base_parser import UnitTestStatus, ParserResult
@@ -111,8 +111,8 @@ class Harness:
         self._project_type_filter = project_type
         self._keep_alive = keep_alive
         self._plugin_set_names = plugin_set_names
-        self._skill_sets: list[SkillSet] = []
-        self._current_skill_set: SkillSet | None = None
+        self._plugin_sets: list[PluginSet] = []
+        self._current_plugin_set: PluginSet | None = None
         self._with_profiling = with_profiling
 
         # Initialize setup orchestrator for variant-specific setup
@@ -135,7 +135,7 @@ class Harness:
         self._run_path.mkdir(parents=True, exist_ok=True)
 
         self._init_dataset()
-        self._init_skill_sets()
+        self._init_plugin_sets()
         self._init_logger()
 
     @property
@@ -195,16 +195,16 @@ class Harness:
             excluded_task_ids=self._exclude_task_ids,
         )
 
-    def _init_skill_sets(self) -> None:
-        """Load and resolve skill sets from configuration."""
-        config_path = self._dataset_path.parent / "experiment_sets" / "skill-sets.yaml"
+    def _init_plugin_sets(self) -> None:
+        """Load and resolve plugin sets from configuration."""
+        config_path = self._dataset_path.parent / "experiment_sets" / "plugin-sets.yaml"
         if not config_path.exists():
-            # No skill sets config - use empty list (no plugins)
-            self._skill_sets = [SkillSet(name="no-plugins", allowed_tools=["Bash", "Edit", "Write", "Read", "Glob", "Grep"])]
+            # No plugin sets config - use empty list (no plugins)
+            self._plugin_sets = [PluginSet(name="no-plugins", allowed_tools=["Bash", "Edit", "Write", "Read", "Glob", "Grep"])]
             return
 
-        loader = SkillSetLoader(config_path)
-        self._skill_sets = loader.resolve_skill_sets(
+        loader = PluginSetLoader(config_path)
+        self._plugin_sets = loader.resolve_plugin_sets(
             plugin_set_names=self._plugin_set_names,
             agent_name=self._agent_name.value
         )
@@ -575,7 +575,7 @@ class Harness:
                 session=session,
                 file_diff_handler=file_diff_handler,
                 trial_handler=trial_handler,
-                skill_set=self._current_skill_set
+                plugin_set=self._current_plugin_set
             )
 
             # Run setup with timeout using asyncio
@@ -626,9 +626,9 @@ class Harness:
             model_name=self._model_name,
             db_type=config.get("db_type"),
             project_type=config.get("project_type"),
-            skill_set_name=self._current_skill_set.name if self._current_skill_set else None,
-            skill_set_skills=self._current_skill_set.skills if self._current_skill_set else None,
-            skill_set_mcp_servers=list(self._current_skill_set.mcp_servers.keys()) if self._current_skill_set else None,
+            plugin_set_name=self._current_plugin_set.name if self._current_plugin_set else None,
+            plugin_set_skills=self._current_plugin_set.skills if self._current_plugin_set else None,
+            plugin_set_mcp_servers=list(self._current_plugin_set.mcp_servers.keys()) if self._current_plugin_set else None,
         )
 
         with spin_up_terminal(
@@ -1234,9 +1234,9 @@ class Harness:
                 model_name=self._model_name,
                 db_type=config.get("db_type"),
                 project_type=config.get("project_type"),
-                skill_set_name=self._current_skill_set.name if self._current_skill_set else None,
-                skill_set_skills=self._current_skill_set.skills if self._current_skill_set else None,
-                skill_set_mcp_servers=list(self._current_skill_set.mcp_servers.keys()) if self._current_skill_set else None,
+                plugin_set_name=self._current_plugin_set.name if self._current_plugin_set else None,
+                plugin_set_skills=self._current_plugin_set.skills if self._current_plugin_set else None,
+                plugin_set_mcp_servers=list(self._current_plugin_set.mcp_servers.keys()) if self._current_plugin_set else None,
             )
             return trial_results
 
@@ -1334,21 +1334,21 @@ class Harness:
         return results
 
     def run(self) -> BenchmarkResults:
-        """Run the benchmark with all configured skill sets."""
+        """Run the benchmark with all configured plugin sets."""
         all_results = BenchmarkResults()
         original_run_id = self._run_id
 
-        for skill_set in self._skill_sets:
-            # Create run ID with skill set suffix
-            self._run_id = f"{original_run_id}__{skill_set.name}"
-            self._current_skill_set = skill_set
+        for plugin_set in self._plugin_sets:
+            # Create run ID with plugin set suffix
+            self._run_id = f"{original_run_id}__{plugin_set.name}"
+            self._current_plugin_set = plugin_set
 
-            # Ensure output directory exists for this skill set
+            # Ensure output directory exists for this plugin set
             self._run_path.mkdir(parents=True, exist_ok=True)
 
-            self._logger.info(f"Starting run for skill set: {skill_set.name}")
+            self._logger.info(f"Starting run for plugin set: {plugin_set.name}")
 
-            # Run trials for this skill set
+            # Run trials for this plugin set
             results = self._execute_trials()
             all_results.results.extend(results.results)
 
