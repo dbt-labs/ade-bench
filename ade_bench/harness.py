@@ -132,8 +132,6 @@ class Harness:
         self._n_concurrent_trials = n_concurrent_trials
         self._n_attempts = n_attempts
 
-        self._run_path.mkdir(parents=True, exist_ok=True)
-
         self._init_dataset()
         self._init_plugin_sets()
         self._init_logger()
