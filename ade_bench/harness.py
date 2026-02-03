@@ -761,6 +761,7 @@ class Harness:
 
             # Only write agent.log and format it for agents with log formatters (e.g., Claude Code)
             formatted_content = None
+            agent_log_path = None
             if hasattr(task_agent, '_log_formatter') and task_agent._log_formatter is not None:
                 agent_log_path = trial_handler.sessions_path / "agent.log"
                 try:
@@ -771,12 +772,20 @@ class Harness:
                         self._logger.debug(f"Generated formatted agent.txt from agent.log using agent's formatter")
                 except Exception as e:
                     self._logger.warning(f"Failed to write/format agent.log: {e}. Using raw pane output.")
+                    agent_log_path = None  # Mark as unavailable on error
 
             # Write to file - either formatted content or fallback to raw pane
             if formatted_content:
                 trial_handler.agent_pane_path.write_text(formatted_content)
             else:
                 trial_handler.agent_pane_path.write_text(post_agent_pane)
+
+            # Extract tools used if log file is available
+            if agent_log_path and agent_log_path.exists():
+                try:
+                    results.tools_used = task_agent.extract_tools_used(agent_log_path)
+                except Exception as e:
+                    self._logger.debug(f"Could not extract tools used: {e}")
 
             # Capture snapshot after agent and create agent diff
             if file_diff_handler:

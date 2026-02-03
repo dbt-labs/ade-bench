@@ -98,6 +98,7 @@ class TrialResults(BaseModel):
     plugin_set_name: str | None = None
     plugin_set_skills: list[str] | None = None
     plugin_set_mcp_servers: list[str] | None = None
+    tools_used: list[str] | None = None
 
 
 class BenchmarkResults(BaseModel):
