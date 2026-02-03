@@ -134,7 +134,7 @@ def summarize_results(results: BenchmarkResults) -> Dict[str, Any]:
             'inferred_model': inferred_model,
             'db_type': first_result.db_type if first_result else None,
             'project_type': first_result.project_type if first_result else None,
-            'used_mcp': first_result.used_mcp if first_result else None,
+            'plugin_set': first_result.plugin_set_name if first_result else None,
             'agent': first_result.agent if first_result else None,
         }
     }

@@ -26,10 +26,9 @@ from ade_bench.config import config
 class AbstractInstalledAgent(BaseAgent, ABC):
     NAME = AgentName.ABSTRACT_INSTALLED
 
-    def __init__(self, use_mcp: bool = False, model_name: str | None = None, allowed_tools: list[str] | None = None, **kwargs):
+    def __init__(self, model_name: str | None = None, allowed_tools: list[str] | None = None, **kwargs):
         super().__init__(**kwargs)
         self._variant_config = {}
-        self._use_mcp = use_mcp
         self._model_name = model_name
         self._allowed_tools = allowed_tools or []
 
@@ -109,28 +108,6 @@ class AbstractInstalledAgent(BaseAgent, ABC):
                 block=True,
                 max_timeout_sec=config.setup_timeout_sec,  # Use setup timeout for installation
             )
-
-            # Optionally setup dbt MCP server
-            if self._use_mcp:
-                dbt_mcp_script = Path(__file__).parent.parent.parent.parent / "shared" / "scripts" / "setup-dbt-mcp.sh"
-                session.copy_to_container(
-                    dbt_mcp_script,
-                    container_dir="/scripts",
-                    container_filename="setup-dbt-mcp.sh",
-                )
-
-                # Pass db_type, project_type, and agent name
-                db_type = self._variant_config.get('db_type', 'unknown')
-                project_type = self._variant_config.get('project_type', 'unknown')
-                agent_name = self.NAME.value if hasattr(self.NAME, 'value') else str(self.NAME)
-                session.send_keys(
-                    [
-                        f"bash /scripts/setup-dbt-mcp.sh {db_type} {project_type} {agent_name}",
-                        "Enter",
-                    ],
-                    block=True,
-                    max_timeout_sec=config.setup_timeout_sec,
-                )
         except TimeoutError:
             log_harness_info(
                 logger,

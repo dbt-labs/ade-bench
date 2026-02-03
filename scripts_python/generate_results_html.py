@@ -165,7 +165,7 @@ class ResultsHTMLGenerator:
         html_content = html_content.replace('{{ model }}', html.escape(model))
         html_content = html_content.replace('{{ db_type }}', html.escape(summary['db_type'] or 'Unknown'))
         html_content = html_content.replace('{{ project_type }}', html.escape(summary['project_type'] or 'Unknown'))
-        html_content = html_content.replace('{{ used_mcp }}', 'Yes' if summary['used_mcp'] else 'No')
+        html_content = html_content.replace('{{ plugin_set }}', html.escape(summary['plugin_set'] or 'None'))
 
         # Replace the entire table section with the generated HTML table
         import re
