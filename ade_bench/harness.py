@@ -467,14 +467,21 @@ class Harness:
         logging_dir: Path,
         agent: BaseAgent,
         task_name: str | None = None,
+        prompt_suffix: str = "",
     ) -> AgentResult | None:
         timeouts = TimeoutManager.get_timeouts_for_task(trial_handler.task)
+
+        # Build the full prompt with optional suffix
+        full_prompt = trial_handler.task_prompt
+        if prompt_suffix:
+            full_prompt = f"{full_prompt} {prompt_suffix}"
+
         loop = asyncio.get_event_loop()
         task = loop.run_in_executor(
             None,
             partial(
                 agent.perform_task,
-                task_prompt=trial_handler.task_prompt,
+                task_prompt=full_prompt,
                 session=session,
                 logging_dir=logging_dir,
                 task_name=task_name,
@@ -492,6 +499,11 @@ class Harness:
         task_name: str | None = None,
     ) -> tuple[AgentResult | None, FailureMode]:
         try:
+            # Get prompt suffix from current plugin set
+            prompt_suffix = ""
+            if self._current_plugin_set and self._current_plugin_set.prompt_suffix:
+                prompt_suffix = self._current_plugin_set.prompt_suffix
+
             result = asyncio.run(
                 self._run_agent_with_timeout(
                     trial_handler=trial_handler,
@@ -499,6 +511,7 @@ class Harness:
                     logging_dir=trial_handler.agent_logging_dir,
                     agent=agent,
                     task_name=task_name,
+                    prompt_suffix=prompt_suffix,
                 )
             )
 

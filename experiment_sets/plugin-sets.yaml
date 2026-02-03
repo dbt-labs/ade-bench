@@ -15,6 +15,7 @@ sets:
       - dbt-labs/dbt-agent-skills
     mcp_servers: {}
     allowed_tools: [Bash, Edit, Write, Read, Glob, Grep, Skill]
+    prompt_suffix: "You can use the dbt skills."
 
   - name: dbt-mcp
     description: dbt MCP server
@@ -31,6 +32,7 @@ sets:
           DISABLE_SQL: "true"
           DISABLE_DBT_CODEGEN: "true"
     allowed_tools: [Bash, Edit, Write, Read, Glob, Grep, mcp__dbt__*]
+    prompt_suffix: "You can use the dbt MCP server."
 
   - name: dbt-skill-mcp
     description: dbt skills and MCP server
@@ -47,3 +49,4 @@ sets:
           DISABLE_SQL: "true"
           DISABLE_DBT_CODEGEN: "true"
     allowed_tools: [Bash, Edit, Write, Read, Glob, Grep, Skill, mcp__dbt__*]
+    prompt_suffix: "You can use the dbt skills and MCP server."

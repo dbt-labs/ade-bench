@@ -19,6 +19,7 @@ class PluginSet(BaseModel):
     skills: list[str] = []
     mcp_servers: dict[str, McpServerConfig] = {}
     allowed_tools: list[str] = []
+    prompt_suffix: str = ""  # Appended to task prompt before execution
 
     def is_compatible_with_agent(self, agent_name: str) -> bool:
         """Check if this plugin set is compatible with the given agent."""
