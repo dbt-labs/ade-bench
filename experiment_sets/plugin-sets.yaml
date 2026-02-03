@@ -10,8 +10,7 @@ sets:
     allowed_tools: [Bash, Edit, Write, Read, Glob, Grep]
 
   - name: dbt-skills
-    description: dbt skills via Vercel Skills CLI
-    agents: [claude]
+    description: All dbt skills
     skills:
       - dbt-labs/dbt-agent-skills
     mcp_servers: {}
@@ -33,9 +32,8 @@ sets:
           DISABLE_DBT_CODEGEN: "true"
     allowed_tools: [Bash, Edit, Write, Read, Glob, Grep, mcp__dbt__*]
 
-  - name: dbt-full
-    description: Both skills and MCP
-    agents: [claude]
+  - name: dbt-skill-mcp
+    description: dbt skills and MCP server
     skills:
       - dbt-labs/dbt-agent-skills
     mcp_servers:
