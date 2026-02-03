@@ -131,7 +131,7 @@ def write_results_tsv(results: BenchmarkResults, output_path: Path, run_id: str)
         "model_name",
         "db_type",
         "project_type",
-        "used_mcp"
+        "plugin_set"
     ]
 
     with open(output_path, 'w', newline='') as f:
@@ -175,7 +175,7 @@ def write_results_tsv(results: BenchmarkResults, output_path: Path, run_id: str)
                 trial_result.model_name or "",
                 trial_result.db_type or "",
                 trial_result.project_type or "",
-                trial_result.used_mcp if trial_result.used_mcp is not None else ""
+                trial_result.plugin_set_name or ""
             ]
 
             writer.writerow(row)
