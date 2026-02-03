@@ -94,7 +94,10 @@ class TrialResults(BaseModel):
     model_name: str | None = None
     db_type: str | None = None
     project_type: str | None = None
-    used_mcp: bool | None = None
+    # Skill set metadata
+    skill_set_name: str | None = None
+    skill_set_skills: list[str] | None = None
+    skill_set_mcp_servers: list[str] | None = None
 
 
 class BenchmarkResults(BaseModel):
