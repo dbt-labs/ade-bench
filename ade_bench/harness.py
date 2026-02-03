@@ -569,15 +569,13 @@ class Harness:
 
         try:
             # Create setup orchestrator with terminal and session for harness-specific operations
-            # Determine if skills should be used based on current skill set
-            use_skills = bool(self._current_skill_set and self._current_skill_set.skills)
             setup_orchestrator = SetupOrchestrator(
                 logger=self._logger,
                 terminal=terminal,
                 session=session,
                 file_diff_handler=file_diff_handler,
                 trial_handler=trial_handler,
-                use_skills=use_skills
+                skill_set=self._current_skill_set
             )
 
             # Run setup with timeout using asyncio
