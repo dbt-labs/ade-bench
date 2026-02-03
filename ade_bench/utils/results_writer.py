@@ -157,6 +157,7 @@ def write_results_tsv(results: BenchmarkResults, output_path: Path, run_id: str)
             # Get failure type
             failure_type = get_failure_type(trial_result)
 
+            tools_str = ",".join(trial_result.tools_used) if trial_result.tools_used else ""
 
             row = [
                 run_id,
