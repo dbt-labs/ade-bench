@@ -127,6 +127,7 @@ def write_results_tsv(results: BenchmarkResults, output_path: Path, run_id: str)
         "output_tokens",
         "cache_tokens",
         "turns",
+        "tools",
         "agent",
         "model_name",
         "db_type",
@@ -156,6 +157,7 @@ def write_results_tsv(results: BenchmarkResults, output_path: Path, run_id: str)
             # Get failure type
             failure_type = get_failure_type(trial_result)
 
+
             row = [
                 run_id,
                 calc['task_id'],
@@ -171,6 +173,7 @@ def write_results_tsv(results: BenchmarkResults, output_path: Path, run_id: str)
                 calc['_output_tokens'],
                 calc['_cache_tokens'],
                 calc['_turns'],
+                tools_str,
                 trial_result.agent or "",
                 trial_result.model_name or "",
                 trial_result.db_type or "",
