@@ -28,6 +28,8 @@ from ade_bench.harness_models import (
     RunMetadata,
     TrialResults,
 )
+from ade_bench.models.skill_set import SkillSet
+from ade_bench.plugins.loader import SkillSetLoader
 from ade_bench.setup.setup_orchestrator import SetupOrchestrator
 from ade_bench.llms.base_llm import ContextLengthExceededError, ParseError
 from ade_bench.parsers.base_parser import UnitTestStatus, ParserResult
@@ -65,8 +67,7 @@ class Harness:
         db_type: str | None = None,
         project_type: str | None = None,
         keep_alive: bool = False,
-        use_mcp: bool = False,
-        use_skills: bool = False,
+        plugin_set_names: list[str] | None = None,
         with_profiling: bool = False,
     ):
         """
@@ -95,8 +96,7 @@ class Harness:
             db_type: Database type to filter variants (e.g., duckdb, postgres, sqlite, snowflake).
             project_type: Project type to filter variants (e.g., dbt, other).
             keep_alive: If True, keep containers alive when tasks fail for debugging.
-            use_mcp: If True, start a dbt MCP server after setup completes.
-            use_skills: If True, copy skills directory to container for agent use.
+            plugin_set_names: List of skill set names to use. If None, uses defaults.
             with_profiling: If True, will enable the cProfiler.
         """
         self._run_uuid = None
@@ -110,8 +110,9 @@ class Harness:
         self._db_filter = db_type
         self._project_type_filter = project_type
         self._keep_alive = keep_alive
-        self._use_mcp = use_mcp
-        self._use_skills = use_skills
+        self._plugin_set_names = plugin_set_names
+        self._skill_sets: list[SkillSet] = []
+        self._current_skill_set: SkillSet | None = None
         self._with_profiling = with_profiling
 
         # Initialize setup orchestrator for variant-specific setup
@@ -134,7 +135,7 @@ class Harness:
         self._run_path.mkdir(parents=True, exist_ok=True)
 
         self._init_dataset()
-
+        self._init_skill_sets()
         self._init_logger()
 
     @property
@@ -184,9 +185,6 @@ class Harness:
         if self._model_name:
             agent_kwargs["model_name"] = self._model_name
 
-        # Pass use_mcp flag to installed agents
-        agent_kwargs["use_mcp"] = self._use_mcp
-
         return AgentFactory.get_agent(self._agent_name, **agent_kwargs)
 
     def _init_dataset(self) -> None:
@@ -195,6 +193,20 @@ class Harness:
             dataset_path=self._dataset_path,
             task_ids=self._task_ids,
             excluded_task_ids=self._exclude_task_ids,
+        )
+
+    def _init_skill_sets(self) -> None:
+        """Load and resolve skill sets from configuration."""
+        config_path = self._dataset_path.parent / "experiment_sets" / "skill-sets.yaml"
+        if not config_path.exists():
+            # No skill sets config - use empty list (no plugins)
+            self._skill_sets = [SkillSet(name="no-plugins", allowed_tools=["Bash", "Edit", "Write", "Read", "Glob", "Grep"])]
+            return
+
+        loader = SkillSetLoader(config_path)
+        self._skill_sets = loader.resolve_skill_sets(
+            plugin_set_names=self._plugin_set_names,
+            agent_name=self._agent_name.value
         )
 
     def _init_logger(self) -> None:
@@ -557,13 +569,15 @@ class Harness:
 
         try:
             # Create setup orchestrator with terminal and session for harness-specific operations
+            # Determine if skills should be used based on current skill set
+            use_skills = bool(self._current_skill_set and self._current_skill_set.skills)
             setup_orchestrator = SetupOrchestrator(
                 logger=self._logger,
                 terminal=terminal,
                 session=session,
                 file_diff_handler=file_diff_handler,
                 trial_handler=trial_handler,
-                use_skills=self._use_skills
+                use_skills=use_skills
             )
 
             # Run setup with timeout using asyncio
@@ -614,7 +628,9 @@ class Harness:
             model_name=self._model_name,
             db_type=config.get("db_type"),
             project_type=config.get("project_type"),
-            used_mcp=self._use_mcp,
+            skill_set_name=self._current_skill_set.name if self._current_skill_set else None,
+            skill_set_skills=self._current_skill_set.skills if self._current_skill_set else None,
+            skill_set_mcp_servers=list(self._current_skill_set.mcp_servers.keys()) if self._current_skill_set else None,
         )
 
         with spin_up_terminal(
@@ -1220,7 +1236,9 @@ class Harness:
                 model_name=self._model_name,
                 db_type=config.get("db_type"),
                 project_type=config.get("project_type"),
-                used_mcp=self._use_mcp,
+                skill_set_name=self._current_skill_set.name if self._current_skill_set else None,
+                skill_set_skills=self._current_skill_set.skills if self._current_skill_set else None,
+                skill_set_mcp_servers=list(self._current_skill_set.mcp_servers.keys()) if self._current_skill_set else None,
             )
             return trial_results
 
@@ -1318,10 +1336,32 @@ class Harness:
         return results
 
     def run(self) -> BenchmarkResults:
-        """Run the harness.
+        """Run the benchmark with all configured skill sets."""
+        all_results = BenchmarkResults()
+        original_run_id = self._run_id
+
+        for skill_set in self._skill_sets:
+            # Create run ID with skill set suffix
+            self._run_id = f"{original_run_id}__{skill_set.name}"
+            self._current_skill_set = skill_set
+
+            # Ensure output directory exists for this skill set
+            self._run_path.mkdir(parents=True, exist_ok=True)
+
+            self._logger.info(f"Starting run for skill set: {skill_set.name}")
+
+            # Run trials for this skill set
+            results = self._execute_trials()
+            all_results.results.extend(results.results)
+
+        self._run_id = original_run_id
+        return all_results
+
+    def _execute_trials(self) -> BenchmarkResults:
+        """Execute trials for the current skill set.
 
         Returns:
-            BenchmarkResults: The results of the harness run.
+            BenchmarkResults: The results of the trials.
         """
         log_harness_info(logger, "system", "start", "STARTING HARNESS RUN")
         log_harness_info(logger, "system", "start", f"Run ID: {self._run_id}")
