@@ -472,7 +472,7 @@ class Harness:
         # Build the full prompt with optional suffix
         full_prompt = trial_handler.task_prompt
         if prompt_suffix:
-            full_prompt = f"{full_prompt} {prompt_suffix}"
+            full_prompt = f"{full_prompt}\n\n{prompt_suffix}"
 
         loop = asyncio.get_event_loop()
         task = loop.run_in_executor(
