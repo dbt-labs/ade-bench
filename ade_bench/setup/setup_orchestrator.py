@@ -12,7 +12,6 @@ from .agent_setup import setup_agent_config
 from ..utils.logger import log_harness_info
 from ..models.plugin_set import PluginSet
 from ..plugins.skills_handler import SkillsHandler
-from ..plugins.mcp_handler import McpHandler
 
 
 class SetupOrchestrator:
@@ -26,7 +25,6 @@ class SetupOrchestrator:
         self.trial_handler = trial_handler
         self.plugin_set = plugin_set
         self._skills_handler = SkillsHandler()
-        self._mcp_handler = McpHandler()
 
     def setup_task(self, task_id: str, variant: Dict[str, Any]) -> bool:
         """Setup a task for the given variant."""
@@ -47,18 +45,11 @@ class SetupOrchestrator:
         # Logging is in the setup_agent_config function
         setup_agent_config(self.terminal, task_id, self.trial_handler, self.logger)
 
-        # Install skills and configure MCP if plugin set specified
-        if self.plugin_set:
-            if self.plugin_set.skills:
-                log_harness_info(self.logger, task_id, "setup", "Installing skills...")
-                self._skills_handler.install(self.plugin_set, self.terminal)
-                log_harness_info(self.logger, task_id, "setup", "Skills installed")
-
-            if self.plugin_set.mcp_servers:
-                log_harness_info(self.logger, task_id, "setup", "Configuring MCP servers...")
-                agent_name = self.trial_handler.agent_name.value
-                self._mcp_handler.configure(self.plugin_set, agent_name, self.terminal)
-                log_harness_info(self.logger, task_id, "setup", "MCP servers configured")
+        # Install skills if plugin set specified (MCP is configured after agent installation)
+        if self.plugin_set and self.plugin_set.skills:
+            log_harness_info(self.logger, task_id, "setup", "Installing skills...")
+            self._skills_handler.install(self.plugin_set, self.terminal)
+            log_harness_info(self.logger, task_id, "setup", "Skills installed")
 
 
         # Set up the database

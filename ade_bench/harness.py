@@ -189,6 +189,10 @@ class Harness:
         if self._current_plugin_set and self._current_plugin_set.allowed_tools:
             agent_kwargs["allowed_tools"] = self._current_plugin_set.allowed_tools
 
+        # Pass mcp_servers from current plugin set
+        if self._current_plugin_set and self._current_plugin_set.mcp_servers:
+            agent_kwargs["mcp_servers"] = self._current_plugin_set.mcp_servers
+
         return AgentFactory.get_agent(self._agent_name, **agent_kwargs)
 
     def _init_dataset(self) -> None:

@@ -18,7 +18,9 @@ from typing import Any
 from ade_bench.agents.agent_name import AgentName
 from ade_bench.agents.base_agent import AgentResult, BaseAgent
 from ade_bench.harness_models import TerminalCommand, FailureMode
+from ade_bench.models.plugin_set import McpServerConfig
 from ade_bench.terminal.tmux_session import TmuxSession
+from ade_bench.terminal.docker_compose_manager import DockerComposeManager
 from ade_bench.utils.logger import log_harness_info, logger
 from ade_bench.config import config
 
@@ -26,11 +28,12 @@ from ade_bench.config import config
 class AbstractInstalledAgent(BaseAgent, ABC):
     NAME = AgentName.ABSTRACT_INSTALLED
 
-    def __init__(self, model_name: str | None = None, allowed_tools: list[str] | None = None, **kwargs):
+    def __init__(self, model_name: str | None = None, allowed_tools: list[str] | None = None, mcp_servers: dict[str, McpServerConfig] | None = None, **kwargs):
         super().__init__(**kwargs)
         self._variant_config = {}
         self._model_name = model_name
         self._allowed_tools = allowed_tools or []
+        self._mcp_servers = mcp_servers or {}
 
     @property
     @abstractmethod
@@ -62,6 +65,47 @@ class AbstractInstalledAgent(BaseAgent, ABC):
         return "\n".join(
             [f"export {key}='{value}'" for key, value in self._env.items()]
         )
+
+    def _configure_mcp_servers(self, session: TmuxSession, task_name: str | None) -> None:
+        """Configure MCP servers after agent installation."""
+        agent_cli = self.NAME.value  # e.g., "claude", "gemini"
+
+        for server_name, mcp_config in self._mcp_servers.items():
+            log_harness_info(logger, task_name, "agent", f"Configuring MCP server '{server_name}'...")
+
+            # Write env file if env vars specified
+            env_file_path = None
+            if mcp_config.env:
+                env_file_path = f"/tmp/{server_name}.env"
+                env_content = "\n".join(f"{k}={v}" for k, v in mcp_config.env.items())
+                write_cmd = f"cat > {env_file_path} << 'ENVEOF'\n{env_content}\nENVEOF"
+
+                result = session.container.exec_run(
+                    ["sh", "-c", write_cmd],
+                    workdir=str(DockerComposeManager.CONTAINER_APP_DIR)
+                )
+                if result.exit_code != 0:
+                    logger.warning(f"[MCP] Failed to write env file: {result.output.decode('utf-8')}")
+
+            # Build mcp add command
+            args_str = " ".join(mcp_config.args)
+            if env_file_path:
+                mcp_cmd = f"{agent_cli} mcp add {server_name} -- {mcp_config.command} --env-file {env_file_path} {args_str}"
+            else:
+                mcp_cmd = f"{agent_cli} mcp add {server_name} -- {mcp_config.command} {args_str}"
+
+            result = session.container.exec_run(
+                ["sh", "-c", mcp_cmd],
+                workdir=str(DockerComposeManager.CONTAINER_APP_DIR)
+            )
+
+            if result.exit_code != 0:
+                logger.warning(
+                    f"[MCP] Server registration failed for {server_name}: "
+                    f"{result.output.decode('utf-8')}"
+                )
+            else:
+                log_harness_info(logger, task_name, "agent", f"MCP server '{server_name}' configured")
 
     def perform_task(
         self,
@@ -108,6 +152,10 @@ class AbstractInstalledAgent(BaseAgent, ABC):
                 block=True,
                 max_timeout_sec=config.setup_timeout_sec,  # Use setup timeout for installation
             )
+
+            # Configure MCP servers after agent is installed
+            if self._mcp_servers:
+                self._configure_mcp_servers(session, task_name)
         except TimeoutError:
             log_harness_info(
                 logger,
