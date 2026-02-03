@@ -1,0 +1,51 @@
+# Skill set configurations for ADE-Bench
+# Use --plugin-set <name> to select, or run without flag to use all defaults
+
+sets:
+  - name: no-plugins
+    description: Baseline - no skills or MCP
+    default: true
+    skills: []
+    mcp_servers: {}
+    allowed_tools: [Bash, Edit, Write, Read, Glob, Grep]
+
+  - name: dbt-skills
+    description: dbt skills via Vercel Skills CLI
+    agents: [claude]
+    skills:
+      - dbt-labs/dbt-agent-skills
+    mcp_servers: {}
+    allowed_tools: [Bash, Edit, Write, Read, Glob, Grep, Skill]
+
+  - name: dbt-mcp
+    description: dbt MCP server
+    default: true
+    skills: []
+    mcp_servers:
+      dbt:
+        command: uvx
+        args: [dbt-mcp@latest]
+        env:
+          DISABLE_SEMANTIC_LAYER: "true"
+          DISABLE_DISCOVERY: "true"
+          DISABLE_ADMIN_API: "true"
+          DISABLE_SQL: "true"
+          DISABLE_DBT_CODEGEN: "true"
+    allowed_tools: [Bash, Edit, Write, Read, Glob, Grep, mcp__dbt__*]
+
+  - name: dbt-full
+    description: Both skills and MCP
+    agents: [claude]
+    skills:
+      - dbt-labs/dbt-agent-skills
+    mcp_servers:
+      dbt:
+        command: uvx
+        args: [dbt-mcp@latest]
+        env:
+          DISABLE_SEMANTIC_LAYER: "true"
+          DISABLE_DISCOVERY: "true"
+          DISABLE_ADMIN_API: "true"
+          DISABLE_SQL: "true"
+          DISABLE_DBT_CODEGEN: "true"
+    allowed_tools: [Bash, Edit, Write, Read, Glob, Grep, Skill, mcp__dbt__*]
