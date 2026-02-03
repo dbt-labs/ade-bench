@@ -6,11 +6,12 @@ log files (JSON-lines format), and generates HTML transcripts using
 claude-code-transcripts.
 """
 
+import contextlib
+import io
 import json
 import logging
 import re
 import tempfile
-from io import StringIO
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -226,7 +227,7 @@ class ClaudeCodeLogFormatter(LogFormatter):
 
     def format_readable_log(self, turns: List[Dict[str, Any]]) -> str:
         """Format the parsed turns into a readable text string."""
-        output = StringIO()
+        output = io.StringIO()
 
         output.write("=" * 80 + "\n")
         output.write("CLAUDE CODE AGENT INTERACTION LOG\n")
@@ -319,8 +320,10 @@ class ClaudeCodeLogFormatter(LogFormatter):
                 tmp_path = Path(tmp_file.name)
 
             try:
-                # Generate HTML transcript
-                generate_html(tmp_path, output_dir)
+                # Generate HTML transcript (suppress stdout/stderr from library)
+                with contextlib.redirect_stdout(io.StringIO()), \
+                     contextlib.redirect_stderr(io.StringIO()):
+                    generate_html(tmp_path, output_dir)
 
                 # Check for generated files
                 index_path = output_dir / "index.html"

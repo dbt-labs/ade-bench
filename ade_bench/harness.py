@@ -746,19 +746,18 @@ class Harness:
             parts = full_pane.split('=== ADE_BENCH_PHASE_DELIMITER_AGENT_START ===')
             post_agent_pane = parts[-1].strip()
 
-            # Write raw agent output to sessions/agent.log for potential formatting
-            agent_log_path = trial_handler.sessions_path / "agent.log"
-            agent_log_path.write_text(post_agent_pane)
-
-            # Try to generate a nicely formatted agent.txt from agent.log
+            # Only write agent.log and format it for agents with log formatters (e.g., Claude Code)
             formatted_content = None
-            try:
-                # Get formatted content from agent (returns string or None)
-                formatted_content = task_agent.format_agent_log(agent_log_path)
-                if formatted_content:
-                    self._logger.debug(f"Generated formatted agent.txt from agent.log using agent's formatter")
-            except Exception as e:
-                self._logger.warning(f"Failed to format agent.log: {e}. Using raw pane output.")
+            if hasattr(task_agent, '_log_formatter') and task_agent._log_formatter is not None:
+                agent_log_path = trial_handler.sessions_path / "agent.log"
+                try:
+                    agent_log_path.write_text(post_agent_pane)
+                    # Get formatted content from agent (returns string or None)
+                    formatted_content = task_agent.format_agent_log(agent_log_path)
+                    if formatted_content:
+                        self._logger.debug(f"Generated formatted agent.txt from agent.log using agent's formatter")
+                except Exception as e:
+                    self._logger.warning(f"Failed to write/format agent.log: {e}. Using raw pane output.")
 
             # Write to file - either formatted content or fallback to raw pane
             if formatted_content:
