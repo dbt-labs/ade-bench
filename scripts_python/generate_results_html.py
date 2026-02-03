@@ -305,38 +305,90 @@ class ResultsHTMLGenerator:
         )
 
     def _generate_panes_page(self, task_data: Dict[str, Any], task_dir: Path, task_html_dir: Path):
-        """Generate panes detail page."""
+        """Generate panes detail page.
+
+        Displays terminal output in chronological order:
+        1. pre-agent.txt (setup before agent runs)
+        2. HTML transcript (if available) OR agent.txt (raw output)
+        3. post-agent.txt (teardown after agent completes)
+        """
+        import shutil
+
         panes_dir = task_dir / "panes"
-        content = ""
+        transcript_dir = task_dir / "sessions" / "transcript"
+
+        # Check for HTML transcript (always use page-001.html since there's only 1 prompt)
+        transcript_html = None
+        if transcript_dir.exists() and (transcript_dir / "page-001.html").exists():
+            # Copy transcript directory to HTML output
+            output_transcript_dir = task_html_dir / "transcript"
+            if output_transcript_dir.exists():
+                shutil.rmtree(output_transcript_dir)
+            shutil.copytree(transcript_dir, output_transcript_dir)
+            transcript_html = "transcript/page-001.html"
+
+        # Build content sections in chronological order
+        sections = []
 
         if panes_dir.exists():
-            pane_files = list(panes_dir.glob("*.txt"))
-            pane_dict = {p.name: p for p in pane_files}
+            pane_dict = {p.name: p for p in panes_dir.glob("*.txt")}
 
-            pane_order = ["pre-agent.txt", "agent.txt", "post-agent.txt"]
+            # 1. Pre-agent section
+            if "pre-agent.txt" in pane_dict:
+                with open(pane_dict["pre-agent.txt"], 'r') as f:
+                    pre_content = f.read().strip()
+                if pre_content:
+                    sections.append(("Pre-Agent Setup", pre_content, "text"))
 
-            # Main panes in desired order, then any missing panes
-            main_panes = [pane_dict[p] for p in pane_order if p in pane_dict]
-            missing_panes = [p for p in pane_files if p.name not in pane_order]
+            # 2. Agent section - HTML transcript OR raw agent.txt
+            if transcript_html:
+                sections.append(("Agent Transcript", transcript_html, "iframe"))
+            elif "agent.txt" in pane_dict:
+                with open(pane_dict["agent.txt"], 'r') as f:
+                    agent_content = f.read().strip()
+                if agent_content:
+                    sections.append(("Agent Output", agent_content, "text"))
 
-            panes = main_panes + missing_panes
+            # 3. Post-agent section
+            if "post-agent.txt" in pane_dict:
+                with open(pane_dict["post-agent.txt"], 'r') as f:
+                    post_content = f.read().strip()
+                if post_content:
+                    sections.append(("Post-Agent Output", post_content, "text"))
 
-            for pane_file in panes:
-                content += f"\n{'='*80}\n"
-                content += f"FILE: {pane_file.name}\n"
-                content += f"{'='*80}\n\n"
-                with open(pane_file, 'r') as f:
-                    content += f.read()
-                content += "\n\n"
-        else:
-            content = "No panes directory found."
+            # Any other pane files not in the standard order
+            other_panes = [p for p in pane_dict.keys()
+                          if p not in ["pre-agent.txt", "agent.txt", "post-agent.txt"]]
+            for pane_name in sorted(other_panes):
+                with open(pane_dict[pane_name], 'r') as f:
+                    other_content = f.read().strip()
+                if other_content:
+                    sections.append((f"Other: {pane_name}", other_content, "text"))
 
-        self._write_detail_page(
+        # Build HTML content from sections
+        content_parts = []
+        for title, content, content_type in sections:
+            if content_type == "iframe":
+                content_parts.append(f'''<div style="margin-bottom: 24px;">
+    <h2 style="color: #4ec9b0; margin-bottom: 10px;">{html.escape(title)}</h2>
+    <iframe src="{html.escape(content)}" style="width: 100%; height: 700px; border: 1px solid #3c3c3c; border-radius: 4px; background: #fff;"></iframe>
+    <p style="margin-top: 8px; font-size: 11px; color: #808080;"><a href="{html.escape(content)}" target="_blank" style="color: #9cdcfe;">Open transcript in new tab</a></p>
+</div>''')
+            else:
+                content_parts.append(f'''<div style="margin-bottom: 24px;">
+    <h2 style="color: #4ec9b0; margin-bottom: 10px;">{html.escape(title)}</h2>
+    <pre style="white-space: pre-wrap; word-wrap: break-word; background: #1e1e1e; padding: 16px; border-radius: 4px; overflow-x: auto;">{html.escape(content)}</pre>
+</div>''')
+
+        if not content_parts:
+            content_parts.append("<p>No panes data found.</p>")
+
+        # Write directly using template
+        self._write_panes_page(
             task_html_dir / "panes.html",
             "Terminal Panes",
             task_data['task_id'],
-            content,
-            "panes"
+            "\n".join(content_parts)
         )
 
     def _generate_diffs_page(self, task_data: Dict[str, Any], task_dir: Path, task_html_dir: Path):
@@ -368,8 +420,23 @@ class ResultsHTMLGenerator:
             "diffs"
         )
 
-    def _write_detail_page(self, output_path: Path, title: str, task_id: str, content: str, content_type: str):
-        """Write a detail page using the template."""
+    def _write_detail_page(
+        self,
+        output_path: Path,
+        title: str,
+        task_id: str,
+        content: str,
+        content_type: str
+    ):
+        """Write a detail page using the template.
+
+        Args:
+            output_path: Path to write the HTML file
+            title: Page title
+            task_id: Task identifier
+            content: Main text content (will be HTML-escaped)
+            content_type: CSS class for content styling
+        """
         template_path = self.templates_dir / "detail.html"
         if not template_path.exists():
             print(f"Error: Template not found: {template_path}")
@@ -383,6 +450,41 @@ class ResultsHTMLGenerator:
         html_content = html_content.replace('{{ task_id }}', html.escape(task_id))
         html_content = html_content.replace('{{ content }}', html.escape(content))
         html_content = html_content.replace('{{ content_type }}', html.escape(content_type))
+
+        with open(output_path, 'w') as f:
+            f.write(html_content)
+
+    def _write_panes_page(
+        self,
+        output_path: Path,
+        title: str,
+        task_id: str,
+        content_html: str
+    ):
+        """Write the panes page with pre-built HTML content.
+
+        Unlike _write_detail_page which escapes content, this method accepts
+        raw HTML that has already been constructed with proper sections.
+
+        Args:
+            output_path: Path to write the HTML file
+            title: Page title
+            task_id: Task identifier
+            content_html: Pre-built HTML content (not escaped)
+        """
+        template_path = self.templates_dir / "detail.html"
+        if not template_path.exists():
+            print(f"Error: Template not found: {template_path}")
+            return
+
+        with open(template_path, 'r') as f:
+            template_content = f.read()
+
+        # Simple template replacement - content_html is already formatted
+        html_content = template_content.replace('{{ title }}', html.escape(title))
+        html_content = html_content.replace('{{ task_id }}', html.escape(task_id))
+        html_content = html_content.replace('{{ content }}', content_html)
+        html_content = html_content.replace('{{ content_type }}', 'panes')
 
         with open(output_path, 'w') as f:
             f.write(html_content)

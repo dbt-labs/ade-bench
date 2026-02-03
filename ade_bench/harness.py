@@ -218,15 +218,25 @@ class Harness:
         )
 
     def _init_logger(self) -> None:
-        file_handler = logging.FileHandler(self._log_output_path)
-        file_handler.setLevel(logging.DEBUG)
-        logger.addHandler(file_handler)
-
+        """Initialize console logging. File logging is initialized per plugin set."""
         console_handler = logging.StreamHandler()
         console_handler.setLevel(self._log_level)
         logger.addHandler(console_handler)
 
         self._logger = logger.getChild(__name__)
+        self._file_handler: logging.FileHandler | None = None
+
+    def _init_file_logger(self) -> None:
+        """Initialize or reinitialize file logging for the current run path."""
+        # Remove existing file handler if present
+        if self._file_handler is not None:
+            logger.removeHandler(self._file_handler)
+            self._file_handler.close()
+
+        # Create new file handler for the current run path
+        self._file_handler = logging.FileHandler(self._log_output_path)
+        self._file_handler.setLevel(logging.DEBUG)
+        logger.addHandler(self._file_handler)
 
     def _is_resolved(self, parser_result: ParserResult | None) -> bool:
         if parser_result is None:
@@ -736,18 +746,19 @@ class Harness:
             parts = full_pane.split('=== ADE_BENCH_PHASE_DELIMITER_AGENT_START ===')
             post_agent_pane = parts[-1].strip()
 
-            # Try to generate a nicely formatted agent.txt from agent.log
+            # Write raw agent output to sessions/agent.log for potential formatting
             agent_log_path = trial_handler.sessions_path / "agent.log"
-            formatted_content = None
+            agent_log_path.write_text(post_agent_pane)
 
-            if agent_log_path.exists():
-                try:
-                    # Get formatted content from agent (returns string or None)
-                    formatted_content = task_agent.format_agent_log(agent_log_path)
-                    if formatted_content:
-                        self._logger.debug(f"Generated formatted agent.txt from agent.log using agent's formatter")
-                except Exception as e:
-                    self._logger.warning(f"Failed to format agent.log: {e}. Using raw pane output.")
+            # Try to generate a nicely formatted agent.txt from agent.log
+            formatted_content = None
+            try:
+                # Get formatted content from agent (returns string or None)
+                formatted_content = task_agent.format_agent_log(agent_log_path)
+                if formatted_content:
+                    self._logger.debug(f"Generated formatted agent.txt from agent.log using agent's formatter")
+            except Exception as e:
+                self._logger.warning(f"Failed to format agent.log: {e}. Using raw pane output.")
 
             # Write to file - either formatted content or fallback to raw pane
             if formatted_content:
@@ -1353,6 +1364,9 @@ class Harness:
 
             # Ensure output directory exists for this plugin set
             self._run_path.mkdir(parents=True, exist_ok=True)
+
+            # Initialize file logger for this plugin set's run path
+            self._init_file_logger()
 
             self._logger.info(f"Starting run for plugin set: {plugin_set.name}")
 

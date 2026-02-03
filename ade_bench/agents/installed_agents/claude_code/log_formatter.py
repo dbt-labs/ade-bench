@@ -2,16 +2,21 @@
 Log formatter for Claude Code agent.
 
 This module provides parsing and formatting utilities for Claude Code agent
-log files (JSON-lines format).
+log files (JSON-lines format), and generates HTML transcripts using
+claude-code-transcripts.
 """
 
 import json
+import logging
 import re
+import tempfile
 from io import StringIO
 from pathlib import Path
 from typing import Any, Dict, List
 
 from ade_bench.agents.log_formatter import LogFormatter
+
+logger = logging.getLogger(__name__)
 
 
 class ClaudeCodeLogFormatter(LogFormatter):
@@ -22,6 +27,66 @@ class ClaudeCodeLogFormatter(LogFormatter):
         """Remove ANSI color codes from text."""
         ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
         return ansi_escape.sub('', text)
+
+    @staticmethod
+    def extract_jsonl_content(log_path: Path, inject_prompt: str | None = None) -> str:
+        """
+        Extract only the JSON lines from a log file that may contain mixed content.
+
+        The log file may contain terminal output before the JSON lines begin.
+        This method extracts only valid JSON lines.
+
+        Claude Code's stream-json output doesn't include the initial user prompt,
+        only the assistant responses and tool results. If no user prompt with text
+        is found in the log, a synthetic one is injected so that transcript
+        generation tools can identify conversation boundaries.
+
+        Args:
+            log_path: Path to the log file
+            inject_prompt: Optional prompt text to inject if none found
+
+        Returns:
+            String containing only the JSON lines, newline-separated
+        """
+        json_lines = []
+        has_user_text_prompt = False
+
+        with open(log_path, 'r') as f:
+            for line in f:
+                stripped = line.strip()
+                if stripped.startswith('{'):
+                    try:
+                        # Validate it's actually JSON
+                        data = json.loads(stripped)
+                        json_lines.append(stripped)
+
+                        # Check if this is a user message with actual text content
+                        if data.get('type') == 'user':
+                            content = data.get('message', {}).get('content', [])
+                            if isinstance(content, str) and content.strip():
+                                has_user_text_prompt = True
+                            elif isinstance(content, list):
+                                for item in content:
+                                    if isinstance(item, dict) and item.get('type') == 'text':
+                                        has_user_text_prompt = True
+                                        break
+                    except json.JSONDecodeError:
+                        continue
+
+        # If no user prompt found, inject a synthetic one at the beginning
+        if not has_user_text_prompt and json_lines:
+            prompt_text = inject_prompt or "Claude Code Agent Session"
+            synthetic_prompt = json.dumps({
+                "type": "user",
+                "timestamp": "",
+                "message": {
+                    "role": "user",
+                    "content": prompt_text
+                }
+            })
+            json_lines.insert(0, synthetic_prompt)
+
+        return '\n'.join(json_lines)
 
     @staticmethod
     def format_tool_input(tool_name: str, tool_input: Dict[str, Any]) -> str:
@@ -215,3 +280,70 @@ class ClaudeCodeLogFormatter(LogFormatter):
         output.write("=" * 80 + "\n")
 
         return output.getvalue()
+
+    def generate_html_transcript(self, log_path: Path, output_dir: Path) -> Path | None:
+        """
+        Generate an HTML transcript using claude-code-transcripts.
+
+        This method extracts JSON lines from the log file (which may contain
+        mixed terminal output and JSON) and uses claude-code-transcripts to
+        generate a clean HTML transcript.
+
+        Args:
+            log_path: Path to the log file (may contain mixed content)
+            output_dir: Directory to write HTML transcript files
+
+        Returns:
+            Path to the generated index.html, or None if generation failed
+        """
+        if not log_path.exists():
+            logger.warning(f"Log file not found: {log_path}")
+            return None
+
+        try:
+            from claude_code_transcripts import generate_html
+
+            # Extract only JSON lines from the log file
+            jsonl_content = self.extract_jsonl_content(log_path)
+            if not jsonl_content:
+                logger.warning(f"No JSON content found in {log_path}")
+                return None
+
+            # Write clean JSONL to a temporary file for claude-code-transcripts
+            output_dir.mkdir(parents=True, exist_ok=True)
+
+            with tempfile.NamedTemporaryFile(
+                mode='w', suffix='.jsonl', delete=False
+            ) as tmp_file:
+                tmp_file.write(jsonl_content)
+                tmp_path = Path(tmp_file.name)
+
+            try:
+                # Generate HTML transcript
+                generate_html(tmp_path, output_dir)
+
+                # Check for generated files
+                index_path = output_dir / "index.html"
+                if index_path.exists():
+                    return index_path
+
+                # Check for page-001.html if index.html doesn't exist
+                page_path = output_dir / "page-001.html"
+                if page_path.exists():
+                    return page_path
+
+                logger.warning(f"No HTML output found in {output_dir}")
+                return None
+            finally:
+                # Clean up temporary file
+                tmp_path.unlink(missing_ok=True)
+
+        except ImportError:
+            logger.warning(
+                "claude-code-transcripts not installed. "
+                "Install with: pip install claude-code-transcripts"
+            )
+            return None
+        except Exception as e:
+            logger.warning(f"Transcript generation failed: {e}")
+            return None

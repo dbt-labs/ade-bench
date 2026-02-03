@@ -27,6 +27,7 @@ dependencies = [
     "duckdb>=0.9",
     "snowflake-connector-python>=3.0",
     "pyarrow>=10.0",
+    "claude-code-transcripts>=0.6",
 ]
 
 [project.optional-dependencies]
