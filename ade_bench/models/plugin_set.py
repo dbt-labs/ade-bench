@@ -10,13 +10,23 @@ class McpServerConfig(BaseModel):
     env: dict[str, str] = {}
 
 
+class SkillOrigin(BaseModel):
+    """Configuration for a skill origin."""
+    location: str  # Skill origin (e.g., git URL, local path, GitHub shorthand)
+    skill_names: list[str] = []  # Empty list means install all skills
+
+    def install_all(self) -> bool:
+        """Return True if all skills should be installed from this origin."""
+        return len(self.skill_names) == 0
+
+
 class PluginSet(BaseModel):
     """Configuration for a set of plugins (skills and MCP servers)."""
     name: str
     description: str = ""
     default: bool = False
     agents: list[str] | None = None  # None = all agents compatible
-    skills: list[str] = []
+    skills: list[SkillOrigin] = []
     mcp_servers: dict[str, McpServerConfig] = {}
     allowed_tools: list[str] = []
     prompt_suffix: str = ""  # Appended to task prompt before execution
@@ -26,6 +36,11 @@ class PluginSet(BaseModel):
         if self.agents is None:
             return True
         return agent_name in self.agents
+
+    @property
+    def skill_locations(self) -> list[str]:
+        """Get list of skill locations as strings (for result tracking)."""
+        return [s.location for s in self.skills]
 
 
 class PluginSetsConfig(BaseModel):

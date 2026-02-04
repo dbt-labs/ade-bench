@@ -1,5 +1,5 @@
 import pytest
-from ade_bench.models.plugin_set import PluginSet, McpServerConfig, PluginSetsConfig
+from ade_bench.models.plugin_set import PluginSet, McpServerConfig, PluginSetsConfig, SkillOrigin
 
 
 def test_mcp_server_config_minimal():
@@ -16,6 +16,23 @@ def test_mcp_server_config_with_env():
         env={"DISABLE_SQL": "true"}
     )
     assert config.env == {"DISABLE_SQL": "true"}
+
+
+def test_skill_origin_install_all():
+    """Empty skill_names means install all skills."""
+    origin = SkillOrigin(location="dbt-labs/dbt-agent-skills")
+    assert origin.install_all() is True
+    assert origin.skill_names == []
+
+
+def test_skill_origin_specific_skills():
+    """Non-empty skill_names means install only those skills."""
+    origin = SkillOrigin(
+        location="dbt-labs/dbt-agent-skills",
+        skill_names=["skill1", "skill2"]
+    )
+    assert origin.install_all() is False
+    assert origin.skill_names == ["skill1", "skill2"]
 
 
 def test_plugin_set_minimal():
@@ -35,7 +52,7 @@ def test_plugin_set_full():
         description="Full dbt setup",
         default=True,
         agents=["claude"],
-        skills=["dbt-labs/dbt-agent-skills"],
+        skills=[SkillOrigin(location="dbt-labs/dbt-agent-skills")],
         mcp_servers={
             "dbt": McpServerConfig(command="uvx", args=["dbt-mcp@latest"])
         },
@@ -44,6 +61,8 @@ def test_plugin_set_full():
     assert plugin_set.default is True
     assert plugin_set.agents == ["claude"]
     assert len(plugin_set.mcp_servers) == 1
+    assert len(plugin_set.skills) == 1
+    assert plugin_set.skills[0].location == "dbt-labs/dbt-agent-skills"
 
 
 def test_plugin_set_is_compatible_with_agent_all():
@@ -70,7 +89,8 @@ sets:
   - name: dbt-skills
     agents: [claude]
     skills:
-      - dbt-labs/dbt-agent-skills
+      - location: dbt-labs/dbt-agent-skills
+        skill_names: []
     allowed_tools: [Bash, Skill]
 """
     import yaml
@@ -79,6 +99,7 @@ sets:
     assert len(config.sets) == 2
     assert config.sets[0].name == "no-plugins"
     assert config.sets[0].default is True
+    assert config.sets[1].skills[0].location == "dbt-labs/dbt-agent-skills"
 
 
 def test_plugin_sets_config_get_defaults():

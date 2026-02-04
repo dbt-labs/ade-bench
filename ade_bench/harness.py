@@ -656,7 +656,7 @@ class Harness:
             db_type=config.get("db_type"),
             project_type=config.get("project_type"),
             plugin_set_name=self._current_plugin_set.name if self._current_plugin_set else None,
-            plugin_set_skills=self._current_plugin_set.skills if self._current_plugin_set else None,
+            plugin_set_skills=self._current_plugin_set.skill_locations if self._current_plugin_set else None,
             plugin_set_mcp_servers=list(self._current_plugin_set.mcp_servers.keys()) if self._current_plugin_set else None,
         )
 
@@ -1273,7 +1273,7 @@ class Harness:
                 db_type=config.get("db_type"),
                 project_type=config.get("project_type"),
                 plugin_set_name=self._current_plugin_set.name if self._current_plugin_set else None,
-                plugin_set_skills=self._current_plugin_set.skills if self._current_plugin_set else None,
+                plugin_set_skills=self._current_plugin_set.skill_locations if self._current_plugin_set else None,
                 plugin_set_mcp_servers=list(self._current_plugin_set.mcp_servers.keys()) if self._current_plugin_set else None,
             )
             return trial_results

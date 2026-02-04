@@ -2,11 +2,21 @@
 # Use --plugin-set <name> to select, or run without flag to use all defaults
 
 sets:
-  - name: dbt-skills
+  - name: all-dbt-skills
     description: All dbt skills
     default: true
     skills:
-      - dbt-labs/dbt-agent-skills
+      - location: dbt-labs/dbt-agent-skills
+    mcp_servers: {}
+    allowed_tools: [Bash, Edit, Write, Read, Glob, Grep, Skill]
+    prompt_suffix: "You can use the dbt skills."
+
+  - name: dbt-for-ae
+    description: Just the Using dbt for analytics engineering skill
+    default: false
+    skills:
+      - location: dbt-labs/dbt-agent-skills
+        skill_names: [using-dbt-for-analytics-engineering]
     mcp_servers: {}
     allowed_tools: [Bash, Edit, Write, Read, Glob, Grep, Skill]
     prompt_suffix: "You can use the dbt skills."
@@ -32,7 +42,7 @@ sets:
     description: dbt skills and MCP server
     default: false
     skills:
-      - dbt-labs/dbt-agent-skills
+      - location: dbt-labs/dbt-agent-skills
     mcp_servers:
       dbt:
         command: uvx
@@ -45,7 +55,7 @@ sets:
           DISABLE_DBT_CODEGEN: "true"
     allowed_tools: [Bash, Edit, Write, Read, Glob, Grep, Skill, mcp__dbt__*]
     prompt_suffix: "You can use the dbt skills and MCP server."
-    
+
   - name: none
     description: Baseline - no skills or MCP
     default: true
