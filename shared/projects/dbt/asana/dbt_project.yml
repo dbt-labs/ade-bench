@@ -39,6 +39,38 @@ vars:
 
 seeds:
   +quote_columns: "{{ true if target.type == 'redshift' else false }}"
+  asana:
+    # Solution seed column types for Snowflake compatibility
+    # Snowflake infers 0/1 as NUMBER(38,0) but models output BOOLEAN/TIMESTAMP
+    solution__asana__task:
+      +column_types:
+        is_completed: boolean
+        is_liked: boolean
+        is_currently_assigned: boolean
+        has_been_assigned: boolean
+        is_subtask: boolean
+        completed_at: timestamp
+        created_at: timestamp
+        due_date: timestamp
+        modified_at: timestamp
+        start_date: timestamp
+        last_assigned_at: timestamp
+        first_assigned_at: timestamp
+        parent_due_date: timestamp
+        parent_created_at: timestamp
+    solution__asana__project:
+      +column_types:
+        is_archived: boolean
+        is_public: boolean
+        created_at: timestamp
+        due_date: timestamp
+        last_modified_at: timestamp
+    solution__asana__tag:
+      +column_types:
+        created_at: timestamp
+    solution__int_asana__task_story:
+      +column_types:
+        created_at: timestamp
   main:
     +all_varchar: true
     +column_types:
