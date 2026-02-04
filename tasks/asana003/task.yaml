@@ -1,4 +1,4 @@
-task_id: asana002
+task_id: asana003
 status: ready
 description: Update dbt project to use vars
 notes: |-
