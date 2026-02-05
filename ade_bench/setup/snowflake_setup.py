@@ -9,6 +9,7 @@ from .setup_utils import generate_task_snowflake_credentials
 
 try:
     import snowflake.connector
+
     SNOWFLAKE_AVAILABLE = True
 except ImportError:
     SNOWFLAKE_AVAILABLE = False
@@ -30,34 +31,36 @@ def _execute_queries(cursor, queries: str, logger: logging.Logger):
 def _get_snowflake_connection():
     """Get Snowflake connection using environment variables for setup operations."""
     if not SNOWFLAKE_AVAILABLE:
-        raise RuntimeError("Snowflake connector not available. Please install snowflake-connector-python.")
+        raise RuntimeError(
+            "Snowflake connector not available. Please install snowflake-connector-python."
+        )
 
     # Get Snowflake credentials from environment
-    account = os.getenv('SNOWFLAKE_ACCOUNT')
-    user = os.getenv('SNOWFLAKE_USER')
-    password = os.getenv('SNOWFLAKE_PASSWORD')
+    account = os.getenv("SNOWFLAKE_ACCOUNT")
+    user = os.getenv("SNOWFLAKE_USER")
+    password = os.getenv("SNOWFLAKE_PASSWORD")
 
     if not all([account, user, password]):
-        raise ValueError("Missing required Snowflake credentials. Please set SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER, and SNOWFLAKE_PASSWORD environment variables.")
+        raise ValueError(
+            "Missing required Snowflake credentials. Please set SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER, and SNOWFLAKE_PASSWORD environment variables."
+        )
 
     # Extract account identifier
-    if '.snowflakecomputing.com' in account:
-        account_id = account.replace('.snowflakecomputing.com', '')
+    if ".snowflakecomputing.com" in account:
+        account_id = account.replace(".snowflakecomputing.com", "")
     else:
         account_id = account
 
-    conn = snowflake.connector.connect(
-        account=account_id,
-        user=user,
-        password=password
-    )
+    conn = snowflake.connector.connect(account=account_id, user=user, password=password)
 
     return conn
 
 
-def _clone_database(source_db: str, target_db: str, logger: logging.Logger) -> tuple[bool, Optional[str]]:
+def _clone_database(
+    source_db: str, target_db: str, logger: logging.Logger
+) -> tuple[bool, Optional[str]]:
     """Clone a Snowflake database.
-    
+
     Returns:
         Tuple of (success, error_message). error_message is None on success.
     """
@@ -91,9 +94,11 @@ def _clone_database(source_db: str, target_db: str, logger: logging.Logger) -> t
         return False, error_msg
 
 
-def _create_user_and_role(creds: Dict[str, str], logger: logging.Logger) -> tuple[bool, Optional[str]]:
+def _create_user_and_role(
+    creds: Dict[str, str], logger: logging.Logger
+) -> tuple[bool, Optional[str]]:
     """Create user and role for the database.
-    
+
     Returns:
         Tuple of (success, error_message). error_message is None on success.
     """
@@ -106,12 +111,12 @@ def _create_user_and_role(creds: Dict[str, str], logger: logging.Logger) -> tupl
             cursor.execute(use_db_query)
 
             # Drop and create role
-            admin_role = os.getenv('SNOWFLAKE_ROLE')
+            admin_role = os.getenv("SNOWFLAKE_ROLE")
             if not admin_role:
                 error_msg = "SNOWFLAKE_ROLE environment variable not set"
                 logger.error(error_msg)
                 return False, error_msg
-            
+
             role_query = f"""
                 DROP ROLE IF EXISTS {creds['role']};
                 CREATE ROLE {creds['role']};
@@ -142,9 +147,7 @@ def _create_user_and_role(creds: Dict[str, str], logger: logging.Logger) -> tupl
 
             # Grant privileges to task role
             task_grants_query = grants_template.format(
-                warehouse=creds['warehouse'],
-                database=creds['database'],
-                role=creds['role']
+                warehouse=creds["warehouse"], database=creds["database"], role=creds["role"]
             )
             _execute_queries(cursor, task_grants_query, logger)
 
@@ -167,9 +170,16 @@ def _create_user_and_role(creds: Dict[str, str], logger: logging.Logger) -> tupl
         return False, error_msg
 
 
-def setup_snowflake(terminal, session, task_id: str, variant: Dict[str, Any], trial_handler, logger: logging.Logger = None) -> tuple[bool, Optional[str]]:
+def setup_snowflake(
+    terminal,
+    session,
+    task_id: str,
+    variant: Dict[str, Any],
+    trial_handler,
+    logger: logging.Logger = None,
+) -> tuple[bool, Optional[str]]:
     """Setup Snowflake by cloning database and creating user/role.
-    
+
     Args:
         terminal: Terminal instance
         session: Tmux session
@@ -177,17 +187,17 @@ def setup_snowflake(terminal, session, task_id: str, variant: Dict[str, Any], tr
         variant: Variant configuration
         trial_handler: Trial handler instance
         logger: Logger instance for recording errors
-    
+
     Returns:
         Tuple of (success, error_message). error_message is None on success.
     """
     # Fallback to module-level logger if none provided
     if logger is None:
         logger = logging.getLogger(__name__)
-    
+
     creds = generate_task_snowflake_credentials(task_id)
-    source_db = variant.get('db_name')
-    target_db = creds['database']
+    source_db = variant.get("db_name")
+    target_db = creds["database"]
 
     # Clone the database
     success, error_msg = _clone_database(source_db, target_db, logger)
@@ -198,5 +208,5 @@ def setup_snowflake(terminal, session, task_id: str, variant: Dict[str, Any], tr
     success, error_msg = _create_user_and_role(creds, logger)
     if not success:
         return False, error_msg
-    
+
     return True, None

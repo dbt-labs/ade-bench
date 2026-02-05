@@ -75,7 +75,9 @@ class Config:
     @property
     def file_diff_exclude_paths(self) -> list[str]:
         """List of path patterns to exclude from file diffing."""
-        exclude_paths_str = self.get_setting("file_diff_exclude_paths", "/tmp,/logs,/var,/target,/build,/node_modules")
+        exclude_paths_str = self.get_setting(
+            "file_diff_exclude_paths", "/tmp,/logs,/var,/target,/build,/node_modules"
+        )
         if exclude_paths_str:
             return [path.strip() for path in exclude_paths_str.split(",") if path.strip()]
         return []

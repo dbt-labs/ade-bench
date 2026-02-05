@@ -212,7 +212,10 @@ class Harness:
         parser_results = parser_result.test_results
 
         # Check if compilation failed
-        if "dbt_compile" in parser_results and parser_results["dbt_compile"] == UnitTestStatus.FAILED:
+        if (
+            "dbt_compile" in parser_results
+            and parser_results["dbt_compile"] == UnitTestStatus.FAILED
+        ):
             return False
 
         # Count the number of tests (excluding the compile test)
@@ -221,7 +224,9 @@ class Harness:
             return False
 
         # Count passing tests
-        passing_tests = sum(1 for result in test_results.values() if result == UnitTestStatus.PASSED)
+        passing_tests = sum(
+            1 for result in test_results.values() if result == UnitTestStatus.PASSED
+        )
         total_tests = len(test_results)
 
         # Check if we have fewer parsed tests than expected
@@ -288,7 +293,7 @@ class Harness:
                 terminal.copy_to_container(
                     paths=[script_path],
                     container_dir=str(DockerComposeManager.CONTAINER_SCRIPTS_DIR),
-                    container_filename=script_path.name
+                    container_filename=script_path.name,
                 )
 
             # Copy seeds directory if it exists
@@ -309,7 +314,7 @@ class Harness:
             if trial_handler.task.test_setup:
                 test_setup_path = Path(temp_test_dir) / "test-setup.sh"
 
-                with open(test_setup_path, 'w') as f:
+                with open(test_setup_path, "w") as f:
                     f.write("#!/bin/bash\n")
                     f.write(trial_handler.task.test_setup)
                     f.write("\n")
@@ -318,10 +323,12 @@ class Harness:
                 terminal.copy_to_container(
                     paths=[test_setup_path],
                     container_dir=str(DockerComposeManager.CONTAINER_SCRIPTS_DIR),
-                    container_filename="test-setup.sh"
+                    container_filename="test-setup.sh",
                 )
                 # Make it executable using the container's exec_run method
-                terminal.container.exec_run(f"chmod +x {DockerComposeManager.CONTAINER_SCRIPTS_DIR}/test-setup.sh")
+                terminal.container.exec_run(
+                    f"chmod +x {DockerComposeManager.CONTAINER_SCRIPTS_DIR}/test-setup.sh"
+                )
 
     def _run_tests(
         self,
@@ -341,20 +348,24 @@ class Harness:
             time.sleep(2)
 
             # Log that test script is starting to run
-            log_harness_info(self._logger, trial_handler.task_id, "eval", "Executing test script...")
+            log_harness_info(
+                self._logger, trial_handler.task_id, "eval", "Executing test script..."
+            )
 
             # Build command with optional parameters
             command = f"bash {DockerComposeManager.CONTAINER_TEST_DIR / trial_handler.run_tests_path.name}"
 
-            db_type = trial_handler.variant_config.get('db_type')
-            project_type = trial_handler.variant_config.get('project_type')
+            db_type = trial_handler.variant_config.get("db_type")
+            project_type = trial_handler.variant_config.get("project_type")
 
             if db_type:
                 command += f" --db-type={db_type}"
             if project_type:
                 command += f" --project-type={project_type}"
 
-            session.send_keys([command, "Enter"], block=True, max_timeout_sec=timeouts.test_execution)
+            session.send_keys(
+                [command, "Enter"], block=True, max_timeout_sec=timeouts.test_execution
+            )
 
         except TimeoutError:
             self._logger.warning(
@@ -368,7 +379,7 @@ class Harness:
                 self._logger,
                 trial_handler.task_id,
                 "done",
-                f"TIMEOUT - test execution timed out after {timeouts.test_execution} seconds"
+                f"TIMEOUT - test execution timed out after {timeouts.test_execution} seconds",
             )
 
             # Kill the session to stop the test
@@ -392,7 +403,9 @@ class Harness:
         if not trial_handler.task.solution_seeds:
             return
 
-        log_harness_info(self._logger, trial_handler.task_id, "eval", "Generating solution tests...")
+        log_harness_info(
+            self._logger, trial_handler.task_id, "eval", "Generating solution tests..."
+        )
 
         # Ensure target directory exists
         target_dir.mkdir(parents=True, exist_ok=True)
@@ -414,9 +427,13 @@ class Harness:
 
             # Log the status message if it exists
             if parser_result.status_message:
-                log_harness_info(self._logger, trial_handler.task_id, "done", parser_result.status_message)
+                log_harness_info(
+                    self._logger, trial_handler.task_id, "done", parser_result.status_message
+                )
             else:
-                log_harness_info(self._logger, trial_handler.task_id, "done", "No status message found.")
+                log_harness_info(
+                    self._logger, trial_handler.task_id, "done", "No status message found."
+                )
 
             return parser_result, FailureMode.NONE
         except Exception as e:
@@ -491,13 +508,15 @@ class Harness:
                 self._logger,
                 trial_handler.task_id,
                 "done",
-                f"TIMEOUT - agent execution timed out after {timeouts.total_agent_operation} seconds (total operation including setup + execution + cleanup)"
+                f"TIMEOUT - agent execution timed out after {timeouts.total_agent_operation} seconds (total operation including setup + execution + cleanup)",
             )
 
             # Try to copy logs before killing the session (for agents that support it)
-            if hasattr(agent, '_copy_log_file_from_container'):
+            if hasattr(agent, "_copy_log_file_from_container"):
                 try:
-                    self._logger.info(f"Attempting to copy logs for timed-out task {trial_handler.task_id}")
+                    self._logger.info(
+                        f"Attempting to copy logs for timed-out task {trial_handler.task_id}"
+                    )
                     agent._copy_log_file_from_container(session, trial_handler.agent_logging_dir)
                 except Exception as log_error:
                     self._logger.warning(f"Failed to copy logs after timeout: {log_error}")
@@ -505,7 +524,9 @@ class Harness:
             # Kill the session immediately to stop the agent
             try:
                 session.kill_session()
-                self._logger.info(f"Killed agent session for timed-out task {trial_handler.task_id}")
+                self._logger.info(
+                    f"Killed agent session for timed-out task {trial_handler.task_id}"
+                )
             except Exception as e:
                 self._logger.error(f"Failed to kill session after timeout: {e}")
 
@@ -527,9 +548,7 @@ class Harness:
                 return None, FailureMode.FATAL_LLM_PARSE_ERROR
 
         except Exception as e:
-            self._logger.error(
-                f"Error running agent for task {trial_handler.task_id}: {e}"
-            )
+            self._logger.error(f"Error running agent for task {trial_handler.task_id}: {e}")
             return None, FailureMode.UNKNOWN_AGENT_ERROR
 
         return None, FailureMode.NONE
@@ -559,23 +578,20 @@ class Harness:
                 terminal=terminal,
                 session=session,
                 file_diff_handler=file_diff_handler,
-                trial_handler=trial_handler
+                trial_handler=trial_handler,
             )
 
             # Run setup with timeout using asyncio
             async def run_setup():
                 loop = asyncio.get_event_loop()
                 task = loop.run_in_executor(
-                    None,
-                    setup_orchestrator.setup_task,
-                    trial_handler.task_id,
-                    config
+                    None, setup_orchestrator.setup_task, trial_handler.task_id, config
                 )
                 return await asyncio.wait_for(task, timeout=timeouts.setup)
 
             # Run the async function and check result
             setup_succeeded = asyncio.run(run_setup())
-            
+
             if not setup_succeeded:
                 self._logger.error(f"Setup failed for task {trial_handler.task_id}")
                 return FailureMode.SETUP_FAILED
@@ -583,12 +599,14 @@ class Harness:
             return FailureMode.NONE
 
         except asyncio.TimeoutError:
-            self._logger.warning(f"Setup timed out after {timeouts.setup}s for task {trial_handler.task_id}")
+            self._logger.warning(
+                f"Setup timed out after {timeouts.setup}s for task {trial_handler.task_id}"
+            )
             log_harness_info(
                 self._logger,
                 trial_handler.task_id,
                 "done",
-                f"TIMEOUT - task setup timed out after {timeouts.setup} seconds"
+                f"TIMEOUT - task setup timed out after {timeouts.setup} seconds",
             )
             return FailureMode.SETUP_TIMEOUT
         except Exception as e:
@@ -629,14 +647,10 @@ class Harness:
             if gitignore_path.exists():
                 self._logger.debug("Copying .gitignore to container")
                 terminal.copy_to_container(
-                    paths=gitignore_path,
-                    container_dir="/app",
-                    container_filename=".gitignore"
+                    paths=gitignore_path, container_dir="/app", container_filename=".gitignore"
                 )
 
-            session = terminal.create_session(
-                "agent"
-            )
+            session = terminal.create_session("agent")
 
             # Initialize file diffing if enabled
             file_diff_handler = None
@@ -652,18 +666,21 @@ class Harness:
                     trial_handler._task_output_path,
                     enabled=True,
                     exclude_paths=exclude_paths,
-                    task_name=trial_handler.task_id
+                    task_name=trial_handler.task_id,
                 )
-
 
             #########################################################
             #########################################################
             # RUN COMPREHENSIVE SETUP SCRIPT
             try:
 
-                setup_failure_mode = self._run_setup(terminal, session, trial_handler, config, file_diff_handler)
+                setup_failure_mode = self._run_setup(
+                    terminal, session, trial_handler, config, file_diff_handler
+                )
             except DebugBreakpointException as e:
-                self._logger.info(f"Debug breakpoint hit during setup for task {trial_handler.task_id}: {e}")
+                self._logger.info(
+                    f"Debug breakpoint hit during setup for task {trial_handler.task_id}: {e}"
+                )
                 results.failure_mode = FailureMode.BREAKPOINT
                 return results
             #########################################################
@@ -689,7 +706,7 @@ class Harness:
             task_agent = self._create_agent_for_task(trial_handler.task_id)
 
             # Set variant configuration for sage agent
-            if hasattr(task_agent, 'set_variant_config'):
+            if hasattr(task_agent, "set_variant_config"):
                 task_agent.set_variant_config(config)
 
             log_harness_info(self._logger, trial_handler.task_id, "agent", "Starting agent...")
@@ -701,13 +718,15 @@ class Harness:
                     task_name=trial_handler.task_id,
                 )
             except DebugBreakpointException as e:
-                self._logger.info(f"Debug breakpoint hit during agent execution for task {trial_handler.task_id}: {e}")
+                self._logger.info(
+                    f"Debug breakpoint hit during agent execution for task {trial_handler.task_id}: {e}"
+                )
                 results.failure_mode = FailureMode.BREAKPOINT
                 return results
 
             # Capture the full pane and split on delimiter to get post-agent content
             full_pane = session.capture_pane(capture_entire=True)
-            parts = full_pane.split('=== ADE_BENCH_PHASE_DELIMITER_AGENT_START ===')
+            parts = full_pane.split("=== ADE_BENCH_PHASE_DELIMITER_AGENT_START ===")
             post_agent_pane = parts[-1].strip()
 
             # Try to generate a nicely formatted agent.txt from agent.log
@@ -719,7 +738,9 @@ class Harness:
                     # Get formatted content from agent (returns string or None)
                     formatted_content = task_agent.format_agent_log(agent_log_path)
                     if formatted_content:
-                        self._logger.debug("Generated formatted agent.txt from agent.log using agent's formatter")
+                        self._logger.debug(
+                            "Generated formatted agent.txt from agent.log using agent's formatter"
+                        )
                 except Exception as e:
                     self._logger.warning(f"Failed to format agent.log: {e}. Using raw pane output.")
 
@@ -731,13 +752,19 @@ class Harness:
 
             # Capture snapshot after agent and create agent diff
             if file_diff_handler:
-                file_diff_handler.handle_phase_diffing(terminal.container, "agent", trial_handler.task_id, self._logger)
+                file_diff_handler.handle_phase_diffing(
+                    terminal.container, "agent", trial_handler.task_id, self._logger
+                )
 
             # If agent setup timed out, stop the task immediately (don't run tests)
             if agent_failure_mode == FailureMode.AGENT_SETUP_TIMEOUT:
                 results.failure_mode = agent_failure_mode
-                self._logger.info(f"Task {trial_handler.task_id} halted due to agent setup or installation timeout")
-                log_harness_info(self._logger, trial_handler.task_id, "done", "TIMEOUT - agent setup timed out")
+                self._logger.info(
+                    f"Task {trial_handler.task_id} halted due to agent setup or installation timeout"
+                )
+                log_harness_info(
+                    self._logger, trial_handler.task_id, "done", "TIMEOUT - agent setup timed out"
+                )
                 # Session should be killed
                 try:
                     session.kill_session()
@@ -748,7 +775,9 @@ class Harness:
             # If agent timed out, stop the task immediately (don't run tests)
             elif agent_failure_mode == FailureMode.AGENT_TIMEOUT:
                 results.failure_mode = agent_failure_mode
-                self._logger.info(f"Task {trial_handler.task_id} halted due to agent execution timeout")
+                self._logger.info(
+                    f"Task {trial_handler.task_id} halted due to agent execution timeout"
+                )
                 # Session already killed in _run_agent, but try again to be safe
                 try:
                     session.kill_session()
@@ -759,13 +788,22 @@ class Harness:
             elif agent_failure_mode != FailureMode.NONE:
                 # Any other agent failure should also halt the task
                 results.failure_mode = agent_failure_mode
-                self._logger.warning(f"Task {trial_handler.task_id} halted due to agent failure: {agent_failure_mode}")
-                log_harness_info(self._logger, trial_handler.task_id, "done", f"ERROR - {agent_failure_mode.value}")
+                self._logger.warning(
+                    f"Task {trial_handler.task_id} halted due to agent failure: {agent_failure_mode}"
+                )
+                log_harness_info(
+                    self._logger,
+                    trial_handler.task_id,
+                    "done",
+                    f"ERROR - {agent_failure_mode.value}",
+                )
                 # Kill the session to ensure cleanup
                 try:
                     session.kill_session()
                 except Exception as e:
-                    self._logger.warning(f"Failed to kill agent session for task {trial_handler.task_id}: {e}")
+                    self._logger.warning(
+                        f"Failed to kill agent session for task {trial_handler.task_id}: {e}"
+                    )
                 return results
 
             if agent_result is not None:
@@ -791,9 +829,7 @@ class Harness:
                 )
 
             if not trial_handler.task.run_tests_in_same_shell:
-                session = terminal.create_session(
-                    "tests"
-                )
+                session = terminal.create_session("tests")
 
             try:
                 test_failure_mode = self._run_tests(
@@ -802,7 +838,9 @@ class Harness:
                     trial_handler=trial_handler,
                 )
             except DebugBreakpointException as e:
-                self._logger.info(f"Debug breakpoint hit during test execution for task {trial_handler.task_id}: {e}")
+                self._logger.info(
+                    f"Debug breakpoint hit during test execution for task {trial_handler.task_id}: {e}"
+                )
                 results.failure_mode = FailureMode.BREAKPOINT
                 return results
 
@@ -815,9 +853,7 @@ class Harness:
 
             agent_recording_path = trial_handler.sessions_path / "agent.cast"
 
-            results.recording_path = str(
-                agent_recording_path.relative_to(self._output_path)
-            )
+            results.recording_path = str(agent_recording_path.relative_to(self._output_path))
 
             if agent_result is not None:
                 asciinema_handler = AsciinemaHandler(
@@ -831,10 +867,7 @@ class Harness:
                 self._extract_csv_files(terminal, trial_handler)
 
             # If the test failed, but the agent didn't, use the test failure mode
-            if (
-                test_failure_mode != FailureMode.NONE
-                and results.failure_mode == FailureMode.UNSET
-            ):
+            if test_failure_mode != FailureMode.NONE and results.failure_mode == FailureMode.UNSET:
                 results.failure_mode = test_failure_mode
                 return results
 
@@ -884,15 +917,11 @@ class Harness:
             columns = []
             for row in schema_result:
                 col_name, col_type = row
-                columns.append({
-                    "name": col_name,
-                    "type": col_type.lower()  # Use DuckDB type directly
-                })
+                columns.append(
+                    {"name": col_name, "type": col_type.lower()}  # Use DuckDB type directly
+                )
 
-            return {
-                "name": f"solution__{table_name}",
-                "columns": columns
-            }
+            return {"name": f"solution__{table_name}", "columns": columns}
         except Exception as e:
             self._logger.error(f"Failed to extract schema for table {table_name}: {e}")
             return None
@@ -906,43 +935,64 @@ class Harness:
             return
 
         import yaml
-        with open(task_yaml_path, 'r') as f:
+
+        with open(task_yaml_path, "r") as f:
             task_config = yaml.safe_load(f)
 
         # Extract table names from solution_seeds (all items are dictionaries)
         tables_to_extract = []
 
-        solution_seeds = task_config.get('solution_seeds', [])
+        solution_seeds = task_config.get("solution_seeds", [])
         for item in solution_seeds:
             if isinstance(item, dict):
-                table_name = item.get('table_name')
+                table_name = item.get("table_name")
                 if table_name:
                     tables_to_extract.append(table_name)
                     # Also add alternates if present
-                    alternates = item.get('alternates', [])
+                    alternates = item.get("alternates", [])
                     if alternates:
                         tables_to_extract.extend(alternates)
                 else:
                     self._logger.warning(f"Invalid solution_seed item (missing table_name): {item}")
             else:
-                self._logger.warning(f"Invalid solution_seed item type (expected dict): {type(item)}")
+                self._logger.warning(
+                    f"Invalid solution_seed item type (expected dict): {type(item)}"
+                )
 
         if not tables_to_extract:
-            log_harness_info(self._logger, trial_handler.task_id, "seed", "No valid tables to extract")
+            log_harness_info(
+                self._logger, trial_handler.task_id, "seed", "No valid tables to extract"
+            )
             return
 
-        log_harness_info(self._logger, trial_handler.task_id, "seed", f"Extracting tables: {tables_to_extract}")
+        log_harness_info(
+            self._logger, trial_handler.task_id, "seed", f"Extracting tables: {tables_to_extract}"
+        )
 
         # Get the current running variant information directly from the trial handler
-        variant_db_type = trial_handler.variant_config.get('db_type', '')
-        variant_db_name = trial_handler.variant_config.get('db_name', '')
+        variant_db_type = trial_handler.variant_config.get("db_type", "")
+        variant_db_name = trial_handler.variant_config.get("db_name", "")
 
-        if variant_db_type == 'duckdb':
-            self._extract_duckdb_csv(terminal, trial_handler, variant_db_name, tables_to_extract, task_config)
+        if variant_db_type == "duckdb":
+            self._extract_duckdb_csv(
+                terminal, trial_handler, variant_db_name, tables_to_extract, task_config
+            )
         else:
-            log_harness_info(self._logger, trial_handler.task_id, "seed", f"CSV extraction not supported for db_type: {variant_db_type}")
+            log_harness_info(
+                self._logger,
+                trial_handler.task_id,
+                "seed",
+                f"CSV extraction not supported for db_type: {variant_db_type}",
+            )
 
-    def _extract_duckdb_csv(self, terminal: Terminal, trial_handler: TrialHandler, db_name: str, tables_to_extract: list, task_config: dict) -> None:
+    def _extract_duckdb_csv(
+        self,
+        terminal: Terminal,
+        trial_handler: TrialHandler,
+        db_name: str,
+        tables_to_extract: list,
+        task_config: dict,
+    ) -> None:
         """Extract CSV files from DuckDB database."""
         # Create output directory
         task_seeds_dir = trial_handler.input_path / "seeds"
@@ -961,9 +1011,11 @@ class Harness:
                 container_name = terminal.container.name
                 db_path = f"/app/{db_name}.duckdb"
 
-                result = subprocess.run([
-                    "docker", "cp", f"{container_name}:{db_path}", temp_db_path
-                ], capture_output=True, text=True)
+                result = subprocess.run(
+                    ["docker", "cp", f"{container_name}:{db_path}", temp_db_path],
+                    capture_output=True,
+                    text=True,
+                )
 
                 if result.returncode != 0:
                     self._logger.error(f"Failed to copy database: {result.stderr}")
@@ -971,6 +1023,7 @@ class Harness:
 
                 # Extract tables using Python
                 import duckdb
+
                 con = duckdb.connect(temp_db_path)
 
                 # Collect all schema information
@@ -987,7 +1040,12 @@ class Harness:
                         csv_path = task_seeds_dir / f"solution__{table_name}.csv"
                         copy_query = f"COPY {table_name} TO '{csv_path}' (HEADER, DELIMITER ',');"
                         con.execute(copy_query)
-                        log_harness_info(self._logger, trial_handler.task_id, "seed", f"Exported {table_name} to {csv_path}")
+                        log_harness_info(
+                            self._logger,
+                            trial_handler.task_id,
+                            "seed",
+                            f"Exported {table_name} to {csv_path}",
+                        )
                     except Exception as e:
                         self._logger.error(f"Failed to export table {table_name}: {e}")
 
@@ -997,36 +1055,38 @@ class Harness:
                     no_op_path = task_seeds_dir / "_no-op.txt"
 
                     # Get project name from current variant
-                    project_name = trial_handler.variant_config.get('project_name', 'default')
+                    project_name = trial_handler.variant_config.get("project_name", "default")
 
                     # Create the seeds section in proper YAML format
-                    seeds_content = {
-                        'seeds': {
-                            project_name: {}
-                        }
-                    }
+                    seeds_content = {"seeds": {project_name: {}}}
 
                     # Add column types for each table
                     for schema in all_schemas:
-                        table_name = schema['name']
+                        table_name = schema["name"]
                         column_types = {}
-                        for col in schema['columns']:
+                        for col in schema["columns"]:
                             # Convert hugeint to bigint for Snowflake compatibility
-                            col_type = col['type']
-                            if col_type.lower() == 'hugeint':
-                                col_type = 'bigint'
-                            column_types[col['name']] = col_type
+                            col_type = col["type"]
+                            if col_type.lower() == "hugeint":
+                                col_type = "bigint"
+                            column_types[col["name"]] = col_type
 
-                        seeds_content['seeds'][project_name][table_name] = {
-                            '+column_types': column_types
+                        seeds_content["seeds"][project_name][table_name] = {
+                            "+column_types": column_types
                         }
 
                     import yaml
-                    with open(no_op_path, 'w') as f:
-                        f.write('\n\n')  # Add two blank lines at the start
+
+                    with open(no_op_path, "w") as f:
+                        f.write("\n\n")  # Add two blank lines at the start
                         yaml.dump(seeds_content, f, default_flow_style=False, sort_keys=False)
 
-                    log_harness_info(self._logger, trial_handler.task_id, "seed", f"Generated _no-op.txt file: {no_op_path}")
+                    log_harness_info(
+                        self._logger,
+                        trial_handler.task_id,
+                        "seed",
+                        f"Generated _no-op.txt file: {no_op_path}",
+                    )
 
                 con.close()
 
@@ -1044,9 +1104,7 @@ class Harness:
         """Get the current git commit hash."""
         try:
             return (
-                subprocess.check_output(
-                    ["git", "rev-parse", "HEAD"], stderr=subprocess.DEVNULL
-                )
+                subprocess.check_output(["git", "rev-parse", "HEAD"], stderr=subprocess.DEVNULL)
                 .decode("utf-8")
                 .strip()
             )
@@ -1060,9 +1118,7 @@ class Harness:
         """
         try:
             git_user = (
-                subprocess.check_output(
-                    ["git", "config", "user.name"], stderr=subprocess.DEVNULL
-                )
+                subprocess.check_output(["git", "config", "user.name"], stderr=subprocess.DEVNULL)
                 .decode("utf-8")
                 .strip()
             )
@@ -1090,7 +1146,12 @@ class Harness:
 
         try:
             s3_client = boto3.client("s3")
-            log_harness_info(self._logger, "system", "upload", f"Uploading run results to S3 bucket: {self._s3_bucket}")
+            log_harness_info(
+                self._logger,
+                "system",
+                "upload",
+                f"Uploading run results to S3 bucket: {self._s3_bucket}",
+            )
 
             failed_uploads = []
 
@@ -1104,9 +1165,7 @@ class Harness:
                     )
                     s3_client.upload_file(str(file_path), self._s3_bucket, s3_key)
                 except Exception as file_error:
-                    self._logger.warning(
-                        f"Failed to upload {relative_path}: {file_error}"
-                    )
+                    self._logger.warning(f"Failed to upload {relative_path}: {file_error}")
                     failed_uploads.append(str(relative_path))
 
             if not failed_uploads:
@@ -1115,7 +1174,7 @@ class Harness:
                     "system",
                     "upload",
                     f"Successfully uploaded all {len(files_to_upload)} files to "
-                    f"s3://{self._s3_bucket}/{self._run_id}/"
+                    f"s3://{self._s3_bucket}/{self._run_id}/",
                 )
             else:
                 self._logger.warning(
@@ -1157,9 +1216,7 @@ class Harness:
         self._run_metadata_output_path.write_text(metadata.model_dump_json(indent=4))
 
     def _update_metadata_on_end(self, results: BenchmarkResults) -> None:
-        metadata = RunMetadata.model_validate_json(
-            self._run_metadata_output_path.read_text()
-        )
+        metadata = RunMetadata.model_validate_json(self._run_metadata_output_path.read_text())
         metadata.end_time = datetime.now(timezone.utc).isoformat()
         metadata.accuracy = results.accuracy
         metadata.pass_at_k = results.pass_at_k
@@ -1194,16 +1251,12 @@ class Harness:
         try:
             trial_results = self._run_trial(trial_handler, config)
 
-            trial_handler.results_path.write_text(
-                trial_results.model_dump_json(indent=4)
-            )
+            trial_handler.results_path.write_text(trial_results.model_dump_json(indent=4))
 
             return trial_results
 
         except Exception as e:
-            logger.error(
-                f"Harness execution failed for {task_path} with key {task_key}: {e}"
-            )
+            logger.error(f"Harness execution failed for {task_path} with key {task_key}: {e}")
             # Update logger table
             log_harness_info(logger, trial_handler.task_id, "done", f"ERROR - {e}")
 
@@ -1250,7 +1303,10 @@ class Harness:
             # Find the matching config
             matching_config = None
             for variant in variants:
-                if variant.get("db_type") == self._db_filter and variant.get("project_type") == self._project_type_filter:
+                if (
+                    variant.get("db_type") == self._db_filter
+                    and variant.get("project_type") == self._project_type_filter
+                ):
                     matching_config = variant
                     break
 
@@ -1261,7 +1317,12 @@ class Harness:
         # Log filtering summary
         total_tasks = len(self._dataset)
         matching_count = len(matching_tasks)
-        log_harness_info(self._logger, "system", "start", f"Running with {self._db_filter} + {self._project_type_filter}. Found {matching_count} tasks of {total_tasks} requested tasks.")
+        log_harness_info(
+            self._logger,
+            "system",
+            "start",
+            f"Running with {self._db_filter} + {self._project_type_filter}. Found {matching_count} tasks of {total_tasks} requested tasks.",
+        )
 
         if not matching_tasks:
             self._logger.warning("No tasks have matching database and project type configurations")
@@ -1303,12 +1364,14 @@ class Harness:
 
                 # Log progress update
                 successful_tasks = sum(1 for result in results.results if result.is_resolved)
-                percentage = (successful_tasks / completed_tasks * 100) if completed_tasks > 0 else 0
+                percentage = (
+                    (successful_tasks / completed_tasks * 100) if completed_tasks > 0 else 0
+                )
                 log_harness_info(
                     self._logger,
                     "SUMMARY",
                     "",
-                    f"Run {completed_tasks} of {total_tasks} tasks, {successful_tasks} successful ({percentage:.1f}%)"
+                    f"Run {completed_tasks} of {total_tasks} tasks, {successful_tasks} successful ({percentage:.1f}%)",
                 )
 
         return results
@@ -1353,16 +1416,18 @@ class Harness:
         if ade_bench_config.use_dynamic_logging:
             rich_logger.stop()
 
-
         # Generate HTML results dashboard
         if not self._disable_diffs:
             try:
                 from scripts_python.generate_results_html import ResultsHTMLGenerator
+
                 generator = ResultsHTMLGenerator(self._run_path)
                 generator.generate_all()
                 log_harness_info(self._logger, "system", "finish", "Generated HTML dashboard.")
             except Exception:
-                log_harness_info(self._logger, "system", "finish", "Failed to generate HTML dashboard.")
+                log_harness_info(
+                    self._logger, "system", "finish", "Failed to generate HTML dashboard."
+                )
 
         # Log harness completion
         successful_tasks = sum(1 for result in results.results if result.is_resolved)
@@ -1371,7 +1436,7 @@ class Harness:
             self._logger,
             "system",
             "finish",
-            f"Harness run completed: {successful_tasks} of {total_tasks} tasks successful"
+            f"Harness run completed: {successful_tasks} of {total_tasks} tasks successful",
         )
 
         if self._with_profiling:
@@ -1379,7 +1444,7 @@ class Harness:
                 self._logger,
                 "system",
                 "finish",
-                f"Profiling informationn from cProfiler saved to {self._cProfile_output_path}."
+                f"Profiling informationn from cProfiler saved to {self._cProfile_output_path}.",
             )
 
         return results

@@ -23,6 +23,7 @@ def view_callback(ctx: typer.Context):
     # If no subcommand, use the existing view_results logic
     if ctx.invoked_subcommand is None:
         from scripts_python.view_results import main as view_results_main
+
         view_results_main()
 
 

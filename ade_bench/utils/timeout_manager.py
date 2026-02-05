@@ -12,6 +12,7 @@ if TYPE_CHECKING:
 @dataclass
 class TimeoutSet:
     """Complete set of timeouts for a task execution."""
+
     setup: float
     agent_execution: float
     cleanup: float

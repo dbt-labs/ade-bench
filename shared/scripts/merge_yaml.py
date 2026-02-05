@@ -42,7 +42,7 @@ def main():
     merged_data = deep_merge(base_data, merge_data)
 
     # Write merged result
-    with open(output_file, 'w') as f:
+    with open(output_file, "w") as f:
         yaml.dump(merged_data, f, default_flow_style=False, sort_keys=False)
 
     print(f"Successfully merged {merge_file} into {base_file} -> {output_file}")

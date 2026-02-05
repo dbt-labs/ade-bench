@@ -13,29 +13,26 @@ from ade_bench.utils.logger import logger
 
 
 def interact(
-    task_id: Annotated[
-        str, typer.Option("-t", "--task-id", help="The ID of the task to launch.")
-    ],
-    db: Annotated[
-        str, typer.Option("--db", help="Database type to use (e.g., duckdb, snowflake)")
-    ],
+    task_id: Annotated[str, typer.Option("-t", "--task-id", help="The ID of the task to launch.")],
+    db: Annotated[str, typer.Option("--db", help="Database type to use (e.g., duckdb, snowflake)")],
     project_type: Annotated[
         str, typer.Option("--project-type", help="Project type to use (e.g., dbt)")
     ],
     agent: Annotated[
-        str, typer.Option("--agent", help="Agent to set up (optional)"),
+        str,
+        typer.Option("--agent", help="Agent to set up (optional)"),
     ] = None,
     step: Annotated[
         str,
         typer.Option(
             "--step",
             help="Point in workflow to start interactive session (post-setup, post-agent, post-eval)",
-            case_sensitive=False
-        )
+            case_sensitive=False,
+        ),
     ] = "post-setup",
-    tasks_dir: Annotated[
-        Path, typer.Option(help="The path to the tasks directory.")
-    ] = Path("tasks"),
+    tasks_dir: Annotated[Path, typer.Option(help="The path to the tasks directory.")] = Path(
+        "tasks"
+    ),
     include_all: Annotated[
         bool,
         typer.Option(
@@ -44,12 +41,8 @@ def interact(
             help="Copy test scripts and solution script to container",
         ),
     ] = False,
-    rebuild: Annotated[
-        bool, typer.Option(help="Whether to rebuild the client container.")
-    ] = True,
-    run_id: Annotated[
-        str, typer.Option(help="Optional run ID for output directory")
-    ] = None,
+    rebuild: Annotated[bool, typer.Option(help="Whether to rebuild the client container.")] = True,
+    run_id: Annotated[str, typer.Option(help="Optional run ID for output directory")] = None,
 ):
     """
     Launch an interactive shell into a task environment.
@@ -100,11 +93,7 @@ def interact(
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # Create the trial handler
-    trial_handler = TrialHandler(
-        trial_name=task_id,
-        input_path=task_dir,
-        output_path=output_dir
-    )
+    trial_handler = TrialHandler(trial_name=task_id, input_path=task_dir, output_path=output_dir)
 
     # Find the matching variant
     variant_found = False
@@ -149,7 +138,7 @@ def interact(
         docker_name_prefix=trial_handler.docker_image_prefix,
         sessions_path=trial_handler.sessions_path,
         no_rebuild=True,  # Already built
-        cleanup=False,    # We'll handle cleanup
+        cleanup=False,  # We'll handle cleanup
         build_context_dir=trial_handler.input_path,
     )
     # Set both the container and the compose manager's client container
@@ -177,7 +166,7 @@ def interact(
         session = TmuxSession(
             container=container,
             session_name=session_name,
-            commands_path=None  # Skip command logging
+            commands_path=None,  # Skip command logging
         )
         session.start()
     except RuntimeError as e:
@@ -197,7 +186,7 @@ def interact(
                     session = TmuxSession(
                         container=container,
                         session_name=session_name,
-                        commands_path=None  # Skip command logging
+                        commands_path=None,  # Skip command logging
                     )
                     session.start()
                 else:
@@ -226,7 +215,7 @@ def interact(
         terminal=terminal,
         session=session,  # Use the tmux session for setup
         file_diff_handler=file_diff_handler,
-        trial_handler=trial_handler
+        trial_handler=trial_handler,
     )
 
     try:
@@ -246,6 +235,7 @@ def interact(
 
                 # Setup agent configuration files
                 from ade_bench.setup.agent_setup import setup_agent_config
+
                 setup_agent_config(terminal, task_id, trial_handler, logger)
 
                 # Install the agent using the agent's own setup code
@@ -262,7 +252,10 @@ def interact(
 
                     # For installed agents, we just need to do setup steps from perform_task
                     # without actually running the agent commands
-                    if hasattr(agent_instance, '_install_agent_script') and agent_instance._install_agent_script:
+                    if (
+                        hasattr(agent_instance, "_install_agent_script")
+                        and agent_instance._install_agent_script
+                    ):
                         # Copy the installation script
                         session.copy_to_container(
                             agent_instance._install_agent_script,
@@ -271,8 +264,9 @@ def interact(
                         )
 
                         # Setup environment variables
-                        if hasattr(agent_instance, '_env') and agent_instance._env:
+                        if hasattr(agent_instance, "_env") and agent_instance._env:
                             import shlex
+
                             env_setup_content = agent_instance._create_env_setup_file()
                             session.container.exec_run(
                                 [
@@ -300,7 +294,7 @@ def interact(
             terminal.copy_to_container(
                 paths=[script_path],
                 container_dir=str(DockerComposeManager.CONTAINER_SCRIPTS_DIR),
-                container_filename=script_path.name
+                container_filename=script_path.name,
             )
 
         # Always copy test files for post-agent and post-eval
@@ -310,8 +304,7 @@ def interact(
             # Copy solutions directory if it exists
             if trial_handler.solutions_dir.exists():
                 terminal.copy_to_container(
-                    paths=[trial_handler.solutions_dir],
-                    container_dir="/sage/solutions"
+                    paths=[trial_handler.solutions_dir], container_dir="/sage/solutions"
                 )
 
             # Copy test files
@@ -320,16 +313,14 @@ def interact(
                     trial_handler.run_tests_path,
                     trial_handler.test_dir,
                 ],
-                container_dir="/tests"
+                container_dir="/tests",
             )
 
             # Copy solution.sh if it exists
             solution_script = task_dir / "solution.sh"
             if solution_script.exists():
                 terminal.copy_to_container(
-                    paths=[solution_script],
-                    container_dir="/sage",
-                    container_filename="solution.sh"
+                    paths=[solution_script], container_dir="/sage", container_filename="solution.sh"
                 )
 
                 # Make it executable
@@ -355,11 +346,11 @@ def interact(
                 task_data = yaml.safe_load(f)
 
             # Get the base prompt (first in the list)
-            if 'prompts' not in task_data or not task_data['prompts']:
+            if "prompts" not in task_data or not task_data["prompts"]:
                 typer.echo("No prompts found in task.yaml")
                 raise typer.Exit(1)
 
-            prompt = task_data['prompts'][0]['prompt']
+            prompt = task_data["prompts"][0]["prompt"]
 
             # Run the agent with the prompt
             agent_name = AgentName(agent.lower())
@@ -371,14 +362,19 @@ def interact(
 
                 # Use the standard TerminalCommand with config timeout
                 from ade_bench.config import config
-                session.send_command(TerminalCommand(
-                    command="/sage/solution.sh",
-                    block=True,
-                    max_timeout_sec=config.default_agent_timeout_sec,
-                    append_enter=True,
-                ))
 
-                typer.echo("Solution script sent to tmux session. You'll see the execution in the session.")
+                session.send_command(
+                    TerminalCommand(
+                        command="/sage/solution.sh",
+                        block=True,
+                        max_timeout_sec=config.default_agent_timeout_sec,
+                        append_enter=True,
+                    )
+                )
+
+                typer.echo(
+                    "Solution script sent to tmux session. You'll see the execution in the session."
+                )
             else:
                 # For other agents, we need to get the agent instance and run it
                 from ade_bench.agents.agent_factory import AgentFactory
@@ -388,12 +384,12 @@ def interact(
                 agent_instance = AgentFactory.get_agent(agent_name=agent_name)
 
                 # Ensure log directories exist if needed
-                if hasattr(agent_instance, 'LOG_DIR') and agent_instance.LOG_DIR:
+                if hasattr(agent_instance, "LOG_DIR") and agent_instance.LOG_DIR:
                     typer.echo(f"Ensuring log directory exists: {agent_instance.LOG_DIR}")
                     session.container.exec_run(["mkdir", "-p", agent_instance.LOG_DIR])
 
                 # Use the agent's _run_agent_commands method to get the correct command
-                if hasattr(agent_instance, '_run_agent_commands'):
+                if hasattr(agent_instance, "_run_agent_commands"):
                     # Get the commands from the agent
                     commands = agent_instance._run_agent_commands(prompt)
                     typer.echo("Running agent commands in tmux session...")
@@ -405,8 +401,12 @@ def interact(
                         session.send_command(cmd)
 
                         # Let the user know it's running
-                        typer.echo("Command sent to tmux session. Agent is running in the session...")
-                        typer.echo("You'll be connected to the tmux session to see the agent in action.")
+                        typer.echo(
+                            "Command sent to tmux session. Agent is running in the session..."
+                        )
+                        typer.echo(
+                            "You'll be connected to the tmux session to see the agent in action."
+                        )
                 else:
                     typer.echo(f"Agent {agent_name.value} does not have _run_agent_commands method")
                     raise typer.Exit(1)
@@ -417,7 +417,7 @@ def interact(
 
             # Run dbt tests
             result = container.exec_run(["/bin/bash", "-c", "cd /app && dbt test"])
-            typer.echo(result.output.decode('utf-8'))
+            typer.echo(result.output.decode("utf-8"))
 
             # The test status code indicates whether all tests passed
             if result.exit_code != 0:
@@ -439,7 +439,17 @@ def interact(
         typer.echo("You can detach from tmux with Ctrl+B, D and reattach with 'tmux attach'")
 
         # Attach to the tmux session - fall back to normal shell if tmux session is killed
-        subprocess.run(["docker", "exec", "-it", container.name, "bash", "-c", f"tmux attach -t {session_name} || bash"])
+        subprocess.run(
+            [
+                "docker",
+                "exec",
+                "-it",
+                container.name,
+                "bash",
+                "-c",
+                f"tmux attach -t {session_name} || bash",
+            ]
+        )
 
     finally:
         # Clean up

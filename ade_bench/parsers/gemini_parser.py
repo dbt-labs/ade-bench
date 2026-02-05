@@ -3,6 +3,7 @@ from typing import Dict, Any
 
 from ade_bench.parsers.base_parser import BaseParser
 
+
 class GeminiParser(BaseParser):
     """Parser for Gemini agent responses to extract runtime, token usage, and cost metrics."""
 
@@ -32,7 +33,7 @@ class GeminiParser(BaseParser):
             "num_turns": 0,
             "success": False,
             "error": None,
-            "model_name": "default"
+            "model_name": "default",
         }
 
         try:
@@ -41,16 +42,16 @@ class GeminiParser(BaseParser):
 
             # First, try to find where the JSON starts by looking for a line that starts with {
             # and has "stats" in the subsequent content
-            lines = content.strip().split('\n')
+            lines = content.strip().split("\n")
             json_str = None
 
             # Try to find a JSON object starting from the end
             for i in range(len(lines) - 1, -1, -1):
                 line = lines[i].strip()
-                if line.startswith('{'):
+                if line.startswith("{"):
                     # Found potential start of JSON, collect the rest
                     potential_json_lines = lines[i:]
-                    potential_json = '\n'.join(potential_json_lines)
+                    potential_json = "\n".join(potential_json_lines)
 
                     # The last line might have shell prompt appended, try to extract just the JSON
                     # Look for the closing brace and ignore anything after it
@@ -58,9 +59,9 @@ class GeminiParser(BaseParser):
                     brace_count = 0
                     json_end = -1
                     for idx, char in enumerate(potential_json):
-                        if char == '{':
+                        if char == "{":
                             brace_count += 1
-                        elif char == '}':
+                        elif char == "}":
                             brace_count -= 1
                             if brace_count == 0:
                                 json_end = idx + 1
@@ -117,19 +118,19 @@ class GeminiParser(BaseParser):
                 cached_tokens = tokens.get("cached", 0)
 
                 if "flash" in model_name:
-                    input_cost =    .30 / 1000000
-                    output_cost =  2.50 / 1000000
-                    cached_cost =  0.03 / 1000000
+                    input_cost = 0.30 / 1000000
+                    output_cost = 2.50 / 1000000
+                    cached_cost = 0.03 / 1000000
                 else:
                     # These are "Pro" prices
-                    input_cost =   2.00 / 1000000
+                    input_cost = 2.00 / 1000000
                     output_cost = 10.00 / 1000000
-                    cached_cost =  0.20 / 1000000
+                    cached_cost = 0.20 / 1000000
 
                 cost_usd = (
-                    input_cost * input_tokens +
-                    output_cost * output_tokens +
-                    cached_cost * cached_tokens
+                    input_cost * input_tokens
+                    + output_cost * output_tokens
+                    + cached_cost * cached_tokens
                 )
 
                 # Input tokens = prompt - cached
@@ -155,7 +156,7 @@ class GeminiParser(BaseParser):
                 "num_turns": total_num_turns,
                 "success": success,
                 "error": None,
-                "model_name": primary_model_name or "default"
+                "model_name": primary_model_name or "default",
             }
 
         except Exception as e:

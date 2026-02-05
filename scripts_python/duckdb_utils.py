@@ -57,43 +57,48 @@ class DuckDBExtractor:
         try:
             with duckdb.connect(str(db_path), read_only=True) as conn:
                 # Get all schemas
-                schemas = conn.execute("""
+                schemas = conn.execute(
+                    """
                     SELECT schema_name
                     FROM information_schema.schemata
                     WHERE schema_name NOT IN ('information_schema', 'pg_catalog', 'pg_toast')
                     ORDER BY schema_name
-                """).fetchall()
+                """
+                ).fetchall()
 
                 schema_info = {}
                 for (schema_name,) in schemas:
                     # Get tables in this schema
-                    tables = conn.execute("""
+                    tables = conn.execute(
+                        """
                         SELECT table_name, table_type
                         FROM information_schema.tables
                         WHERE table_schema = ? AND table_type = 'BASE TABLE'
                         ORDER BY table_name
-                    """, [schema_name]).fetchall()
+                    """,
+                        [schema_name],
+                    ).fetchall()
 
                     if tables:
                         schema_info[schema_name] = {
-                            'tables': [{'name': name, 'type': ttype} for name, ttype in tables],
-                            'table_count': len(tables)
+                            "tables": [{"name": name, "type": ttype} for name, ttype in tables],
+                            "table_count": len(tables),
                         }
 
                 return {
-                    'file_path': str(db_path),
-                    'file_name': db_path.name,
-                    'schemas': schema_info,
-                    'total_tables': sum(info['table_count'] for info in schema_info.values())
+                    "file_path": str(db_path),
+                    "file_name": db_path.name,
+                    "schemas": schema_info,
+                    "total_tables": sum(info["table_count"] for info in schema_info.values()),
                 }
 
         except Exception as e:
             return {
-                'file_path': str(db_path),
-                'file_name': db_path.name,
-                'error': str(e),
-                'schemas': {},
-                'total_tables': 0
+                "file_path": str(db_path),
+                "file_name": db_path.name,
+                "error": str(e),
+                "schemas": {},
+                "total_tables": 0,
             }
 
     def should_exclude_file(self, db_path: Path) -> bool:
@@ -131,12 +136,14 @@ class DuckDBExtractor:
 
         return False
 
-    def export_table_to_parquet(self, duckdb_path: Path, schema_name: str, table_name: str, output_path: Path) -> bool:
+    def export_table_to_parquet(
+        self, duckdb_path: Path, schema_name: str, table_name: str, output_path: Path
+    ) -> bool:
         """Export a single table from DuckDB to Parquet format using direct DuckDB export."""
         try:
             with duckdb.connect(str(duckdb_path), read_only=True) as conn:
                 # First check if table is empty
-                if schema_name == 'main':
+                if schema_name == "main":
                     count_query = f'SELECT COUNT(*) FROM "{table_name}"'
                 else:
                     count_query = f'SELECT COUNT(*) FROM {schema_name}."{table_name}"'
@@ -144,7 +151,7 @@ class DuckDBExtractor:
                 row_count = conn.execute(count_query).fetchone()[0]
 
                 # Use DuckDB's direct export to Parquet
-                if schema_name == 'main':
+                if schema_name == "main":
                     export_query = f'COPY (SELECT * FROM "{table_name}") TO "{output_path}" (FORMAT PARQUET, COMPRESSION ZSTD)'
                 else:
                     export_query = f'COPY (SELECT * FROM {schema_name}."{table_name}") TO "{output_path}" (FORMAT PARQUET, COMPRESSION ZSTD)'
@@ -158,7 +165,9 @@ class DuckDBExtractor:
             print(f"    ❌ Error exporting {table_name}: {e}", file=sys.stderr)
             return False
 
-    def export_all_tables_to_parquet(self, duckdb_path: Path, output_dir: Path, db_name: str = None) -> Dict:
+    def export_all_tables_to_parquet(
+        self, duckdb_path: Path, output_dir: Path, db_name: str = None
+    ) -> Dict:
         """
         Export all tables from a DuckDB file to Parquet format.
 
@@ -175,35 +184,32 @@ class DuckDBExtractor:
 
         # Analyze the DuckDB file first
         analysis = self.analyze_duckdb_schema(duckdb_path)
-        if 'error' in analysis:
+        if "error" in analysis:
             return {
-                'success': False,
-                'error': analysis['error'],
-                'tables_exported': 0,
-                'parquet_files': []
+                "success": False,
+                "error": analysis["error"],
+                "tables_exported": 0,
+                "parquet_files": [],
             }
 
-        if analysis['total_tables'] == 0:
+        if analysis["total_tables"] == 0:
             return {
-                'success': False,
-                'error': 'No tables found',
-                'tables_exported': 0,
-                'parquet_files': []
+                "success": False,
+                "error": "No tables found",
+                "tables_exported": 0,
+                "parquet_files": [],
             }
 
-        results = {
-            'success': True,
-            'tables_exported': 0,
-            'parquet_files': [],
-            'errors': []
-        }
+        results = {"success": True, "tables_exported": 0, "parquet_files": [], "errors": []}
 
         # Export each table to Parquet
-        for schema_name, schema_info in analysis['schemas'].items():
-            print(f"  Processing schema '{schema_name}' with {schema_info['table_count']} tables...")
+        for schema_name, schema_info in analysis["schemas"].items():
+            print(
+                f"  Processing schema '{schema_name}' with {schema_info['table_count']} tables..."
+            )
 
-            for table_info in schema_info['tables']:
-                table_name = table_info['name']
+            for table_info in schema_info["tables"]:
+                table_name = table_info["name"]
                 print(f"    Processing table: {table_name}")
 
                 # Create parquet file path
@@ -212,19 +218,23 @@ class DuckDBExtractor:
 
                 # Export to Parquet
                 if self.export_table_to_parquet(duckdb_path, schema_name, table_name, parquet_path):
-                    results['tables_exported'] += 1
-                    results['parquet_files'].append({
-                        'schema': schema_name,
-                        'table': table_name,
-                        'file_path': str(parquet_path),
-                        'filename': parquet_filename
-                    })
+                    results["tables_exported"] += 1
+                    results["parquet_files"].append(
+                        {
+                            "schema": schema_name,
+                            "table": table_name,
+                            "file_path": str(parquet_path),
+                            "filename": parquet_filename,
+                        }
+                    )
                 else:
-                    results['errors'].append(f"Failed to export {schema_name}.{table_name}")
+                    results["errors"].append(f"Failed to export {schema_name}.{table_name}")
 
         return results
 
-    def export_database_to_parquet(self, duckdb_path: Path, output_dir: Path, db_name: str = None) -> Dict:
+    def export_database_to_parquet(
+        self, duckdb_path: Path, output_dir: Path, db_name: str = None
+    ) -> Dict:
         """
         Export entire DuckDB database to Parquet using DuckDB's EXPORT DATABASE command.
         This is more efficient than exporting tables individually.
@@ -247,7 +257,9 @@ class DuckDBExtractor:
                 db_parquet_dir.mkdir(exist_ok=True)
 
                 # Use DuckDB's EXPORT DATABASE command
-                export_query = f"EXPORT DATABASE '{db_parquet_dir}' (FORMAT PARQUET, COMPRESSION ZSTD);"
+                export_query = (
+                    f"EXPORT DATABASE '{db_parquet_dir}' (FORMAT PARQUET, COMPRESSION ZSTD);"
+                )
                 print(f"  Exporting entire database using: {export_query}")
                 conn.execute(export_query)
 
@@ -257,28 +269,23 @@ class DuckDBExtractor:
                 print(f"  ✅ Exported {len(parquet_files)} Parquet files to {db_parquet_dir}")
 
                 return {
-                    'success': True,
-                    'tables_exported': len(parquet_files),
-                    'parquet_files': [
+                    "success": True,
+                    "tables_exported": len(parquet_files),
+                    "parquet_files": [
                         {
-                            'schema': 'main',  # DuckDB export doesn't preserve schema info easily
-                            'table': f.stem,
-                            'file_path': str(f),
-                            'filename': f.name
+                            "schema": "main",  # DuckDB export doesn't preserve schema info easily
+                            "table": f.stem,
+                            "file_path": str(f),
+                            "filename": f.name,
                         }
                         for f in parquet_files
                     ],
-                    'errors': []
+                    "errors": [],
                 }
 
         except Exception as e:
             print(f"  ❌ Error exporting database: {e}", file=sys.stderr)
-            return {
-                'success': False,
-                'error': str(e),
-                'tables_exported': 0,
-                'parquet_files': []
-            }
+            return {"success": False, "error": str(e), "tables_exported": 0, "parquet_files": []}
 
     def filter_files(self, files: List[Path], include_list: List[str] = None) -> List[Path]:
         """Filter files based on include/exclude logic."""

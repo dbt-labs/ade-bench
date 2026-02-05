@@ -90,7 +90,7 @@ def main():
             task_id.replace("-", "_"): {
                 "materialized": "table",
             }
-        }
+        },
     }
 
     with open(task_dir / "dbt_project" / "dbt_project.yml", "w") as f:
@@ -133,6 +133,7 @@ FROM {{ ref('my_model') }};
         example_expected = [{"row_count": 100}]
         with open(task_dir / "expected" / "check_row_count.json", "w") as f:
             import json
+
             json.dump(example_expected, f, indent=2)
 
         # Example solution

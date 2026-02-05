@@ -34,12 +34,12 @@ class CodexParser(BaseParser):
             "num_turns": 0,
             "success": False,
             "error": None,
-            "model_name": "default"
+            "model_name": "default",
         }
 
         try:
             # Split content into lines and parse JSON lines
-            lines = content.strip().split('\n')
+            lines = content.strip().split("\n")
 
             total_input_tokens = 0
             total_output_tokens = 0
@@ -51,7 +51,7 @@ class CodexParser(BaseParser):
 
             for line in lines:
                 line = line.strip()
-                if not line or not line.startswith('{'):
+                if not line or not line.startswith("{"):
                     continue
 
                 try:
@@ -85,9 +85,9 @@ class CodexParser(BaseParser):
 
                         # Cost is estimated from https://openai.com/api/pricing/
                         cost_usd = (
-                            (total_input_tokens /1000000) * 1.25 +
-                            (total_output_tokens/1000000) * 10 +
-                            (total_cache_tokens /1000000) * 0.125
+                            (total_input_tokens / 1000000) * 1.25
+                            + (total_output_tokens / 1000000) * 10
+                            + (total_cache_tokens / 1000000) * 0.125
                         )
 
                 except json.JSONDecodeError:
@@ -103,7 +103,7 @@ class CodexParser(BaseParser):
                 "num_turns": num_items,
                 "success": success,
                 "error": error,
-                "model_name": "default"
+                "model_name": "default",
             }
 
         except Exception as e:
