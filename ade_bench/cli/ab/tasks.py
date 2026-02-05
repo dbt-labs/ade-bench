@@ -187,12 +187,12 @@ def list(
                             'tags': tags_str
                         })
 
-        except Exception as e:
+        except Exception:
             # Add error row
             table.add_row(
                 "[red]error[/red]",
                 task_path.name,
-                f"[red]Error loading task.yaml[/red]"
+                "[red]Error loading task.yaml[/red]"
             )
 
     # Print the table

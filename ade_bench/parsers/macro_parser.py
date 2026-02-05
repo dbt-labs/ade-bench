@@ -2,7 +2,7 @@ import json
 import re
 from typing import Dict, Any
 
-from ade_bench.parsers.base_parser import BaseParser, UnitTestStatus
+from ade_bench.parsers.base_parser import BaseParser
 
 class MacroParser(BaseParser):
     """Parser for Macro agent responses to extract token usage and cost metrics."""
@@ -86,7 +86,7 @@ class MacroParser(BaseParser):
         cost_usd = data.get("total_cost", 0.0)
 
         # Determine success
-        success = data.get("is_error", True) == False
+        success = data.get("is_error", True) == False  # noqa: E712
 
         # Extract model name if available
         model_name = data.get("model")

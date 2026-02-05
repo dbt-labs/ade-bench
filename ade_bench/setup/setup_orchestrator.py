@@ -24,13 +24,13 @@ class SetupOrchestrator:
 
     def setup_task(self, task_id: str, variant: Dict[str, Any]) -> bool:
         """Setup a task for the given variant."""
-        log_harness_info(self.logger, task_id, "setup", f"Starting task setup...")
+        log_harness_info(self.logger, task_id, "setup", "Starting task setup...")
 
 
         # Set up the project
         project_type = variant.get('project_type')
         if project_type in ['dbt', 'dbt-fusion']:
-            log_harness_info(self.logger, task_id, "setup", f"Setting up dbt project...")
+            log_harness_info(self.logger, task_id, "setup", "Setting up dbt project...")
             success, error_msg = setup_dbt_project(self.terminal, self.session, task_id, variant, self.trial_handler)
             if not success:
                 log_harness_info(self.logger, task_id, "done", f"SETUP_FAILED - {error_msg}")
@@ -45,7 +45,7 @@ class SetupOrchestrator:
         # Set up the database
         db_type = variant.get('db_type')
         if db_type == 'duckdb':
-            log_harness_info(self.logger, task_id, "setup", f"Setting up DuckDB database...")
+            log_harness_info(self.logger, task_id, "setup", "Setting up DuckDB database...")
             success, error_msg = setup_duckdb(self.terminal, self.session, variant, self.trial_handler)
             if not success:
                 log_harness_info(self.logger, task_id, "done", f"SETUP_FAILED - {error_msg}")
@@ -56,7 +56,7 @@ class SetupOrchestrator:
             if not success:
                 log_harness_info(self.logger, task_id, "done", f"SETUP_FAILED - {error_msg}")
                 return False
-            log_harness_info(self.logger, task_id, "setup", f"Snowflake setup complete.")
+            log_harness_info(self.logger, task_id, "setup", "Snowflake setup complete.")
 
 
         # Take snapshot before migrations and main setup script
@@ -66,7 +66,7 @@ class SetupOrchestrator:
 
 
         # Set up any migrations and run them.
-        log_harness_info(self.logger, task_id, "setup", f"Running migrations...")
+        log_harness_info(self.logger, task_id, "setup", "Running migrations...")
         setup_migration(self.terminal, self.session, variant, self.trial_handler)
         log_harness_info(self.logger, task_id, "setup", "Migration script complete")
 

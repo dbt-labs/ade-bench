@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Iterator, Optional
+from typing import Iterator
 import yaml
 from ade_bench.utils.logger import logger
 

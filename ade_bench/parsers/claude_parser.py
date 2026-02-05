@@ -1,8 +1,7 @@
 import json
-import re
 from typing import Dict, Any
 
-from ade_bench.parsers.base_parser import BaseParser, UnitTestStatus
+from ade_bench.parsers.base_parser import BaseParser
 
 class ClaudeParser(BaseParser):
     """Parser for Claude agent responses to extract runtime, token usage, and cost metrics."""
@@ -100,7 +99,7 @@ class ClaudeParser(BaseParser):
         cost_usd = data.get("total_cost_usd", 0.0)
 
         # Determine success
-        success = data.get("is_error", True) == False
+        success = data.get("is_error", True) == False  # noqa: E712
 
         # If model_name not provided from init message, try to get from modelUsage
         # modelUsage contains a dict of model names to their usage stats

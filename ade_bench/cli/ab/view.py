@@ -3,7 +3,6 @@
 import sys
 import typer
 from pathlib import Path
-from typing import Optional
 
 # Add project root to path for imports
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))

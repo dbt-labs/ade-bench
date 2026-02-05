@@ -1,6 +1,6 @@
 """Utility for generating solution seed tests."""
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
 from ade_bench.harness_models import SolutionSeedConfig
 
@@ -119,7 +119,7 @@ def generate_equality_test(
     for i, alternate_name in enumerate(answer_keys):
         numbered_key = f"answer_key_{i+1}"
 
-        union_statement = f"\n\tunion all" if i < len(answer_keys) - 1 else ""
+        union_statement = "\n\tunion all" if i < len(answer_keys) - 1 else ""
 
         jinja_vars_block += f"{{% set {numbered_key} = 'solution__{alternate_name}' %}}\n"
         depends_on_block += f"-- depends_on: {{{{ ref({numbered_key}) }}}}\n"

@@ -1,7 +1,7 @@
 import json
 from typing import Dict, Any
 
-from ade_bench.parsers.base_parser import BaseParser, UnitTestStatus
+from ade_bench.parsers.base_parser import BaseParser
 
 class GeminiParser(BaseParser):
     """Parser for Gemini agent responses to extract runtime, token usage, and cost metrics."""

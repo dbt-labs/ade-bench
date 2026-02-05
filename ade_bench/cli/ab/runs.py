@@ -3,7 +3,7 @@
 import builtins
 import typer
 from pathlib import Path
-from typing import Optional, List
+from typing import Optional
 
 app = typer.Typer(help="Manage ADE-bench runs")
 
@@ -60,7 +60,7 @@ def list(
                 with builtins.open(metadata_file, "r") as f:
                     metadata = json.load(f)
                     agent = metadata.get("agent_name", "N/A")
-                    db_type = metadata.get("db_type", "N/A")
+                    _db_type = metadata.get("db_type", "N/A")
                     
                 typer.echo(f"{i}. {run.name} - Agent: {agent}, Accuracy: {accuracy}")
             except json.JSONDecodeError:

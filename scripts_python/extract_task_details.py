@@ -3,7 +3,6 @@
 Script to extract task details from all task.yaml files and generate a CSV.
 """
 
-import os
 import yaml
 import pandas as pd
 import subprocess
@@ -230,7 +229,7 @@ def main(output_file: Path | None = None, quiet: bool = False):
         print("✗ Failed to copy to clipboard")
 
     # Print summary
-    print(f"\nSummary:")
+    print("\nSummary:")
     print(f"- Total tasks: {len(df['task_id'].unique())}")
     print(f"- Total rows: {len(df)}")
     print(f"- Difficulties: {', '.join(sorted(df['difficulty'].unique()))}")

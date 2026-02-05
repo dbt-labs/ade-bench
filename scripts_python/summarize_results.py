@@ -253,4 +253,4 @@ def display_detailed_results(results: BenchmarkResults) -> None:
     table_data = format_summary_table(summary)
     print(f"\n{'=' * 40} RESULTS SUMMARY {'=' * 40}\n")
     print(tabulate(table_data, headers=summary['headers'], tablefmt="psql"))
-    print(f"\nFor more details, run the command below:\nade view")
+    print("\nFor more details, run the command below:\nade view")
