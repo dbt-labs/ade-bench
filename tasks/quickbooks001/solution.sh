@@ -1,33 +1,21 @@
 #!/bin/bash
 
-## Introduce an error by changing the data type of the underlying table.
+## Solution: Override Fivetran staging models to handle unix epoch timestamps.
+## Instead of modifying the underlying data, we create custom versions of the
+## staging models that convert the epoch integers back to proper dates.
 
-## Get the schema based on the database type.
-if [[ "$*" == *"--db-type=duckdb"* ]]; then
-    schema='main'
-else
-    schema='public'
-fi
+# Get the directory where this script is located
+SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE}")")"
 
-# Execute SQL using the run_sql utility.
-/scripts/run_sql.sh "$@" << SQL
-create or replace table ${schema}.refund_receipt_data_temp as
-  select * replace (transaction_date::date as transaction_date)
-  from ${schema}.refund_receipt_data;
+# Disable the package models in dbt_project.yml
+yq -i '.models.quickbooks_source.stg_quickbooks__refund_receipt."+enabled" = false' dbt_project.yml
+yq -i '.models.quickbooks_source.stg_quickbooks__sales_receipt."+enabled" = false' dbt_project.yml
+yq -i '.models.quickbooks_source.stg_quickbooks__estimate."+enabled" = false' dbt_project.yml
 
-create or replace table ${schema}.sales_receipt_data_temp as
-  select * replace (transaction_date::date as transaction_date)
-  from ${schema}.sales_receipt_data;
+# Create staging directory if it doesn't exist
+mkdir -p models/staging
 
-create or replace table ${schema}.estimate_data_temp as
-  select * replace (due_date::date as due_date)
-  from ${schema}.estimate_data;
-
-drop table ${schema}.sales_receipt_data;
-drop table ${schema}.refund_receipt_data;
-drop table ${schema}.estimate_data;
-
-alter table ${schema}.sales_receipt_data_temp rename to sales_receipt_data;
-alter table ${schema}.refund_receipt_data_temp rename to refund_receipt_data;
-alter table ${schema}.estimate_data_temp rename to estimate_data;
-SQL
+# Copy our override models that handle the epoch-to-date conversion
+cp $SCRIPT_DIR/solutions/stg_quickbooks__refund_receipt.sql models/staging/
+cp $SCRIPT_DIR/solutions/stg_quickbooks__sales_receipt.sql models/staging/
+cp $SCRIPT_DIR/solutions/stg_quickbooks__estimate.sql models/staging/
