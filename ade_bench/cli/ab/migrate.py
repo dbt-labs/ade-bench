@@ -12,18 +12,13 @@ def duckdb_to_snowflake(
         None,
         "--include",
         "-i",
-        help="DuckDB databases to include (e.g., airbnb, analytics_engineering)"
+        help="DuckDB databases to include (e.g., airbnb, analytics_engineering)",
     ),
     exclude: Optional[List[str]] = typer.Option(
-        None,
-        "--exclude",
-        "-e", 
-        help="DuckDB databases to exclude"
+        None, "--exclude", "-e", help="DuckDB databases to exclude"
     ),
     use_database_export: bool = typer.Option(
-        False,
-        "--use-database-export",
-        help="Use database export for better performance"
+        False, "--use-database-export", help="Use database export for better performance"
     ),
 ):
     """
@@ -31,7 +26,7 @@ def duckdb_to_snowflake(
     """
     # Import the migration script
     from scripts_python.migrate_duckdb_to_snowflake import main as migrate_main
-    
+
     # Call the migration function with the provided arguments
     migrate_main(include, exclude, use_database_export)
 

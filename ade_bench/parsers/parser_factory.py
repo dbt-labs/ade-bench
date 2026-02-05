@@ -28,7 +28,9 @@ class ParserFactory:
             try:
                 parser_name = ParserName(parser_name)
             except ValueError:
-                raise ValueError(f"Unknown parser: {parser_name}. Available parsers: {[p.value for p in ParserName]}")
+                raise ValueError(
+                    f"Unknown parser: {parser_name}. Available parsers: {[p.value for p in ParserName]}"
+                )
 
         parser_class = ParserFactory.PARSER_NAME_TO_CLASS.get(parser_name)
         if not parser_class:

@@ -21,7 +21,7 @@ class FileContentManager:
 
     def add_file_content(self, file_path: str, content: str) -> str:
         """Add file content and return its hash."""
-        content_hash = hashlib.sha256(content.encode('utf-8')).hexdigest()
+        content_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()
         self.content_store[content_hash] = content
         return content_hash
 
@@ -31,9 +31,7 @@ class FileContentManager:
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for serialization."""
-        return {
-            "content_store": self.content_store
-        }
+        return {"content_store": self.content_store}
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "FileContentManager":
@@ -46,7 +44,13 @@ class FileContentManager:
 class FileSnapshot:
     """Represents a snapshot of files in a directory at a specific point in time."""
 
-    def __init__(self, timestamp: datetime, directory: str, files: Dict[str, str], content_manager: FileContentManager):
+    def __init__(
+        self,
+        timestamp: datetime,
+        directory: str,
+        files: Dict[str, str],
+        content_manager: FileContentManager,
+    ):
         self.timestamp = timestamp
         self.directory = directory
         self.files = files  # file_path -> file_content
@@ -69,7 +73,7 @@ class FileSnapshot:
         return {
             "timestamp": self.timestamp.isoformat(),
             "directory": self.directory,
-            "file_hashes": self.file_hashes
+            "file_hashes": self.file_hashes,
         }
 
     @classmethod
@@ -129,19 +133,19 @@ class FileDiff:
                 return None
 
             # Create temporary files for diff
-            with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.before') as before_file:
+            with tempfile.NamedTemporaryFile(
+                mode="w", delete=False, suffix=".before"
+            ) as before_file:
                 before_file.write(before_content)
                 before_path = before_file.name
 
-            with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.after') as after_file:
+            with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".after") as after_file:
                 after_file.write(after_content)
                 after_path = after_file.name
 
             # Run diff command
             result = subprocess.run(
-                ['diff', '-u', before_path, after_path],
-                capture_output=True,
-                text=True
+                ["diff", "-u", before_path, after_path], capture_output=True, text=True
             )
 
             # Clean up temp files
@@ -167,7 +171,7 @@ class FileDiff:
             "after": self.after.to_dict(),
             "added_files": self.added_files,
             "removed_files": self.removed_files,
-            "modified_files": self.modified_files
+            "modified_files": self.modified_files,
         }
 
     @classmethod
@@ -185,7 +189,13 @@ class FileDiff:
 class FileDiffHandler:
     """Handles file diffing operations for test execution."""
 
-    def __init__(self, output_dir: Path, enabled: bool = True, exclude_paths: List[str] = None, task_name: str = "FILE_DIFF"):
+    def __init__(
+        self,
+        output_dir: Path,
+        enabled: bool = True,
+        exclude_paths: List[str] = None,
+        task_name: str = "FILE_DIFF",
+    ):
         self.output_dir = output_dir
         self.enabled = enabled
         self.exclude_paths = exclude_paths or []
@@ -227,7 +237,7 @@ class FileDiffHandler:
 
             # Extract files from tar archive
             files = {}
-            with tarfile.open(fileobj=tar_data, mode='r') as tar:
+            with tarfile.open(fileobj=tar_data, mode="r") as tar:
                 for member in tar.getmembers():
                     # Skip directories
                     if not member.isfile():
@@ -238,8 +248,8 @@ class FileDiffHandler:
 
                     # Skip hidden files (files starting with .)
                     # This matches the behavior of: find directory -type f -not -path "*/.*"
-                    path_parts = member.name.split('/')
-                    if any(part.startswith('.') for part in path_parts):
+                    path_parts = member.name.split("/")
+                    if any(part.startswith(".") for part in path_parts):
                         continue
 
                     # Apply exclusion filters
@@ -251,7 +261,7 @@ class FileDiffHandler:
                     try:
                         file_obj = tar.extractfile(member)
                         if file_obj:
-                            content = file_obj.read().decode('utf-8')
+                            content = file_obj.read().decode("utf-8")
                             files[file_path] = content
                     except Exception as e:
                         self._logger.debug(f"Could not read file {file_path}: {e}")
@@ -260,7 +270,7 @@ class FileDiffHandler:
                 timestamp=datetime.now(),
                 directory=directory,
                 files=files,
-                content_manager=self.content_manager
+                content_manager=self.content_manager,
             )
 
             self.snapshots.append(snapshot)
@@ -271,7 +281,9 @@ class FileDiffHandler:
             self._logger.error(f"Error capturing file snapshot: {e}")
             return None
 
-    def create_diff(self, before_snapshot: FileSnapshot, after_snapshot: FileSnapshot) -> Optional[FileDiff]:
+    def create_diff(
+        self, before_snapshot: FileSnapshot, after_snapshot: FileSnapshot
+    ) -> Optional[FileDiff]:
         """Create a diff between two snapshots."""
         if not self.enabled:
             return None
@@ -302,7 +314,7 @@ class FileDiffHandler:
             diff_data = {
                 "content_manager": self.content_manager.to_dict(),
                 "snapshots": [snapshot.to_dict() for snapshot in self.snapshots],
-                "diffs": [diff.to_dict() for diff in self.diffs]
+                "diffs": [diff.to_dict() for diff in self.diffs],
             }
 
             self.diff_log_path.write_text(json.dumps(diff_data, indent=2))
@@ -324,7 +336,9 @@ class FileDiffHandler:
         summary_lines.append("")
 
         for i, diff in enumerate(self.diffs, 1):
-            summary_lines.append(f"DIFF {i}: {diff.before.timestamp.strftime('%H:%M:%S')} -> {diff.after.timestamp.strftime('%H:%M:%S')}")
+            summary_lines.append(
+                f"DIFF {i}: {diff.before.timestamp.strftime('%H:%M:%S')} -> {diff.after.timestamp.strftime('%H:%M:%S')}"
+            )
             summary_lines.append("-" * 40)
 
             if diff.added_files:
@@ -351,7 +365,7 @@ class FileDiffHandler:
 
             summary_lines.append("")
 
-        self.diff_summary_path.write_text('\n'.join(summary_lines))
+        self.diff_summary_path.write_text("\n".join(summary_lines))
 
     def get_latest_snapshot(self) -> Optional[FileSnapshot]:
         """Get the most recent snapshot."""
@@ -372,7 +386,7 @@ class FileDiffHandler:
             return None
 
         try:
-            with open(diff_log_path, 'r') as f:
+            with open(diff_log_path, "r") as f:
                 data = json.load(f)
 
             # Create handler instance
@@ -423,10 +437,7 @@ class FileDiffHandler:
         if snapshot and self.get_snapshot_count() >= 2:
             # Create diff with previous snapshot
             log_harness_info(self._logger, self.task_name, phase, f"Diffing the {phase} changes...")
-            diff = self.create_diff(
-                self.snapshots[-2],
-                self.snapshots[-1]
-            )
+            diff = self.create_diff(self.snapshots[-2], self.snapshots[-1])
             if diff:
                 diff_summary = f"Captured {phase} diffs: {len(diff.added_files)} added, {len(diff.removed_files)} removed, {len(diff.modified_files)} modified files"
                 log_harness_info(self._logger, self.task_name, phase, diff_summary)
@@ -476,4 +487,3 @@ class FileDiffHandler:
 
         except Exception as e:
             self._logger.error(f"Error saving diff to trial log: {e}")
-

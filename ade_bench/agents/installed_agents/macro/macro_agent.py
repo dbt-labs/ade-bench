@@ -38,7 +38,9 @@ class MacroAgent(AbstractInstalledAgent):
     def _run_agent_commands(self, task_prompt: str) -> list[TerminalCommand]:
         """Return the command(s) that will run the Macro agent inside the container."""
         escaped_prompt = shlex.quote(task_prompt)
-        base_command = f"macro -p {escaped_prompt} -e {self.LOG_DIR}/{self.LOG_FILENAME} --output-format=json"
+        base_command = (
+            f"macro -p {escaped_prompt} -e {self.LOG_DIR}/{self.LOG_FILENAME} --output-format=json"
+        )
 
         if self.additional_args:
             logger.info(f"Running macro with additional args: {self.additional_args}")

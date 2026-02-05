@@ -3,13 +3,14 @@ from typing import Dict, Any
 
 from ade_bench.parsers.base_parser import BaseParser
 
+
 class ClaudeParser(BaseParser):
     """Parser for Claude agent responses to extract runtime, token usage, and cost metrics."""
-    
+
     def parse(self, content: str) -> Dict[str, Any]:
         """
         Parse Claude agent response to extract metrics.
-        
+
         Returns a dictionary with the following keys:
         - runtime_ms: The higher of duration_ms and duration_api_ms
         - input_tokens: input_tokens
@@ -29,17 +30,17 @@ class ClaudeParser(BaseParser):
             "num_turns": 0,
             "success": False,
             "error": None,
-            "model_name": "default"
+            "model_name": "default",
         }
         try:
             # Get lines and remove empty ones
-            lines = [line.strip() for line in content.split('\n') if line.strip()]
+            lines = [line.strip() for line in content.split("\n") if line.strip()]
             lines_to_try = []
 
             # First, try to find the model name from the system init message
             model_name = None
             for line in lines:
-                if line.startswith('{') and line.endswith('}'):
+                if line.startswith("{") and line.endswith("}"):
                     try:
                         data = json.loads(line)
                         if data.get("type") == "system" and data.get("subtype") == "init":
@@ -51,7 +52,7 @@ class ClaudeParser(BaseParser):
             # Find line after AGENT RESPONSE and add it to the list of lines to try
             agent_response_line = None
             for i, line in enumerate(lines):
-                if line.startswith('AGENT RESPONSE:'):
+                if line.startswith("AGENT RESPONSE:"):
                     if i + 1 < len(lines):
                         agent_response_line = lines[i + 1]
                         lines_to_try.append(agent_response_line)
@@ -63,7 +64,7 @@ class ClaudeParser(BaseParser):
             # Try parsing each line for the result message
             for line in lines_to_try:
                 self._logger.debug(f"Trying to parse line: {line}")
-                if line.startswith('{') and line.endswith('}'):
+                if line.startswith("{") and line.endswith("}"):
                     try:
                         data = json.loads(line)
                         result = self._parse_json_response(data, model_name)
@@ -78,8 +79,10 @@ class ClaudeParser(BaseParser):
         except Exception as e:
             self._logger.error(f"Error parsing Claude response: {e}")
             return default_return
-    
-    def _parse_json_response(self, data: Dict[str, Any], model_name: str | None = None) -> Dict[str, Any]:
+
+    def _parse_json_response(
+        self, data: Dict[str, Any], model_name: str | None = None
+    ) -> Dict[str, Any]:
         """Parse the JSON response data to extract metrics."""
         # Extract runtime - use the higher of duration_ms and duration_api_ms
         duration_ms = data.get("duration_ms", 0)
@@ -110,7 +113,7 @@ class ClaudeParser(BaseParser):
                 primary_model = max(
                     model_usage.keys(),
                     key=lambda m: model_usage[m].get("outputTokens", 0),
-                    default=None
+                    default=None,
                 )
                 model_name = primary_model
 
@@ -123,5 +126,5 @@ class ClaudeParser(BaseParser):
             "num_turns": num_turns,
             "success": success,
             "error": None,
-            "model_name": model_name or "default"
+            "model_name": model_name or "default",
         }

@@ -1,4 +1,5 @@
 """Data models for ADE-Bench harness."""
+
 import uuid
 
 from enum import Enum
@@ -46,6 +47,7 @@ class FailureMode(Enum):
             FailureMode.CONTEXT_LENGTH_EXCEEDED,
             FailureMode.QUOTA_EXCEEDED,
         }
+
 
 class RunMetadata(BaseModel):
     run_id: str
@@ -184,10 +186,12 @@ class VariantConfig(BaseModel):
     project_type: str = Field(default="dbt", pattern="^(dbt|dbt-fusion)$")
     project_name: str
     migration_directory: Optional[str] = None  # Name of directory in shared/migrations
-    project_dir: Optional[str] = None  # Directory containing the dbt project (overrides default projects dir)
-    db_dir: Optional[str] = None  # Directory containing the DuckDB database file (overrides default databases dir)
-
-
+    project_dir: Optional[str] = (
+        None  # Directory containing the dbt project (overrides default projects dir)
+    )
+    db_dir: Optional[str] = (
+        None  # Directory containing the DuckDB database file (overrides default databases dir)
+    )
 
 
 class SolutionSeedConfig(BaseModel):
@@ -211,6 +215,7 @@ class TaskMetadata(BaseModel):
     test_type: str = "sql"
     db_type: str = "duckdb"
     variants: List[VariantConfig] = Field(default_factory=list)
+
 
 class TerminalCommand(BaseModel):
     command: str
