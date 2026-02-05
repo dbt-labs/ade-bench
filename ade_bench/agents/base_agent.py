@@ -75,16 +75,31 @@ class BaseAgent(ABC, metaclass=RequireNameMeta):
     def format_agent_log(self, log_path: Path) -> str | None:
         """
         Format the agent's log file into a human-readable string.
-        
+
         This method can be overridden by subclasses to provide agent-specific
         log formatting. The default implementation returns None, indicating
         that no formatting is available.
-        
+
         Args:
             log_path: Path to the raw agent log file
-            
+
         Returns:
             Formatted log content as a string, or None if not available
+        """
+        return None
+
+    def extract_tools_used(self, log_path: Path) -> list[str] | None:
+        """
+        Extract deduplicated list of tool names from the agent's log file.
+
+        This method can be overridden by subclasses to provide agent-specific
+        tool extraction. The default implementation returns None.
+
+        Args:
+            log_path: Path to the raw agent log file
+
+        Returns:
+            Sorted list of unique tool names, or None if not available
         """
         return None
 

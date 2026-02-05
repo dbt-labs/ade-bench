@@ -18,10 +18,10 @@ class LogFormatter(ABC):
     def parse_log_file(self, log_path: Path) -> List[Dict[str, Any]]:
         """
         Parse the agent log file and extract structured information.
-        
+
         Args:
             log_path: Path to the log file to parse
-            
+
         Returns:
             List of turn dictionaries containing structured log data
         """
@@ -31,10 +31,10 @@ class LogFormatter(ABC):
     def format_readable_log(self, turns: List[Dict[str, Any]]) -> str:
         """
         Format the parsed turns into a readable text string.
-        
+
         Args:
             turns: List of turn dictionaries from parse_log_file
-            
+
         Returns:
             Formatted log content as a string
         """
@@ -43,10 +43,10 @@ class LogFormatter(ABC):
     def format_log(self, log_path: Path) -> str | None:
         """
         Parse and format a log file in one step.
-        
+
         Args:
             log_path: Path to the log file to parse
-            
+
         Returns:
             Formatted log content as a string, or None if formatting failed
         """
@@ -57,3 +57,19 @@ class LogFormatter(ABC):
             return self.format_readable_log(turns)
         except Exception:
             return None
+
+    def generate_html_transcript(self, log_path: Path, output_dir: Path) -> Path | None:
+        """
+        Generate an HTML transcript from the log file.
+
+        Override this method in subclasses to provide HTML transcript generation.
+        The default implementation returns None (no HTML transcript).
+
+        Args:
+            log_path: Path to the log file to parse
+            output_dir: Directory to write HTML transcript files
+
+        Returns:
+            Path to the generated index.html, or None if not supported/failed
+        """
+        return None

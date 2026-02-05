@@ -2,10 +2,12 @@
 Agent-specific setup functions for copying configuration files and other agent resources.
 """
 
+from pathlib import Path
 from ..utils.logger import logger
 from ..terminal.docker_compose_manager import DockerComposeManager
 from ..agents.agent_name import AgentName
 from ..utils.logger import log_harness_info
+
 
 def _copy_config_file(terminal, trial_handler, config_filename: str, container_filename: str = None) -> None:
     """Helper to copy a configuration file to the container."""
@@ -30,6 +32,7 @@ def setup_agent_config(terminal, task_id: str, trial_handler, logger) -> None:
 
     log_harness_info(logger, task_id, "setup", "Migrating agent config files...")
 
+    # Copy agent-specific config files
     if agent_name == AgentName.CLAUDE_CODE:
         _copy_config_file(terminal, trial_handler, "CLAUDE.md")
     elif agent_name == AgentName.GEMINI_CLI:

@@ -176,7 +176,7 @@ def get_canonical_column_order() -> List[str]:
         'model_name',
         'db_type',
         'project_type',
-        'used_mcp'
+        'plugin_set'
     ]
 
 

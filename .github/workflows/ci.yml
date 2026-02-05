@@ -53,7 +53,7 @@ jobs:
         run: docker build -t ade-bench-base -f docker/base/Dockerfile.duckdb-dbt .
 
       - name: Run benchmark
-        run: uv run ade run all --agent ${{ matrix.agent }} --db duckdb --project-type dbt --no-diffs --n-concurrent-trials 6 --no-rebuild
+        run: uv run ade run all --agent ${{ matrix.agent }} --db duckdb --project-type dbt --no-diffs --n-concurrent-trials 6 --no-rebuild --plugin-set none
         env:
           USE_DYNAMIC_LOGGING: "FALSE"
           DEFAULT_TEST_TIMEOUT_SEC: "120"
