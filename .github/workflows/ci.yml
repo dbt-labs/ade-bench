@@ -19,8 +19,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  ruff-check:
-    name: Ruff check
+  lint:
+    name: Lint and format check
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -39,6 +39,9 @@ jobs:
 
       - name: Run ruff check
         run: uv run ruff check .
+
+      - name: Run black check
+        run: uv run black --check .
 
   check-regressions:
     name: ${{ matrix.agent == 'sage' && 'Sage agent always passes' || 'None agent always fails' }}
