@@ -399,12 +399,12 @@ def main(include: List[str] = None, exclude: List[str] = None, use_database_expo
         print(f"Failed: {len(results['failed'])}")
 
         if results['converted']:
-            print(f"\nSuccessfully converted:")
+            print("\nSuccessfully converted:")
             for item in results['converted']:
                 print(f"  ✅ {item['database']} ({item['tables_exported']} tables exported, {item['tables_loaded']} loaded)")
 
         if results['failed']:
-            print(f"\nFailed conversions:")
+            print("\nFailed conversions:")
             for item in results['failed']:
                 print(f"  ❌ {Path(item['duckdb_file']).name}: {', '.join(item['errors'])}")
 

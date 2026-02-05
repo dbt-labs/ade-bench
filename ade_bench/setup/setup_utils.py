@@ -5,7 +5,7 @@ Utilities for setup functions.
 import os
 import subprocess
 import tempfile
-from typing import Dict, Any
+from typing import Dict
 
 
 def generate_task_snowflake_credentials(task_id: str) -> Dict[str, str]:

@@ -5,7 +5,7 @@ import typer
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, Set
+from typing import List, Optional
 
 import sys
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))
@@ -14,7 +14,7 @@ from ade_bench import Harness
 from ade_bench.agents import AgentName
 from scripts_python.summarize_results import display_detailed_results
 
-from ade_bench.cli.ab import migrate, check, tasks, view, save, interact as interact_module
+from ade_bench.cli.ab import migrate, check, view, save, interact as interact_module
 import click
 from typer import rich_utils
 

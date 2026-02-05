@@ -6,7 +6,7 @@ import sys
 import html
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Dict, Any
 
 # Add the project root to the sys path
 sys.path.append(str(Path(__file__).parent.parent))
@@ -118,7 +118,7 @@ class ResultsHTMLGenerator:
                 end = datetime.fromisoformat(end_time.replace('Z', '+00:00'))
                 duration = end - start
                 return str(duration).split('.')[0]  # Remove microseconds
-            except:
+            except:  # noqa: E722
                 pass
 
         return "Unknown"
@@ -413,7 +413,7 @@ def main():
     success = generator.generate_all()
 
     if success:
-        print(f"Successfully generated HTML dashboard")
+        print("Successfully generated HTML dashboard")
         print(f"Open: {generator.html_dir / 'index.html'}")
     else:
         print("Failed to generate HTML dashboard")

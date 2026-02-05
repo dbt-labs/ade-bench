@@ -484,7 +484,7 @@ def generate_all_charts(db_path: str):
 def run_profiling_session(script_path: str, extra_args: list) -> bool:
     cmd = [script_path, '--n-concurrent-trials', '10'] + extra_args
     try:
-        result = subprocess.run(cmd, check=True)
+        subprocess.run(cmd, check=True)
         return True
     except subprocess.CalledProcessError:
         return False
