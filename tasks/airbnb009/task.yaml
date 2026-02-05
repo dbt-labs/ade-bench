@@ -16,6 +16,9 @@ tags:
   - debugging
   - model-refactor
 
+test_setup: |-
+  dbt run --select mom_agg_reviews
+
 # Variants for different database and project combinations
 variants:
 - db_type: duckdb

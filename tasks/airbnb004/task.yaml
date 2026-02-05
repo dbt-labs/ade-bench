@@ -15,6 +15,9 @@ tags:
   - dbt
   - model-refactor
 
+test_setup: |-
+  dbt run --select fct_reviews
+
 # Variants for different database and project combinations
 variants:
 - db_type: duckdb
