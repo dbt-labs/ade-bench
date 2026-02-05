@@ -66,6 +66,31 @@ class AbstractInstalledAgent(BaseAgent, ABC):
             [f"export {key}='{value}'" for key, value in self._env.items()]
         )
 
+    def _get_dbt_dynamic_env(self, session: TmuxSession, task_name: str | None) -> dict[str, str]:
+        """Get dynamic environment variables for dbt MCP server."""
+        env_vars = {}
+
+        # DBT_PROJECT_DIR is the container app directory
+        env_vars["DBT_PROJECT_DIR"] = str(DockerComposeManager.CONTAINER_APP_DIR)
+
+        # Get the dbt path from the container
+        result = session.container.exec_run(
+            ["sh", "-c", "which dbt"],
+            workdir=str(DockerComposeManager.CONTAINER_APP_DIR)
+        )
+        if result.exit_code == 0:
+            dbt_path = result.output.decode("utf-8").strip()
+            if dbt_path:
+                env_vars["DBT_PATH"] = dbt_path
+                log_harness_info(logger, task_name, "agent", f"Found dbt at: {dbt_path}")
+        else:
+            logger.warning("[MCP] dbt not found in PATH, MCP server may not work correctly")
+
+        # Enable the dbt CLI in dbt-mcp
+        env_vars["DISABLE_DBT_CLI"] = "false"
+
+        return env_vars
+
     def _configure_mcp_servers(self, session: TmuxSession, task_name: str | None) -> None:
         """Configure MCP servers after agent installation."""
         agent_cli = self.NAME.value  # e.g., "claude", "gemini"
@@ -73,11 +98,24 @@ class AbstractInstalledAgent(BaseAgent, ABC):
         for server_name, mcp_config in self._mcp_servers.items():
             log_harness_info(logger, task_name, "agent", f"Configuring MCP server '{server_name}'...")
 
-            # Write env file if env vars specified
+            # Start with static env vars from config
+            env_vars = dict(mcp_config.env)
+
+            # For dbt MCP server, add dynamic environment variables
+            # Check server name or if dbt-mcp appears in any of the args
+            is_dbt_mcp = server_name == "dbt" or any("dbt-mcp" in arg for arg in mcp_config.args)
+            if is_dbt_mcp:
+                dynamic_env = self._get_dbt_dynamic_env(session, task_name)
+                # Merge dynamic vars (don't override static config)
+                for key, value in dynamic_env.items():
+                    if key not in env_vars:
+                        env_vars[key] = value
+
+            # Write env file if we have any env vars
             env_file_path = None
-            if mcp_config.env:
+            if env_vars:
                 env_file_path = f"/tmp/{server_name}.env"
-                env_content = "\n".join(f"{k}={v}" for k, v in mcp_config.env.items())
+                env_content = "\n".join(f"{k}={v}" for k, v in env_vars.items())
                 write_cmd = f"cat > {env_file_path} << 'ENVEOF'\n{env_content}\nENVEOF"
 
                 result = session.container.exec_run(
@@ -86,6 +124,8 @@ class AbstractInstalledAgent(BaseAgent, ABC):
                 )
                 if result.exit_code != 0:
                     logger.warning(f"[MCP] Failed to write env file: {result.output.decode('utf-8')}")
+                else:
+                    log_harness_info(logger, task_name, "agent", f"Wrote env file with vars: {list(env_vars.keys())}")
 
             # Build mcp add command
             args_str = " ".join(mcp_config.args)
