@@ -30,7 +30,13 @@ ade run @my_experiment_set --db duckdb --project-type dbt --agent sage
 
 # Run wildcard patterns
 ade run foo+ bar+ --db duckdb --project-type dbt --agent sage
+
+# Schedule tasks longest-first using runtime data from a previous run
+ade run all --db duckdb --project-type dbt --agent sage \
+  --duration-hints experiments/claude-haiku-4-5-20251001-latest
 ```
+
+The `--duration-hints` option points to an experiment directory containing a `results.json`. Tasks are sorted by descending `runtime_ms` so the slowest tasks start first, reducing total wall-clock time when running with multiple concurrent trials. Tasks without a hint are assumed slow and scheduled first.
 
 ### View Results
 
