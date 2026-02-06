@@ -67,6 +67,7 @@ class Harness:
         keep_alive: bool = False,
         use_mcp: bool = False,
         with_profiling: bool = False,
+        duration_hints_path: Path | None = None,
     ):
         """
         Runs the Terminal-Bench harness.
@@ -110,6 +111,7 @@ class Harness:
         self._keep_alive = keep_alive
         self._use_mcp = use_mcp
         self._with_profiling = with_profiling
+        self._duration_hints_path = duration_hints_path
 
         # Initialize setup orchestrator for variant-specific setup
         self._setup_orchestrator = SetupOrchestrator()
@@ -204,6 +206,31 @@ class Harness:
         logger.addHandler(console_handler)
 
         self._logger = logger.getChild(__name__)
+
+    def _load_duration_hints(self) -> dict[str, int]:
+        """Load task_id -> runtime_ms mapping from a reference experiment's results.json.
+
+        If multiple attempts exist for the same task_id, takes the max runtime.
+        Returns empty dict if no path configured or file missing.
+        """
+        if self._duration_hints_path is None:
+            return {}
+
+        results_file = self._duration_hints_path / "results.json"
+        if not results_file.exists():
+            return {}
+
+        with open(results_file) as f:
+            data = json.load(f)
+
+        hints: dict[str, int] = {}
+        for entry in data.get("results", []):
+            task_id = entry.get("task_id")
+            runtime_ms = entry.get("runtime_ms")
+            if task_id is not None and runtime_ms is not None:
+                hints[task_id] = max(hints.get(task_id, 0), runtime_ms)
+
+        return hints
 
     def _is_resolved(self, parser_result: ParserResult | None) -> bool:
         if parser_result is None:
@@ -1266,6 +1293,29 @@ class Harness:
         if not matching_tasks:
             self._logger.warning("No tasks have matching database and project type configurations")
             return results
+
+        # Sort tasks by estimated duration (LPT scheduling) if hints are available
+        duration_hints = self._load_duration_hints()
+        if self._duration_hints_path and not duration_hints:
+            self._logger.warning(f"Duration hints path specified but no hints loaded from {self._duration_hints_path}")
+        if duration_hints:
+            def _task_id_from(task_path: Path, task_key: str) -> str:
+                if task_key == "base":
+                    return task_path.name
+                return f"{task_path.name}.{task_key}"
+
+            matching_tasks.sort(
+                key=lambda t: duration_hints.get(_task_id_from(t[0], t[1]), float('inf')),
+                reverse=True,
+            )
+            # Rebuild task_ids in sorted order
+            task_ids = [_task_id_from(tp, tk) for tp, tk, _ in matching_tasks]
+
+            order_desc = ", ".join(
+                f"{_task_id_from(t[0], t[1])}={duration_hints.get(_task_id_from(t[0], t[1]), '?')}ms"
+                for t in matching_tasks
+            )
+            log_harness_info(self._logger, "system", "start", f"LPT task order: {order_desc}")
 
         # Initialize dynamic logging with task IDs (only if dynamic logging is enabled)
         if ade_bench_config.use_dynamic_logging:

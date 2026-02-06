@@ -166,6 +166,11 @@ def run(
         DEFAULT_TASKS_DIR,
         "--tasks-dir",
         help="Path to the tasks directory (default: ADE_TASKS_DIR env var or 'tasks')"
+    ),
+    duration_hints: Optional[Path] = typer.Option(
+        None,
+        "--duration-hints",
+        help="Path to a reference experiment directory whose results.json provides runtime estimates for LPT scheduling"
     )
 ):
     """
@@ -237,7 +242,8 @@ def run(
         project_type=project_type,
         keep_alive=persist,
         use_mcp=use_mcp,
-        with_profiling=with_profiling
+        with_profiling=with_profiling,
+        duration_hints_path=duration_hints,
     )
 
     results = harness.run()
