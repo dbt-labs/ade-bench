@@ -1,8 +1,11 @@
 """
 Debug breakpoint functionality for halting task execution.
 """
+
+
 class DebugBreakpointException(Exception):
     """Exception raised when a debug breakpoint is hit."""
+
     pass
 
 

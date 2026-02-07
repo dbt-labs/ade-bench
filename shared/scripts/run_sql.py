@@ -37,6 +37,7 @@ except ImportError:
 
 try:
     import snowflake.connector
+
     SNOWFLAKE_AVAILABLE = True
 except ImportError:
     SNOWFLAKE_AVAILABLE = False
@@ -53,24 +54,19 @@ def parse_args() -> argparse.Namespace:
         type=str,
         required=True,
         choices=["duckdb", "snowflake"],
-        help="Database type (duckdb or snowflake)"
+        help="Database type (duckdb or snowflake)",
     )
     parser.add_argument(
-        "--project-type",
-        type=str,
-        default="dbt",
-        help="Project type (default: dbt)"
+        "--project-type", type=str, default="dbt", help="Project type (default: dbt)"
     )
     parser.add_argument(
-        "--sql-file",
-        type=str,
-        help="Path to SQL file (if not provided, reads from stdin)"
+        "--sql-file", type=str, help="Path to SQL file (if not provided, reads from stdin)"
     )
     parser.add_argument(
         "--profiles-path",
         type=str,
         default="/app/profiles.yml",
-        help="Path to profiles.yml file (default: /app/profiles.yml)"
+        help="Path to profiles.yml file (default: /app/profiles.yml)",
     )
     return parser.parse_args()
 
@@ -82,25 +78,25 @@ def load_profiles(profiles_path: str) -> Dict[str, Any]:
         print(f"Error: profiles.yml not found at {profiles_path}", file=sys.stderr)
         sys.exit(1)
 
-    with open(path, 'r') as f:
+    with open(path, "r") as f:
         return yaml.safe_load(f)
 
 
 def get_profile_name(project_type: str, db_type: str, profiles: Dict[str, Any]) -> str:
     """Get the profile name from project type and db type."""
     # Try to infer project name from current directory or environment
-    project_name = os.getenv('DBT_PROJECT_NAME', None)
+    project_name = os.getenv("DBT_PROJECT_NAME", None)
 
     # Check if we're in a dbt project directory
     dbt_project_yml = Path("/app/dbt_project.yml")
     if dbt_project_yml.exists():
-        with open(dbt_project_yml, 'r') as f:
+        with open(dbt_project_yml, "r") as f:
             dbt_config = yaml.safe_load(f)
-            if 'name' in dbt_config:
-                project_name = dbt_config['name']
+            if "name" in dbt_config:
+                project_name = dbt_config["name"]
             # Also check if profile is explicitly set
-            if 'profile' in dbt_config:
-                profile_name = dbt_config['profile']
+            if "profile" in dbt_config:
+                profile_name = dbt_config["profile"]
                 if profile_name in profiles:
                     return profile_name
 
@@ -137,12 +133,12 @@ def get_duckdb_connection(profiles: Dict[str, Any], profile_name: str):
 
     try:
         profile = profiles[profile_name]
-        output = profile['outputs']['dev']
-        db_path = output.get('path', './database.duckdb')
+        output = profile["outputs"]["dev"]
+        db_path = output.get("path", "./database.duckdb")
 
         # Resolve relative paths relative to /app
         if not os.path.isabs(db_path):
-            db_path = os.path.join('/app', db_path)
+            db_path = os.path.join("/app", db_path)
 
         conn = duckdb.connect(db_path)
         return conn
@@ -159,19 +155,19 @@ def get_snowflake_connection(profiles: Dict[str, Any], profile_name: str):
 
     try:
         profile = profiles[profile_name]
-        output = profile['outputs']['dev']
+        output = profile["outputs"]["dev"]
 
-        account = output.get('account', '')
-        user = output.get('user', '')
-        password = output.get('password', '')
-        database = output.get('database', '')
-        schema = output.get('schema', 'PUBLIC')
-        warehouse = output.get('warehouse', '')
-        role = output.get('role', '')
+        account = output.get("account", "")
+        user = output.get("user", "")
+        password = output.get("password", "")
+        database = output.get("database", "")
+        schema = output.get("schema", "PUBLIC")
+        warehouse = output.get("warehouse", "")
+        role = output.get("role", "")
 
         # Extract account identifier
-        if '.snowflakecomputing.com' in account:
-            account_id = account.replace('.snowflakecomputing.com', '')
+        if ".snowflakecomputing.com" in account:
+            account_id = account.replace(".snowflakecomputing.com", "")
         else:
             account_id = account
 
@@ -182,7 +178,7 @@ def get_snowflake_connection(profiles: Dict[str, Any], profile_name: str):
             database=database,
             schema=schema,
             warehouse=warehouse,
-            role=role
+            role=role,
         )
         return conn
     except Exception as e:
@@ -197,7 +193,7 @@ def read_sql(args: argparse.Namespace) -> str:
         if not sql_path.exists():
             print(f"Error: SQL file not found: {args.sql_file}", file=sys.stderr)
             sys.exit(1)
-        with open(sql_path, 'r') as f:
+        with open(sql_path, "r") as f:
             return f.read()
     else:
         # Read from stdin
@@ -209,7 +205,7 @@ def execute_sql(conn, sql: str, db_type: str) -> None:
     cursor = None
     try:
         # Split SQL by semicolons to handle multiple statements
-        statements = [s.strip() for s in sql.split(';') if s.strip()]
+        statements = [s.strip() for s in sql.split(";") if s.strip()]
 
         if not statements:
             print("Error: No SQL statements found", file=sys.stderr)
@@ -234,7 +230,7 @@ def execute_sql(conn, sql: str, db_type: str) -> None:
             pass
 
         # Commit if the connection supports it
-        if hasattr(conn, 'commit'):
+        if hasattr(conn, "commit"):
             conn.commit()
 
         if cursor:
@@ -247,7 +243,7 @@ def execute_sql(conn, sql: str, db_type: str) -> None:
             except Exception:
                 pass
         print(f"Error executing SQL: {e}", file=sys.stderr)
-        if db_type == "snowflake" and hasattr(conn, 'rollback'):
+        if db_type == "snowflake" and hasattr(conn, "rollback"):
             try:
                 conn.rollback()
             except Exception:
@@ -290,4 +286,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

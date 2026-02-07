@@ -6,6 +6,7 @@ from ade_bench.harness_models import FailureMode
 from ade_bench.terminal.tmux_session import TmuxSession
 from ade_bench.utils.logger import logger
 
+
 class NoneAgent(BaseAgent):
     NAME = AgentName.NONE
 
@@ -14,7 +15,7 @@ class NoneAgent(BaseAgent):
 
         self._logger = logger.getChild(__name__)
         self._variant_config = None
-    
+
     def perform_task(
         self,
         task_prompt: str,

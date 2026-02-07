@@ -8,10 +8,11 @@ from pathlib import Path
 from typing import List, Optional
 
 import sys
+
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))
 
 from ade_bench import Harness
-from ade_bench.agents import AgentName
+from ade_bench.agents import AgentName, NamedAgentFactory
 from scripts_python.summarize_results import display_detailed_results
 
 from ade_bench.cli.ab import migrate, check, view, save, interact as interact_module
@@ -58,104 +59,71 @@ def main(ctx: typer.Context):
 def run(
     tasks: List[str] = typer.Argument(
         ...,
-        help="Task ID(s) to run. Use 'all' to run all ready tasks, '@experiment_set' to run an experiment set, 'task+' for wildcards"
+        help="Task ID(s) to run. Use 'all' to run all ready tasks, '@experiment_set' to run an experiment set, 'task+' for wildcards",
     ),
     db: str = typer.Option(
         ...,
         "--db",
-        help="Database type to filter variants (e.g., duckdb, postgres, sqlite, snowflake)"
+        help="Database type to filter variants (e.g., duckdb, postgres, sqlite, snowflake)",
     ),
     project_type: str = typer.Option(
-        ...,
-        "--project-type",
-        help="Project type to filter variants (e.g., dbt, other)"
+        ..., "--project-type", help="Project type to filter variants (e.g., dbt, other)"
     ),
     output_path: Path = typer.Option(
-        Path("experiments"),
-        "--output-path",
-        "-o",
-        help="Path to the output directory"
+        Path("experiments"), "--output-path", "-o", help="Path to the output directory"
     ),
     agent: str = typer.Option(
         "sage",
         "--agent",
         case_sensitive=False,
-        help="The agent to benchmark (e.g., sage, claude, macro)"
+        help="The agent to benchmark (e.g., sage, claude, macro)",
     ),
     model_name: str = typer.Option(
-        "",
-        "--model",
-        help="The LLM model to use (e.g., claude-3-5-sonnet-20241022, gpt-4)"
+        "", "--model", help="The LLM model to use (e.g., claude-3-5-sonnet-20241022, gpt-4)"
     ),
-    no_rebuild: bool = typer.Option(
-        False,
-        "--no-rebuild",
-        help="Don't rebuild Docker images"
-    ),
+    no_rebuild: bool = typer.Option(False, "--no-rebuild", help="Don't rebuild Docker images"),
     cleanup: bool = typer.Option(
-        False,
-        "--cleanup",
-        help="Cleanup Docker containers and images after running the task"
+        False, "--cleanup", help="Cleanup Docker containers and images after running the task"
     ),
     n_concurrent_trials: int = typer.Option(
-        4,
-        "--n-concurrent-trials",
-        help="Maximum number of tasks to run concurrently"
+        4, "--n-concurrent-trials", help="Maximum number of tasks to run concurrently"
     ),
     exclude_tasks: Optional[List[str]] = typer.Option(
-        None,
-        "--exclude-tasks",
-        help="Task IDs to exclude from the run"
+        None, "--exclude-tasks", help="Task IDs to exclude from the run"
     ),
     n_attempts: int = typer.Option(
-        1,
-        "--n-attempts",
-        help="Number of attempts to make for each task"
+        1, "--n-attempts", help="Number of attempts to make for each task"
     ),
     seed: bool = typer.Option(
-        False,
-        "--seed",
-        help="Extract specified tables as CSV files after harness run completes"
+        False, "--seed", help="Extract specified tables as CSV files after harness run completes"
     ),
     agent_args: str = typer.Option(
         "",
         "--agent-args",
-        help="Additional arguments to pass to the agent binary (e.g., '--verbose --debug')"
+        help="Additional arguments to pass to the agent binary (e.g., '--verbose --debug')",
     ),
     no_diffs: bool = typer.Option(
-        False,
-        "--no-diffs",
-        help="Disable file diffing and HTML generation"
+        False, "--no-diffs", help="Disable file diffing and HTML generation"
     ),
     persist: bool = typer.Option(
-        False,
-        "--persist",
-        help="Keep containers alive when tasks fail for debugging"
+        False, "--persist", help="Keep containers alive when tasks fail for debugging"
     ),
     run_id: str = typer.Option(
         datetime.now().strftime("%Y-%m-%d__%H-%M-%S"),
         "--run-id",
-        help="Unique identifier for this harness run"
+        help="Unique identifier for this harness run",
     ),
     max_episodes: int = typer.Option(
-        50,
-        "--max-episodes",
-        help="The maximum number of episodes (i.e. calls to an agent's LM)"
+        50, "--max-episodes", help="The maximum number of episodes (i.e. calls to an agent's LM)"
     ),
     upload_results: bool = typer.Option(
         False,
         "--upload-results",
-        help="Upload results to S3 bucket (bucket name is read from config)"
+        help="Upload results to S3 bucket (bucket name is read from config)",
     ),
-    log_level: str = typer.Option(
-        "INFO",
-        "--log-level",
-        help="Set the logging level"
-    ),
+    log_level: str = typer.Option("INFO", "--log-level", help="Set the logging level"),
     use_mcp: bool = typer.Option(
-        False,
-        "--use-mcp",
-        help="Enable MCP (Model Context Protocol) for the agent"
+        False, "--use-mcp", help="Enable MCP (Model Context Protocol) for the agent"
     ),
     with_profiling: bool = typer.Option(
         False,
@@ -165,8 +133,8 @@ def run(
     tasks_dir: Path = typer.Option(
         DEFAULT_TASKS_DIR,
         "--tasks-dir",
-        help="Path to the tasks directory (default: ADE_TASKS_DIR env var or 'tasks')"
-    )
+        help="Path to the tasks directory (default: ADE_TASKS_DIR env var or 'tasks')",
+    ),
 ):
     """
     Run ADE-bench with specified tasks and configuration.
@@ -178,10 +146,16 @@ def run(
     log_level_int = getattr(logging, log_level.upper(), logging.INFO)
 
     # Check for common mistakes in task_ids that look like flags
-    flag_looking_args = [task for task in tasks if task.startswith("run-id") or task.startswith("--")]
+    flag_looking_args = [
+        task for task in tasks if task.startswith("run-id") or task.startswith("--")
+    ]
     if flag_looking_args:
-        typer.echo(f"Warning: Some task IDs look like they might be flags: {', '.join(flag_looking_args)}")
-        typer.echo("If you meant to use these as options, make sure to use '--option value' format.")
+        typer.echo(
+            f"Warning: Some task IDs look like they might be flags: {', '.join(flag_looking_args)}"
+        )
+        typer.echo(
+            "If you meant to use these as options, make sure to use '--option value' format."
+        )
         if not typer.confirm("Continue anyway?"):
             typer.echo("Aborting.")
             raise typer.Exit(code=1)
@@ -219,7 +193,7 @@ def run(
         dataset_path=dataset_path,
         output_path=output_path,
         run_id=run_id,
-        agent_name=agent_name,
+        agent_factory=NamedAgentFactory(agent_name),
         model_name=model_name,
         agent_kwargs=agent_kwargs,
         no_rebuild=no_rebuild,
@@ -237,7 +211,7 @@ def run(
         project_type=project_type,
         keep_alive=persist,
         use_mcp=use_mcp,
-        with_profiling=with_profiling
+        with_profiling=with_profiling,
     )
 
     results = harness.run()
@@ -246,21 +220,9 @@ def run(
 
 @app.command()
 def interact(
-    task_id: str = typer.Option(
-        ...,
-        "-t", "--task-id",
-        help="The ID of the task to launch."
-    ),
-    db: str = typer.Option(
-        ...,
-        "--db",
-        help="Database type to use (e.g., duckdb, snowflake)"
-    ),
-    project_type: str = typer.Option(
-        ...,
-        "--project-type",
-        help="Project type to use (e.g., dbt)"
-    ),
+    task_id: str = typer.Option(..., "-t", "--task-id", help="The ID of the task to launch."),
+    db: str = typer.Option(..., "--db", help="Database type to use (e.g., duckdb, snowflake)"),
+    project_type: str = typer.Option(..., "--project-type", help="Project type to use (e.g., dbt)"),
     agent: str = typer.Option(
         None,
         "--agent",
@@ -270,28 +232,23 @@ def interact(
         "post-setup",
         "--step",
         help="Point in workflow to start interactive session (post-setup, post-agent, post-eval)",
-        case_sensitive=False
+        case_sensitive=False,
     ),
     tasks_dir: Path = typer.Option(
         DEFAULT_TASKS_DIR,
         "--tasks-dir",
-        help="Path to the tasks directory (default: ADE_TASKS_DIR env var or 'tasks')"
+        help="Path to the tasks directory (default: ADE_TASKS_DIR env var or 'tasks')",
     ),
     include_all: bool = typer.Option(
         False,
-        "-a", "--include-all",
+        "-a",
+        "--include-all",
         help="Copy test scripts and solution script to container",
     ),
     rebuild: bool = typer.Option(
-        True,
-        "--rebuild/--no-rebuild",
-        help="Whether to rebuild the client container."
+        True, "--rebuild/--no-rebuild", help="Whether to rebuild the client container."
     ),
-    run_id: str = typer.Option(
-        None,
-        "--run-id",
-        help="Optional run ID for output directory"
-    ),
+    run_id: str = typer.Option(None, "--run-id", help="Optional run ID for output directory"),
 ):
     """
     Launch an interactive shell into a task environment.

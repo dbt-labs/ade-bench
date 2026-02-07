@@ -29,25 +29,31 @@ def print_failure():
     if len(failurequeue) == 0 and len(successqueue) > 0:
         print("[✅] No failures to report.")
     for message in failurequeue:
-        stderr.print("[❌] "+message)
+        stderr.print("[❌] " + message)
 
 
 def print_success():
     if len(successqueue) == 0:
         pass
     for message in successqueue:
-        print("[✅] "+message)
+        print("[✅] " + message)
 
 
 def print_ade_summary():
     if container_runtime_available:
-        macro_str = ', macro' if macro_available else ''
-        claude_str = ', claude' if anthropic_available else ''
-        codex_str = ', codex' if openai_available else ''
-        gemini_str = ', gemini' if gemini_available else ''
-        print(f"[bold blue]ADE is in a good state to run! Assuming API keys are correct and valid, you have access to the following agents: none, sage{macro_str}{claude_str}{codex_str}{gemini_str}.[/bold blue]")
+        macro_str = ", macro" if macro_available else ""
+        claude_str = ", claude" if anthropic_available else ""
+        codex_str = ", codex" if openai_available else ""
+        gemini_str = ", gemini" if gemini_available else ""
+        print(
+            f"[bold blue]ADE is in a good state to run! Assuming API keys are correct and valid, you have access to the following agents: none, sage{macro_str}{claude_str}{codex_str}{gemini_str}.[/bold blue]"
+        )
     else:
-        error_msg = '' if container_runtime_available else 'No container runtime to work with, currently ADE needs Docker.'
+        error_msg = (
+            ""
+            if container_runtime_available
+            else "No container runtime to work with, currently ADE needs Docker."
+        )
         stderr.print(f"[bold red]ADE is not in a good state to run! {error_msg}[/bold red]")
 
 
@@ -63,7 +69,7 @@ def check_result_callback(result):
     print_failure()
     print_ade_summary()
 
-    
+
 @app.callback(result_callback=check_result_callback)
 def check_callback():
     pass
@@ -171,6 +177,7 @@ def is_docker_available():
     """
     global container_runtime_available
     import docker
+
     try:
         docker.from_env()
         add_success("Connected to a running docker daemon.")
@@ -185,10 +192,13 @@ def is_podman_available():
     Check if python can connect to an actively running podman daemon.
     """
     import podman
+
     try:
         podman.from_env()
         add_success("Connected to a running podman daemon.")
-        add_failure("Note: ADE does not support podman, yet. This message will be removed when it is supported.")
+        add_failure(
+            "Note: ADE does not support podman, yet. This message will be removed when it is supported."
+        )
     except:  # noqa: E722
         add_failure("Could not connect to a running podman daemon.")
 

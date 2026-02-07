@@ -17,20 +17,18 @@ def test_get_repo_root_from_main_directory(tmp_path):
     # Create a trial handler (we'll need a minimal task.yaml)
     task_dir = repo / "tasks" / "test_task"
     task_dir.mkdir(parents=True)
-    (task_dir / "task.yaml").write_text("""
+    (task_dir / "task.yaml").write_text(
+        """
 prompts:
   - key: base
     prompt: "test"
 author_name: test
 author_email: test@test.com
 difficulty: easy
-""")
-
-    handler = TrialHandler(
-        trial_name="test",
-        input_path=task_dir,
-        task_key="base"
+"""
     )
+
+    handler = TrialHandler(trial_name="test", input_path=task_dir, task_key="base")
 
     root = handler._get_repo_root()
     # Should find the ade-bench repo root (where trial_handler.py lives)
@@ -66,26 +64,24 @@ def test_get_repo_root_from_worktree(tmp_path):
         ["git", "worktree", "add", str(worktree), "-b", "feature"],
         cwd=main_repo,
         check=True,
-        capture_output=True
+        capture_output=True,
     )
 
     # Create task in worktree
     task_dir = worktree / "tasks" / "test_task"
     task_dir.mkdir(parents=True)
-    (task_dir / "task.yaml").write_text("""
+    (task_dir / "task.yaml").write_text(
+        """
 prompts:
   - key: base
     prompt: "test"
 author_name: test
 author_email: test@test.com
 difficulty: easy
-""")
-
-    handler = TrialHandler(
-        trial_name="test",
-        input_path=task_dir,
-        task_key="base"
+"""
     )
+
+    handler = TrialHandler(trial_name="test", input_path=task_dir, task_key="base")
 
     root = handler._get_repo_root()
     # Should find the ade-bench repo root (where trial_handler.py lives)
@@ -113,20 +109,18 @@ def test_shared_databases_root_path_in_main_repo(tmp_path):
     # Create a task
     task_dir = repo / "tasks" / "test_task"
     task_dir.mkdir(parents=True)
-    (task_dir / "task.yaml").write_text("""
+    (task_dir / "task.yaml").write_text(
+        """
 prompts:
   - key: base
     prompt: "test"
 author_name: test
 author_email: test@test.com
 difficulty: easy
-""")
-
-    handler = TrialHandler(
-        trial_name="test",
-        input_path=task_dir,
-        task_key="base"
+"""
     )
+
+    handler = TrialHandler(trial_name="test", input_path=task_dir, task_key="base")
 
     # Should point to ade-bench's shared/databases, not the temp repo
     db_path = handler.shared_databases_root_path
@@ -164,26 +158,24 @@ def test_shared_databases_root_path_in_worktree(tmp_path):
         ["git", "worktree", "add", str(worktree), "-b", "feature"],
         cwd=main_repo,
         check=True,
-        capture_output=True
+        capture_output=True,
     )
 
     # Create task in worktree
     task_dir = worktree / "tasks" / "test_task"
     task_dir.mkdir(parents=True)
-    (task_dir / "task.yaml").write_text("""
+    (task_dir / "task.yaml").write_text(
+        """
 prompts:
   - key: base
     prompt: "test"
 author_name: test
 author_email: test@test.com
 difficulty: easy
-""")
-
-    handler = TrialHandler(
-        trial_name="test",
-        input_path=task_dir,
-        task_key="base"
+"""
     )
+
+    handler = TrialHandler(trial_name="test", input_path=task_dir, task_key="base")
 
     # Should point to ade-bench's databases (where code lives)
     # If we're running from agent-install-phase worktree, it should find main ade-bench
@@ -205,20 +197,18 @@ def test_shared_duckdb_path_in_worktree_finds_main_repo_file(tmp_path):
     # Create a task in a temporary directory
     task_dir = tmp_path / "tasks" / "test_task"
     task_dir.mkdir(parents=True)
-    (task_dir / "task.yaml").write_text("""
+    (task_dir / "task.yaml").write_text(
+        """
 prompts:
   - key: base
     prompt: "test"
 author_name: test
 author_email: test@test.com
 difficulty: easy
-""")
-
-    handler = TrialHandler(
-        trial_name="test",
-        input_path=task_dir,
-        task_key="base"
+"""
     )
+
+    handler = TrialHandler(trial_name="test", input_path=task_dir, task_key="base")
 
     # Should point to ade-bench's duckdb dir (where database files actually exist)
     duckdb_path = handler.shared_duckdb_path
@@ -227,17 +217,20 @@ difficulty: easy
     # Check if we're in a worktree by looking at _shared_path
     from importlib.resources import files
     from pathlib import Path as P
-    shared_path = P(str(files('ade_bench'))) / '..' / 'shared'
-    is_worktree = '.worktrees' in str(shared_path.resolve())
+
+    shared_path = P(str(files("ade_bench"))) / ".." / "shared"
+    is_worktree = ".worktrees" in str(shared_path.resolve())
 
     if is_worktree:
         # If we're in a worktree, the path should point to main repo (no .worktrees)
-        assert ".worktrees" not in str(duckdb_path), \
-            f"shared_duckdb_path should point to main repo, not worktree: {duckdb_path}"
+        assert ".worktrees" not in str(
+            duckdb_path
+        ), f"shared_duckdb_path should point to main repo, not worktree: {duckdb_path}"
         # And it should have actual database files (main repo has databases)
         db_files = list(duckdb_path.glob("*.duckdb"))
-        assert len(db_files) > 0, \
-            f"shared_duckdb_path should have database files from main repo, found: {db_files}"
+        assert (
+            len(db_files) > 0
+        ), f"shared_duckdb_path should have database files from main repo, found: {db_files}"
 
     assert duckdb_path.name == "duckdb"
     assert duckdb_path.parent.name == "databases"
@@ -254,29 +247,28 @@ def test_shared_snowflake_path_uses_root_path(tmp_path):
     # Create a task in a temporary directory
     task_dir = tmp_path / "tasks" / "test_task"
     task_dir.mkdir(parents=True)
-    (task_dir / "task.yaml").write_text("""
+    (task_dir / "task.yaml").write_text(
+        """
 prompts:
   - key: base
     prompt: "test"
 author_name: test
 author_email: test@test.com
 difficulty: easy
-""")
-
-    handler = TrialHandler(
-        trial_name="test",
-        input_path=task_dir,
-        task_key="base"
+"""
     )
+
+    handler = TrialHandler(trial_name="test", input_path=task_dir, task_key="base")
 
     # shared_snowflake_path should use shared_databases_root_path (like duckdb does)
     # not shared_databases_path (which is worktree-aware)
     expected_path = handler.shared_databases_root_path / "snowflake"
 
-    assert handler.shared_snowflake_path == expected_path, \
-        f"shared_snowflake_path should equal shared_databases_root_path/snowflake\n" \
-        f"  Expected: {expected_path}\n" \
+    assert handler.shared_snowflake_path == expected_path, (
+        f"shared_snowflake_path should equal shared_databases_root_path/snowflake\n"
+        f"  Expected: {expected_path}\n"
         f"  Got: {handler.shared_snowflake_path}"
+    )
 
     # Verify it matches the pattern of shared_duckdb_path
     assert handler.shared_duckdb_path == handler.shared_databases_root_path / "duckdb"
@@ -311,7 +303,7 @@ def test_shared_databases_path_is_worktree_aware(tmp_path):
         ["git", "worktree", "add", str(worktree), "-b", "feature"],
         cwd=main_repo,
         check=True,
-        capture_output=True
+        capture_output=True,
     )
 
     # Create databases dir in worktree
@@ -321,20 +313,18 @@ def test_shared_databases_path_is_worktree_aware(tmp_path):
     # Create task in worktree
     task_dir = worktree / "tasks" / "test_task"
     task_dir.mkdir(parents=True)
-    (task_dir / "task.yaml").write_text("""
+    (task_dir / "task.yaml").write_text(
+        """
 prompts:
   - key: base
     prompt: "test"
 author_name: test
 author_email: test@test.com
 difficulty: easy
-""")
-
-    handler = TrialHandler(
-        trial_name="test",
-        input_path=task_dir,
-        task_key="base"
+"""
     )
+
+    handler = TrialHandler(trial_name="test", input_path=task_dir, task_key="base")
 
     # shared_databases_path should be worktree-specific
     # This test creates a task in a temporary worktree, but the handler

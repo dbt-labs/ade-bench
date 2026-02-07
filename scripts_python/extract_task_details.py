@@ -16,16 +16,16 @@ def clean_text_for_spreadsheet(text: str) -> str:
     if not text:
         return ""
     # Remove line breaks and normalize whitespace
-    cleaned = ' '.join(text.split())
+    cleaned = " ".join(text.split())
     # Remove any control characters that might cause issues
-    cleaned = ''.join(char for char in cleaned if ord(char) >= 32 or char in '\t\n\r')
+    cleaned = "".join(char for char in cleaned if ord(char) >= 32 or char in "\t\n\r")
     return cleaned
 
 
 def load_yaml_file(file_path: Path) -> Dict[str, Any]:
     """Load and parse a YAML file."""
     try:
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, "r", encoding="utf-8") as f:
             return yaml.safe_load(f)
     except Exception as e:
         print(f"Error loading {file_path}: {e}")
@@ -38,7 +38,7 @@ def extract_task_details(tasks_dir: Path) -> List[Dict[str, Any]]:
 
     # Iterate through all task directories
     for task_dir in tasks_dir.iterdir():
-        if not task_dir.is_dir() or task_dir.name.startswith('.'):
+        if not task_dir.is_dir() or task_dir.name.startswith("."):
             continue
 
         task_yaml_path = task_dir / "task.yaml"
@@ -52,71 +52,89 @@ def extract_task_details(tasks_dir: Path) -> List[Dict[str, Any]]:
             continue
 
         # Extract basic task info
-        task_id = clean_text_for_spreadsheet(task_config.get('task_id', ''))
-        description = clean_text_for_spreadsheet(task_config.get('description', ''))
-        status = clean_text_for_spreadsheet(task_config.get('status', ''))
-        difficulty = clean_text_for_spreadsheet(task_config.get('difficulty', ''))
-        tags = task_config.get('tags', [])
+        task_id = clean_text_for_spreadsheet(task_config.get("task_id", ""))
+        description = clean_text_for_spreadsheet(task_config.get("description", ""))
+        status = clean_text_for_spreadsheet(task_config.get("status", ""))
+        difficulty = clean_text_for_spreadsheet(task_config.get("difficulty", ""))
+        tags = task_config.get("tags", [])
 
         # Extract info from variants
-        variants = task_config.get('variants', [])
+        variants = task_config.get("variants", [])
 
-        db_type_list = [clean_text_for_spreadsheet(variant.get('db_type', '')) for variant in variants if variant.get('db_type')]
-        db_types = ', '.join(set(db_type_list))
+        db_type_list = [
+            clean_text_for_spreadsheet(variant.get("db_type", ""))
+            for variant in variants
+            if variant.get("db_type")
+        ]
+        db_types = ", ".join(set(db_type_list))
 
-        project_type_list = [clean_text_for_spreadsheet(variant.get('project_type', '')) for variant in variants if variant.get('project_type')]
-        project_types = ', '.join(set(project_type_list))
+        project_type_list = [
+            clean_text_for_spreadsheet(variant.get("project_type", ""))
+            for variant in variants
+            if variant.get("project_type")
+        ]
+        project_types = ", ".join(set(project_type_list))
 
-        database_list = [clean_text_for_spreadsheet(variant.get('db_name', '')) for variant in variants if variant.get('db_name')]
-        database_name = ', '.join(set(database_list))
+        database_list = [
+            clean_text_for_spreadsheet(variant.get("db_name", ""))
+            for variant in variants
+            if variant.get("db_name")
+        ]
+        database_name = ", ".join(set(database_list))
 
-        project_list = [clean_text_for_spreadsheet(variant.get('project_name', '')) for variant in variants if variant.get('project_name')]
-        project_name = ', '.join(set(project_list))
-
-
+        project_list = [
+            clean_text_for_spreadsheet(variant.get("project_name", ""))
+            for variant in variants
+            if variant.get("project_name")
+        ]
+        project_name = ", ".join(set(project_list))
 
         # Extract prompts
-        prompts = task_config.get('prompts', [])
+        prompts = task_config.get("prompts", [])
 
         # Extract notes
-        notes = clean_text_for_spreadsheet(task_config.get('notes', ''))
+        notes = clean_text_for_spreadsheet(task_config.get("notes", ""))
 
         if not prompts:
             # If no prompts, create one row with empty key and prompt
-            task_details.append({
-                'task_id': task_id,
-                'description': description,
-                'status': status,
-                'database_types': db_types,
-                'project_types': project_types,
-                'project_name': project_name,
-                'database_name': database_name,
-                'key': '',
-                'prompt': '',
-                'notes': notes,
-                'difficulty': difficulty,
-                'tags': clean_text_for_spreadsheet(', '.join(tags) if tags else '')
-            })
+            task_details.append(
+                {
+                    "task_id": task_id,
+                    "description": description,
+                    "status": status,
+                    "database_types": db_types,
+                    "project_types": project_types,
+                    "project_name": project_name,
+                    "database_name": database_name,
+                    "key": "",
+                    "prompt": "",
+                    "notes": notes,
+                    "difficulty": difficulty,
+                    "tags": clean_text_for_spreadsheet(", ".join(tags) if tags else ""),
+                }
+            )
         else:
             # Create one row per prompt key
             for prompt in prompts:
-                key = clean_text_for_spreadsheet(prompt.get('key', ''))
-                prompt_text = clean_text_for_spreadsheet(prompt.get('prompt', ''))
+                key = clean_text_for_spreadsheet(prompt.get("key", ""))
+                prompt_text = clean_text_for_spreadsheet(prompt.get("prompt", ""))
 
-                task_details.append({
-                    'task_id': task_id,
-                    'description': description,
-                    'status': status,
-                    'database_types': db_types,
-                    'project_types': project_types,
-                    'project_name': project_name,
-                    'database_name': database_name,
-                    'key': key,
-                    'prompt': prompt_text,
-                    'notes': notes,
-                    'difficulty': difficulty,
-                    'tags': clean_text_for_spreadsheet(', '.join(tags) if tags else '')
-                })
+                task_details.append(
+                    {
+                        "task_id": task_id,
+                        "description": description,
+                        "status": status,
+                        "database_types": db_types,
+                        "project_types": project_types,
+                        "project_name": project_name,
+                        "database_name": database_name,
+                        "key": key,
+                        "prompt": prompt_text,
+                        "notes": notes,
+                        "difficulty": difficulty,
+                        "tags": clean_text_for_spreadsheet(", ".join(tags) if tags else ""),
+                    }
+                )
 
     return task_details
 
@@ -125,11 +143,13 @@ def copy_to_clipboard(text: str) -> bool:
     """Copy text to clipboard using pbcopy (macOS) or xclip (Linux)."""
     try:
         if sys.platform == "darwin":  # macOS
-            process = subprocess.Popen(['pbcopy'], stdin=subprocess.PIPE, text=True)
+            process = subprocess.Popen(["pbcopy"], stdin=subprocess.PIPE, text=True)
             process.communicate(input=text)
             return True
-        elif sys.platform.startswith('linux'):  # Linux
-            process = subprocess.Popen(['xclip', '-selection', 'clipboard'], stdin=subprocess.PIPE, text=True)
+        elif sys.platform.startswith("linux"):  # Linux
+            process = subprocess.Popen(
+                ["xclip", "-selection", "clipboard"], stdin=subprocess.PIPE, text=True
+            )
             process.communicate(input=text)
             return True
         else:
@@ -171,32 +191,32 @@ def main(output_file: Path | None = None, quiet: bool = False):
 
     # Reorder columns as requested
     column_order = [
-        'status',
-        'task_id',
-        'database_types',
-        'project_types',
-        'project_name',
-        'database_name',
-        'key',
-        'description',
-        'prompt',
-        'notes',
-        'difficulty',
-        'tags'
+        "status",
+        "task_id",
+        "database_types",
+        "project_types",
+        "project_name",
+        "database_name",
+        "key",
+        "description",
+        "prompt",
+        "notes",
+        "difficulty",
+        "tags",
     ]
 
     df = df[column_order]
 
     # Sort by task_id and key
-    df = df.sort_values(['task_id', 'key'])
+    df = df.sort_values(["task_id", "key"])
 
     # Generate TSV for clipboard (better for Google Sheets)
-    tsv_content = df.to_csv(index=False, sep='\t')
+    tsv_content = df.to_csv(index=False, sep="\t")
 
     # Save to file if output_file is provided
     if output_file:
         output_file.parent.mkdir(parents=True, exist_ok=True)
-        with open(output_file, 'w', encoding='utf-8') as f:
+        with open(output_file, "w", encoding="utf-8") as f:
             f.write(tsv_content)
         if not quiet:
             print(f"Successfully wrote task details to {output_file}")
@@ -205,9 +225,9 @@ def main(output_file: Path | None = None, quiet: bool = False):
         return
 
     # Print the CSV in a pretty format
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("TASK DETAILS")
-    print("="*80)
+    print("=" * 80)
 
     # Print header
     print(f"{'status':<8} | {'task_id':<25} | {'prompt':<60}")
@@ -215,12 +235,12 @@ def main(output_file: Path | None = None, quiet: bool = False):
 
     # Print data rows
     for _, row in df.iterrows():
-        status = str(row['status'])[:7]
-        task_id = str(row['task_id'])[:24]
-        prompt = str(row['prompt'])[:59]
+        status = str(row["status"])[:7]
+        task_id = str(row["task_id"])[:24]
+        prompt = str(row["prompt"])[:59]
         print(f"{status:<8} | {task_id:<25} | {prompt:<60}")
 
-    print("="*80)
+    print("=" * 80)
 
     # Copy TSV to clipboard
     if copy_to_clipboard(tsv_content):
@@ -236,9 +256,9 @@ def main(output_file: Path | None = None, quiet: bool = False):
 
     # Get unique individual tags (split comma-separated tag strings)
     all_tags = set()
-    for tags_str in df['tags'].dropna():
+    for tags_str in df["tags"].dropna():
         if tags_str:
-            tags = [tag.strip() for tag in str(tags_str).split(',')]
+            tags = [tag.strip() for tag in str(tags_str).split(",")]
             all_tags.update(tags)
     print(f"- Tags: {', '.join(sorted(all_tags))}")
 

@@ -30,18 +30,10 @@ class RichTaskLogger:
 
             # Initialize task data
             for task_id in task_ids:
-                self._task_data[task_id] = {
-                    "stage": "",
-                    "message": "Waiting...",
-                    "timestamp": ""
-                }
+                self._task_data[task_id] = {"stage": "", "message": "Waiting...", "timestamp": ""}
 
             # Add summary row as a regular task
-            self._task_data["SUMMARY"] = {
-                "stage": "",
-                "message": "Waiting...",
-                "timestamp": ""
-            }
+            self._task_data["SUMMARY"] = {"stage": "", "message": "Waiting...", "timestamp": ""}
 
             # Create initial table
             self._table = self._create_table()
@@ -60,7 +52,10 @@ class RichTaskLogger:
         # Find and store console handlers (both stdout and stderr)
         for logger_obj in all_loggers:
             for handler in logger_obj.handlers[:]:
-                if isinstance(handler, logging.StreamHandler) and handler.stream in (sys.stdout, sys.stderr):
+                if isinstance(handler, logging.StreamHandler) and handler.stream in (
+                    sys.stdout,
+                    sys.stderr,
+                ):
                     self._original_console_handlers.append((logger_obj, handler))
                     logger_obj.removeHandler(handler)
 
@@ -85,12 +80,11 @@ class RichTaskLogger:
             self._task_data[task_id] = {
                 "stage": log_data["formatted_stage"],
                 "message": log_data["formatted_message"],
-                "timestamp": log_data["formatted_timestamp"]
+                "timestamp": log_data["formatted_timestamp"],
             }
 
             # Rebuild table with updated data
             self._rebuild_table()
-
 
     def _create_table(self) -> Table:
         """Create a new table with current task data."""
@@ -104,12 +98,7 @@ class RichTaskLogger:
         # Add rows for each task (excluding SUMMARY)
         for task_id, data in self._task_data.items():
             if task_id != "SUMMARY":  # Skip SUMMARY - it gets added separately
-                table.add_row(
-                    data["timestamp"],
-                    task_id,
-                    data["stage"],
-                    data["message"]
-                )
+                table.add_row(data["timestamp"], task_id, data["stage"], data["message"])
 
         # Add divider row
         table.add_row("─" * 8, "─" * 32, "─" * 12, "─" * 100)
@@ -118,10 +107,7 @@ class RichTaskLogger:
         if "SUMMARY" in self._task_data:
             summary_data = self._task_data["SUMMARY"]
             table.add_row(
-                summary_data["timestamp"],
-                "SUMMARY",
-                summary_data["stage"],
-                summary_data["message"]
+                summary_data["timestamp"], "SUMMARY", summary_data["stage"], summary_data["message"]
             )
 
         return table
@@ -134,7 +120,6 @@ class RichTaskLogger:
         # Create new table and update live display
         new_table = self._create_table()
         self._live.update(new_table)
-
 
     def stop(self) -> None:
         """Stop the live display and re-enable console handlers."""
@@ -165,6 +150,7 @@ def format_log_message(message: str) -> str:
         return message[:97] + "..."
     return message
 
+
 def format_log_stage(stage: str) -> str:
     """Format the stage name for display."""
     prefixes = {
@@ -181,9 +167,11 @@ def format_log_stage(stage: str) -> str:
     else:
         return stage_upper
 
+
 def format_log_timestamp(timestamp: datetime) -> str:
     """Format timestamp for display."""
-    return timestamp.strftime('%H:%M:%S')
+    return timestamp.strftime("%H:%M:%S")
+
 
 def format_log_line(log_data: dict) -> str:
     return f"{log_data['formatted_timestamp']:<8} | {log_data['task']:<32} | {log_data['formatted_stage']:<12} | {log_data['formatted_message']}"
@@ -194,7 +182,7 @@ def log(
     task: str,
     stage: str,
     message: str,
-    timestamp: Optional[datetime] = None
+    timestamp: Optional[datetime] = None,
 ) -> None:
     """
     Centralized info logging function for the harness.
@@ -210,12 +198,7 @@ def log(
         timestamp = datetime.now()
 
     # Step 1: Create log data dictionary
-    log_data = {
-        "task": task,
-        "stage": stage,
-        "message": message,
-        "timestamp": timestamp
-    }
+    log_data = {"task": task, "stage": stage, "message": message, "timestamp": timestamp}
 
     # Step 2: Add formatted components to the dict
     log_data["formatted_message"] = format_log_message(message)
@@ -236,7 +219,7 @@ def log(
             lineno=0,
             msg=log_line,
             args=(),
-            exc_info=None
+            exc_info=None,
         )
         file_handler.emit(record)
 
@@ -258,7 +241,7 @@ def log_harness_info(
     task: str,
     stage: str,
     message: str,
-    timestamp: Optional[datetime] = None
+    timestamp: Optional[datetime] = None,
 ) -> None:
 
     try:
@@ -279,6 +262,7 @@ def initialize_dynamic_logging(task_ids: list[str]) -> None:
 
     # Give a moment for the table to initialize
     import time
+
     time.sleep(0.5)
 
 

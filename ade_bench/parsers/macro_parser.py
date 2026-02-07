@@ -4,6 +4,7 @@ from typing import Dict, Any
 
 from ade_bench.parsers.base_parser import BaseParser
 
+
 class MacroParser(BaseParser):
     """Parser for Macro agent responses to extract token usage and cost metrics."""
 
@@ -30,16 +31,16 @@ class MacroParser(BaseParser):
             "num_turns": 0,
             "success": False,
             "error": None,
-            "model_name": "default"
+            "model_name": "default",
         }
         try:
             # Get lines and remove empty ones
-            lines = [line.strip() for line in content.split('\n') if line.strip()]
+            lines = [line.strip() for line in content.split("\n") if line.strip()]
             lines_to_try = []
 
             # First, try to find any JSON objects in the content
             for line in lines:
-                if line.startswith('{') and line.endswith('}'):
+                if line.startswith("{") and line.endswith("}"):
                     lines_to_try.append(line)
 
             # Add lines from bottom up if no obvious JSON objects found
@@ -49,9 +50,9 @@ class MacroParser(BaseParser):
             # Try parsing each line
             for line in lines_to_try:
                 self._logger.debug(f"Trying to parse line: {line}")
-                if '{' in line and '}' in line:
+                if "{" in line and "}" in line:
                     # Extract json content if surrounded by other text
-                    json_match = re.search(r'(\{.*\})', line)
+                    json_match = re.search(r"(\{.*\})", line)
                     if json_match:
                         json_str = json_match.group(1)
                         try:
@@ -100,5 +101,5 @@ class MacroParser(BaseParser):
             "num_turns": num_turns,
             "success": success,
             "error": None,
-            "model_name": model_name or "default"
+            "model_name": model_name or "default",
         }

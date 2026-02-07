@@ -12,8 +12,8 @@ def setup_duckdb(terminal, session, variant: Dict[str, Any], trial_handler) -> T
     Returns:
         Tuple of (success, error_message). error_message is empty string on success.
     """
-    db_name = variant.get('db_name')
-    db_dir = variant.get('db_dir')
+    db_name = variant.get("db_name")
+    db_dir = variant.get("db_dir")
 
     if not db_name:
         return True, ""
@@ -29,6 +29,6 @@ def setup_duckdb(terminal, session, variant: Dict[str, Any], trial_handler) -> T
     terminal.copy_to_container(
         paths=db_file_path,
         container_dir=str(DockerComposeManager.CONTAINER_APP_DIR),
-        container_filename=f"{db_name}.duckdb"
+        container_filename=f"{db_name}.duckdb",
     )
     return True, ""

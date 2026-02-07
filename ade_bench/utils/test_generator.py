@@ -1,4 +1,5 @@
 """Utility for generating solution seed tests."""
+
 from pathlib import Path
 from typing import Optional
 
@@ -33,10 +34,7 @@ def generate_existence_test(table_name: str) -> str:
 """
 
 
-def generate_equality_test(
-    table_name: str,
-    config: Optional[SolutionSeedConfig] = None
-) -> str:
+def generate_equality_test(table_name: str, config: Optional[SolutionSeedConfig] = None) -> str:
     """Generate an equality test for a solution seed table.
 
     Args:
@@ -60,12 +58,16 @@ def generate_equality_test(
             alternates = config.alternates
 
     # Format columns as lists
-    include_list = ",\n    ".join([f"'{col}'" for col in cols_to_include]) if cols_to_include else ""
-    exclude_list = ",\n    ".join([f"'{col}'" for col in cols_to_exclude]) if cols_to_exclude else ""
+    include_list = (
+        ",\n    ".join([f"'{col}'" for col in cols_to_include]) if cols_to_include else ""
+    )
+    exclude_list = (
+        ",\n    ".join([f"'{col}'" for col in cols_to_exclude]) if cols_to_exclude else ""
+    )
 
-#######################################################
-# Standard test with no alternates
-#######################################################
+    #######################################################
+    # Standard test with no alternates
+    #######################################################
     if not alternates:
         return f"""-- Define columns to compare
 {{% set table_name = '{table_name}' %}}
@@ -102,9 +104,9 @@ def generate_equality_test(
 {{% endif %}}
 """
 
-#######################################################
-# Test with alternates
-#######################################################
+    #######################################################
+    # Test with alternates
+    #######################################################
     # Build answer key variables
     answer_keys = [table_name] + alternates
 
@@ -160,10 +162,7 @@ def generate_equality_test(
     {union_statement}
 """
 
-
-
-
-    FINAL_QUERY =f"""-- Define columns to compare
+    FINAL_QUERY = f"""-- Define columns to compare
 {{% set table_name = '{table_name}' %}}
 {jinja_vars_block}
 
@@ -203,11 +202,8 @@ select * from final where min_row_count != 0 and row_count != 0
     return FINAL_QUERY
 
 
-
 def generate_solution_tests(
-    table_name: str,
-    test_dir: Path,
-    config: Optional[SolutionSeedConfig] = None
+    table_name: str, test_dir: Path, config: Optional[SolutionSeedConfig] = None
 ) -> None:
     """Generate both equality and existence tests for a solution seed table.
 

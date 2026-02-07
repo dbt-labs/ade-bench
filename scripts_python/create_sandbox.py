@@ -12,6 +12,7 @@ from pathlib import Path
 # Add the project root to the Python path so we can import ade_bench modules
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+
 def check_task_exists(task_name):
     """Check if task exists in tasks directory."""
     tasks_dir = Path("tasks")
@@ -61,7 +62,7 @@ def get_task_config(task_name):
         return None
 
     try:
-        with open(task_yaml_path, 'r') as f:
+        with open(task_yaml_path, "r") as f:
             task_data = yaml.safe_load(f)
 
         return task_data
@@ -103,11 +104,11 @@ def copy_item(source_path, dest_path, item_name, create_dest_dir=False):
 
 def copy_project_contents(task_name, variant):
     """Copy shared project contents to sandbox."""
-    project_name = variant['project_name']
-    project_type = variant['project_type']
+    project_name = variant["project_name"]
+    project_type = variant["project_type"]
 
     # Determine the project directory based on project_type
-    project_type_path = 'dbt' if project_type == 'dbt-fusion' else project_type
+    project_type_path = "dbt" if project_type == "dbt-fusion" else project_type
     shared_project_dir = Path("shared/projects") / project_type_path / project_name
 
     if not shared_project_dir.exists():
@@ -125,34 +126,35 @@ def find_matching_variant(task_name, db_type, project_type):
         return None
 
     # Check if variants exist
-    if 'variants' not in task_data:
+    if "variants" not in task_data:
         print(f"Error: No variants found in task '{task_name}'")
         return None
 
-    variants = task_data['variants']
+    variants = task_data["variants"]
 
     # Find matching variant
     for variant in variants:
-        if variant.get('db_type') == db_type and variant.get('project_type') == project_type:
+        if variant.get("db_type") == db_type and variant.get("project_type") == project_type:
             return variant
 
-    print(f"Error: No variant found for db_type='{db_type}' and project_type='{project_type}' in task '{task_name}'")
+    print(
+        f"Error: No variant found for db_type='{db_type}' and project_type='{project_type}' in task '{task_name}'"
+    )
     return None
 
 
 def copy_database_file(task_name, variant):
     """Copy the database file to sandbox."""
-    db_name = variant['db_name']
-    db_type = variant['db_type']
+    db_name = variant["db_name"]
+    db_type = variant["db_type"]
 
     # Determine the database directory based on db_type
-    if db_type == 'duckdb':
+    if db_type == "duckdb":
         db_dir = Path("shared/databases/duckdb")
         db_file = db_dir / f"{db_name}.duckdb"
     else:
         print(f"✓ No need to copy database file for {db_type}")
         return True
-
 
     sandbox_dir = Path("dev/sandbox")
     return copy_item(db_file, sandbox_dir, f"database '{db_file.name}'")
@@ -183,10 +185,10 @@ def copy_task_files(task_name):
 
 def copy_migration_files(variant):
     """Copy migration files to sandbox if migration_directory is specified."""
-    if 'migration_directory' not in variant:
+    if "migration_directory" not in variant:
         return True  # No migration directory specified, that's fine
 
-    migration_dir_name = variant['migration_directory']
+    migration_dir_name = variant["migration_directory"]
     migration_dir_path = Path("shared/migrations") / migration_dir_name
 
     if not migration_dir_path.exists():
@@ -203,7 +205,12 @@ def copy_migration_files(variant):
 
     # Copy migration directory contents to sandbox/migration
     migration_dest = sandbox_dir / "migrations"
-    return copy_item(migration_dir_path, migration_dest, f"migration directory '{migration_dir_name}'", create_dest_dir=True)
+    return copy_item(
+        migration_dir_path,
+        migration_dest,
+        f"migration directory '{migration_dir_name}'",
+        create_dest_dir=True,
+    )
 
 
 def copy_shared_scripts():
@@ -212,14 +219,10 @@ def copy_shared_scripts():
 
     # Copy both seed-schema.sh and merge_yaml.py
     seed_schema_success = copy_item(
-        Path("shared/scripts/seed-schema.sh"),
-        sandbox_dir,
-        "seed-schema.sh script"
+        Path("shared/scripts/seed-schema.sh"), sandbox_dir, "seed-schema.sh script"
     )
     merge_yaml_success = copy_item(
-        Path("shared/scripts/merge_yaml.py"),
-        sandbox_dir,
-        "merge_yaml.py script"
+        Path("shared/scripts/merge_yaml.py"), sandbox_dir, "merge_yaml.py script"
     )
 
     return seed_schema_success and merge_yaml_success
@@ -228,8 +231,8 @@ def copy_shared_scripts():
 def update_dbt_config(variant, task_name):
     """Update dbt_project.yml and profiles.yml files based on variant configuration."""
     sandbox_dir = Path("dev/sandbox")
-    project_name = variant['project_name']
-    db_type = variant['db_type']
+    project_name = variant["project_name"]
+    db_type = variant["db_type"]
 
     # Update dbt_project.yml to use the right profile
     dbt_project_path = sandbox_dir / "dbt_project.yml"
@@ -241,12 +244,12 @@ def update_dbt_config(variant, task_name):
         # Use the existing _update_project_profile function logic
         profile_name = f"{project_name}-{db_type}"
 
-        with open(dbt_project_path, 'r') as f:
+        with open(dbt_project_path, "r") as f:
             dbt_project = yaml.safe_load(f)
 
-        dbt_project['profile'] = profile_name
+        dbt_project["profile"] = profile_name
 
-        with open(dbt_project_path, 'w') as f:
+        with open(dbt_project_path, "w") as f:
             yaml.safe_dump(dbt_project, f)
 
         print(f"✓ Updated dbt_project.yml to use profile: {profile_name}")
@@ -268,30 +271,32 @@ def update_dbt_config(variant, task_name):
 
             creds = generate_task_snowflake_credentials(task_name)
 
-            with open(profiles_path, 'r') as f:
+            with open(profiles_path, "r") as f:
                 profiles = yaml.safe_load(f)
 
-            profiles[profile_name]['outputs']['dev']['account'] = creds['account'].replace('.snowflakecomputing.com', '')
-            profiles[profile_name]['outputs']['dev']['user'] = creds['user']
-            profiles[profile_name]['outputs']['dev']['password'] = creds['password']
-            profiles[profile_name]['outputs']['dev']['role'] = creds['role']
-            profiles[profile_name]['outputs']['dev']['database'] = creds['database']
-            profiles[profile_name]['outputs']['dev']['schema'] = creds['schema']
-            profiles[profile_name]['outputs']['dev']['warehouse'] = creds['warehouse']
+            profiles[profile_name]["outputs"]["dev"]["account"] = creds["account"].replace(
+                ".snowflakecomputing.com", ""
+            )
+            profiles[profile_name]["outputs"]["dev"]["user"] = creds["user"]
+            profiles[profile_name]["outputs"]["dev"]["password"] = creds["password"]
+            profiles[profile_name]["outputs"]["dev"]["role"] = creds["role"]
+            profiles[profile_name]["outputs"]["dev"]["database"] = creds["database"]
+            profiles[profile_name]["outputs"]["dev"]["schema"] = creds["schema"]
+            profiles[profile_name]["outputs"]["dev"]["warehouse"] = creds["warehouse"]
 
-            with open(profiles_path, 'w') as f:
+            with open(profiles_path, "w") as f:
                 yaml.safe_dump(profiles, f)
 
             print(f"✓ Updated profiles.yml with generated Snowflake credentials for {profile_name}")
 
         elif db_type == "duckdb":
             # For DuckDB, just ensure the path is correct
-            with open(profiles_path, 'r') as f:
+            with open(profiles_path, "r") as f:
                 profiles = yaml.safe_load(f)
 
-            profiles[profile_name]['outputs']['dev']['path'] = f"./{variant['db_name']}.duckdb"
+            profiles[profile_name]["outputs"]["dev"]["path"] = f"./{variant['db_name']}.duckdb"
 
-            with open(profiles_path, 'w') as f:
+            with open(profiles_path, "w") as f:
                 yaml.safe_dump(profiles, f)
 
             print(f"✓ Updated profiles.yml for DuckDB path: {profile_name}")
@@ -306,7 +311,9 @@ def update_dbt_config(variant, task_name):
 def main():
     parser = argparse.ArgumentParser(description="Create a sandbox environment from a task")
     parser.add_argument("--task", help="Name of the task to create sandbox for")
-    parser.add_argument("--db", required=True, help="Database type (duckdb, sqlite, postgres, snowflake)")
+    parser.add_argument(
+        "--db", required=True, help="Database type (duckdb, sqlite, postgres, snowflake)"
+    )
     parser.add_argument("--project-type", required=True, help="Project type (dbt, other)")
     parser.add_argument("--agent", required=False, help="Ignored")
     parser.add_argument("--use-mcp", required=False, action="store_true", help="Ignored")
@@ -336,8 +343,10 @@ def main():
     if not variant:
         sys.exit(1)
 
-    print(f"✓ Found matching variant: db_name='{variant['db_name']}', project_name='{variant['project_name']}'")
-    if 'migration_directory' in variant:
+    print(
+        f"✓ Found matching variant: db_name='{variant['db_name']}', project_name='{variant['project_name']}'"
+    )
+    if "migration_directory" in variant:
         print(f"✓ Migration directory: {variant['migration_directory']}")
 
     # Step 3: Wipe sandbox directory
@@ -372,7 +381,9 @@ def main():
 
     print("-" * 50)
     print(f"✓ Sandbox created successfully for task '{task_name}'!")
-    print(f"✓ Using variant: {db_type}/{variant['db_name']} + {project_type}/{variant['project_name']}")
+    print(
+        f"✓ Using variant: {db_type}/{variant['db_name']} + {project_type}/{variant['project_name']}"
+    )
 
     # Get the absolute path to the sandbox directory
     sandbox_dir = Path("dev/sandbox").absolute()
