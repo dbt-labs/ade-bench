@@ -8,16 +8,16 @@ from pathlib import Path
 # Add the project root to the sys path
 sys.path.append(str(Path(__file__).parent.parent))
 
-from scripts_python.utils import get_latest_experiment_with_results
 from scripts_python.generate_results_html import ResultsHTMLGenerator
+from scripts_python.utils import get_latest_experiment_with_results
 
 
-def main():
+def main(output_path: Path = Path("experiments")):
     """Generate HTML dashboard for the latest experiment and open it."""
     # Get the latest experiment with results
-    experiment_dir = get_latest_experiment_with_results()
+    experiment_dir = get_latest_experiment_with_results(output_path)
     if not experiment_dir:
-        print("Error: No experiments with results found. Run some tests first.")
+        print(f"Error: No experiments with results found in {output_path}. Run some tests first.")
         sys.exit(1)
 
     print(f"Using latest experiment: {experiment_dir}")

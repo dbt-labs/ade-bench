@@ -6,9 +6,10 @@ import os
 from pathlib import Path
 
 
-def get_latest_experiment_with_results():
+def get_latest_experiment_with_results(experiments_dir: Path = Path("experiments")) -> Path | None:
     """Find the most recent experiment directory that has results.json."""
-    experiments = glob.glob("experiments/*")
+    experiments_root = Path(experiments_dir)
+    experiments = glob.glob(str(experiments_root / "*"))
     if not experiments:
         return None
 
@@ -19,6 +20,6 @@ def get_latest_experiment_with_results():
     for exp in experiments_sorted:
         results_file = Path(exp) / "results.json"
         if results_file.exists():
-            return exp
+            return Path(exp)
 
     return None
