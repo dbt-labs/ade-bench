@@ -12,7 +12,7 @@ import sys
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))
 
 from ade_bench import Harness
-from ade_bench.agents import AgentName
+from ade_bench.agents import AgentName, NamedAgentFactory
 from scripts_python.summarize_results import display_detailed_results
 
 from ade_bench.cli.ab import migrate, check, view, save, interact as interact_module
@@ -193,7 +193,7 @@ def run(
         dataset_path=dataset_path,
         output_path=output_path,
         run_id=run_id,
-        agent_name=agent_name,
+        agent_factory=NamedAgentFactory(agent_name),
         model_name=model_name,
         agent_kwargs=agent_kwargs,
         no_rebuild=no_rebuild,

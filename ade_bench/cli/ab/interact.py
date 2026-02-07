@@ -243,12 +243,10 @@ def interact(
 
                 # Only install for certain agents that need installation
                 if agent_name in [AgentName.CLAUDE_CODE, AgentName.MACRO]:
-                    from ade_bench.agents.agent_factory import AgentFactory
+                    from ade_bench.agents.agent_factory import NamedAgentFactory
 
                     # Create the agent instance
-                    agent_instance = AgentFactory.get_agent(
-                        agent_name=agent_name,
-                    )
+                    agent_instance = NamedAgentFactory(agent_name).get_agent()
 
                     # For installed agents, we just need to do setup steps from perform_task
                     # without actually running the agent commands
@@ -377,11 +375,11 @@ def interact(
                 )
             else:
                 # For other agents, we need to get the agent instance and run it
-                from ade_bench.agents.agent_factory import AgentFactory
+                from ade_bench.agents.agent_factory import NamedAgentFactory
                 from ade_bench.harness_models import TerminalCommand
 
                 # Create the agent instance
-                agent_instance = AgentFactory.get_agent(agent_name=agent_name)
+                agent_instance = NamedAgentFactory(agent_name=agent_name).get_agent()
 
                 # Ensure log directories exist if needed
                 if hasattr(agent_instance, "LOG_DIR") and agent_instance.LOG_DIR:
@@ -448,7 +446,8 @@ def interact(
                 "bash",
                 "-c",
                 f"tmux attach -t {session_name} || bash",
-            ]
+            ],
+            check=False,
         )
 
     finally:

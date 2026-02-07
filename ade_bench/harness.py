@@ -48,7 +48,7 @@ class Harness:
         dataset_path: Path,
         output_path: Path,
         run_id: str,
-        agent_name: AgentName,
+        agent_factory: AgentFactory,
         model_name: str | None = None,
         agent_kwargs: dict[str, Any] | None = None,
         no_rebuild: bool = False,
@@ -76,7 +76,7 @@ class Harness:
             output_path: The path to the output directory. Results and logs will be
                 written here.
             run_id: The ID of the run.
-            agent_name: The name of the agent to use to generate commands.
+            agent_factory: Factory used to construct agents for tasks.
             model_name: The name of the model to use for the agent.
             agent_kwargs: Additional keyword arguments to pass to the agent.
             no_rebuild: Whether to avoid rebuilding the Docker image.
@@ -115,8 +115,9 @@ class Harness:
         self._setup_orchestrator = SetupOrchestrator()
 
         self._output_path = output_path
-        self._agent_name = agent_name
-        self._model_name = AgentName.model_name_from_agent_name(model_name, agent_name)
+        self._agent_factory = agent_factory
+        self._agent_name = agent_factory.agent_name
+        self._model_name = AgentName.model_name_from_agent_name(model_name, self._agent_name)
         self._agent_kwargs = agent_kwargs or {}
         self._run_id = run_id
         self._no_rebuild = no_rebuild
@@ -127,7 +128,6 @@ class Harness:
         self._s3_bucket = ade_bench_config.s3_bucket_name
         self._n_concurrent_trials = n_concurrent_trials
         self._n_attempts = n_attempts
-
         self._run_path.mkdir(parents=True, exist_ok=True)
 
         self._init_dataset()
@@ -184,7 +184,7 @@ class Harness:
         # Pass use_mcp flag to installed agents
         agent_kwargs["use_mcp"] = self._use_mcp
 
-        return AgentFactory.get_agent(self._agent_name, **agent_kwargs)
+        return self._agent_factory.get_agent(**agent_kwargs)
 
     def _init_dataset(self) -> None:
         # Always use the same Dataset constructor - it handles both cases internally
@@ -673,7 +673,6 @@ class Harness:
             #########################################################
             # RUN COMPREHENSIVE SETUP SCRIPT
             try:
-
                 setup_failure_mode = self._run_setup(
                     terminal, session, trial_handler, config, file_diff_handler
                 )
@@ -936,7 +935,7 @@ class Harness:
 
         import yaml
 
-        with open(task_yaml_path, "r") as f:
+        with open(task_yaml_path) as f:
             task_config = yaml.safe_load(f)
 
         # Extract table names from solution_seeds (all items are dictionaries)
@@ -1013,6 +1012,7 @@ class Harness:
 
                 result = subprocess.run(
                     ["docker", "cp", f"{container_name}:{db_path}", temp_db_path],
+                    check=False,
                     capture_output=True,
                     text=True,
                 )
@@ -1444,7 +1444,7 @@ class Harness:
                 self._logger,
                 "system",
                 "finish",
-                f"Profiling informationn from cProfiler saved to {self._cProfile_output_path}.",
+                f"Profiling information from cProfiler saved to {self._cProfile_output_path}.",
             )
 
         return results
