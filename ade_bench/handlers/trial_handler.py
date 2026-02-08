@@ -164,6 +164,7 @@ class TrialHandler:
         task_key: str = "base",
         variant_config: dict | None = None,
         agent_name = None,
+        run_discriminator: str = "",
     ):
         self.trial_name = trial_name
         self.input_path = input_path
@@ -171,6 +172,7 @@ class TrialHandler:
         self.task_key = task_key
         self.variant_config = variant_config or {}
         self.agent_name = agent_name
+        self._run_discriminator = run_discriminator
 
         self._logger = logger.getChild(__name__)
         self.task = Task.from_yaml(self._task_config_path)
@@ -216,7 +218,10 @@ class TrialHandler:
 
     @property
     def client_container_name(self) -> str:
-        return f"{self.trial_name}__client".replace(".", "-")
+        base = self.trial_name.replace(".", "-")
+        if self._run_discriminator:
+            return f"{base}__{self._run_discriminator}__client"
+        return f"{base}__client"
 
     @property
     def client_image_name(self) -> str:

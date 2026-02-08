@@ -1,4 +1,5 @@
 import asyncio
+import hashlib
 import logging
 import shutil
 import subprocess
@@ -1182,6 +1183,7 @@ class Harness:
         Returns:
             TrialResults: The results of the trial execution
         """
+        run_discriminator = hashlib.sha256(self._run_id.encode()).hexdigest()[:6]
         trial_handler = TrialHandler(
             trial_name=trial_name,
             input_path=task_path,
@@ -1189,6 +1191,7 @@ class Harness:
             task_key=task_key,
             variant_config=config,
             agent_name=self._agent_name,
+            run_discriminator=run_discriminator,
         )
 
         try:
