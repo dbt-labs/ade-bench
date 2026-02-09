@@ -28,7 +28,7 @@ tags:
 
 # Test setup script to run before dbt tests
 test_setup: |-
-  dbt run
+  dbt run --full-refresh
 
 # Tables to compare for solution
 solution_seeds:

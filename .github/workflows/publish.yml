@@ -5,9 +5,11 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 jobs:
   pypi-publish:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment:
       name: pypi
@@ -24,6 +26,12 @@ jobs:
         uses: astral-sh/setup-uv@61cb8a9741eeb8a550a1b8544337180c0fc8476b
         with:
           version: "latest"
+
+      - name: Install dependencies
+        run: uv sync --all-groups
+
+      - name: Run tests
+        run: uv run pytest
 
       - name: Build package
         run: uv build
