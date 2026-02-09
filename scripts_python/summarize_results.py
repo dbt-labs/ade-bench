@@ -1,3 +1,5 @@
+import html
+
 from tabulate import tabulate
 from ade_bench.harness_models import BenchmarkResults
 from ade_bench.utils.results_writer import format_trial_result, get_failure_type, is_error_result
@@ -250,7 +252,7 @@ def generate_html_table(results: BenchmarkResults) -> str:
         # Format tools as comma-separated list with styled spans
         tools_list = task.get('tools_used', [])
         if tools_list:
-            tools_html = ', '.join(f'<span class="tool-tag">{tool}</span>' for tool in tools_list)
+            tools_html = ', '.join(f'<span class="tool-tag">{html.escape(tool)}</span>' for tool in tools_list)
         else:
             tools_html = '<span class="no-tools">-</span>'
         html_table = html_table.replace(f"__TOOLS_{i}__", tools_html)
