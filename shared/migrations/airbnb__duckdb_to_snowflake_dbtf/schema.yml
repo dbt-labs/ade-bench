@@ -15,6 +15,8 @@ models:
           - relationships:
               arguments:
                 to: ref('dim_listings')
+                field: LISTING_ID
           - relationships:
               arguments:
                 to: ref('dim_listings_hosts')
+                field: LISTING_ID

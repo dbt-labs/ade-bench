@@ -13,5 +13,7 @@ models:
           - not_null
           - relationships:
               to: ref('dim_listings')
+              field: LISTING_ID
           - relationships:
               to: ref('dim_listings_hosts')
+              field: LISTING_ID
