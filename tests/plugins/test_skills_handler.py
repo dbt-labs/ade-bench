@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import MagicMock, call
 from ade_bench.plugins.skills_handler import SkillsHandler
-from ade_bench.models.plugin_set import PluginSet, SkillOrigin
+from ade_bench.harness_models import PluginSet, SkillOrigin
 
 
 def test_skills_handler_install_no_skills():

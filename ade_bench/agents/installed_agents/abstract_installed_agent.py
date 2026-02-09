@@ -18,7 +18,7 @@ from typing import Any
 from ade_bench.agents.agent_name import AgentName
 from ade_bench.agents.base_agent import AgentResult, BaseAgent
 from ade_bench.harness_models import TerminalCommand, FailureMode
-from ade_bench.models.plugin_set import McpServerConfig
+from ade_bench.harness_models import McpServerConfig
 from ade_bench.terminal.tmux_session import TmuxSession
 from ade_bench.terminal.docker_compose_manager import DockerComposeManager
 from ade_bench.utils.logger import log_harness_info, logger

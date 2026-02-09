@@ -112,7 +112,7 @@ ade run all --db duckdb --project-type dbt --agent claude
 ### 8. Go beyond
 
 - Use the dbt Fusion engine instead of dbt Core with `--project-type dbt-fusion` ([set up Snowflake](#snowflake-setup) first)
-- Enable the dbt MCP server with the `--use-mcp` flag (requires Snowflake, see [MCP](#enabling-the-mcp-server) section)
+- Enable skills, MCP servers, or both with the `--plugin-set` flag (see [Plugin Sets](#plugin-sets) section)
 - [Contribute additional tasks or datasets](/docs/CONTRIBUTING.md)
 
 ---
@@ -159,7 +159,7 @@ ade run \
   --seed \ # Optional; flag for creating solution seed CSVs !! DESTRUCTIVE !! RUN WITH CAUTION !! SEE BELOW !!
   --no-diffs \ # Optional; disables taking snapshots of diffs for faster performance.
   --persist \ # Optional; keeps the container alive after the trial is over or is aborted.
-  --use-mcp \ # Optional; creates an dbt MCP server for the agent. Note: Not all agents and databases are supported.
+  --plugin-set none \ # Optional; plugin set name(s) from experiment_sets/plugin-sets.yaml. Defaults to 'none'.
   --tasks-dir /absolute/path/to/tasks \ # Optional; path to an external tasks directory. Defaults to 'tasks' in the current directory.
 ```
 
@@ -397,14 +397,26 @@ gemini --output-format json --yolo --prompt {task_prompt} --model {model-id}
 
 Configuration files for each agent are found in the `/shared/config` directory. You can use `CLAUDE.md` to configure Claude Code, `AGENTS.md` to configure Codex, and `GEMINI.md` to configure Gemini.
 
-### Enabling the MCP server
+### Plugin sets
 
-If run with the flag `--use-mcp`, ADE-bench will create a dbt MCP server that the agent is allowed to use. The following databases and agents are supported:
+Plugin sets are declarative configurations of skills, MCP servers, and allowed tools that can be applied to benchmark runs. They are defined in `experiment_sets/plugin-sets.yaml`.
 
-- Databases: `snowflake` (duckdb doesn't support multiple simultaneous connections)
-- Agents: `claude`, `codex`, `gemini`
+Use the `--plugin-set` flag to select one or more plugin sets:
 
-Because the server runs locally, it only has access to the [CLI tools](https://github.com/dbt-labs/dbt-mcp#tools). The others are disabled, because they require access to the dbt platform.
+```bash
+ade run all --db duckdb --project-type dbt --agent claude --plugin-set all-dbt-skills
+ade run all --db snowflake --project-type dbt --agent claude --plugin-set dbt-mcp
+ade run all --db duckdb --project-type dbt --agent claude --plugin-set none  # baseline (default)
+```
+
+Available plugin sets include:
+- `none` (default): No skills or MCP servers. Baseline configuration.
+- `all-dbt-skills`: Installs all skills from `dbt-labs/dbt-agent-skills`.
+- `dbt-for-ae`: Installs only the `using-dbt-for-analytics-engineering` skill.
+- `dbt-mcp`: Configures the dbt MCP server (Snowflake only — DuckDB doesn't support multiple simultaneous connections). Only [CLI tools](https://github.com/dbt-labs/dbt-mcp#tools) are enabled.
+- `dbt-skills-mcp`: Both dbt skills and the dbt MCP server.
+
+See `experiment_sets/plugin-sets.yaml` for the full configuration of each set.
 
 ### The Sage agent
 

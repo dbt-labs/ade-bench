@@ -10,7 +10,7 @@ from .dbt_setup import setup_dbt_project
 from .migration_setup import setup_migration
 from .agent_setup import setup_agent_config
 from ..utils.logger import log_harness_info
-from ..models.plugin_set import PluginSet
+from ..harness_models import PluginSet
 from ..plugins.skills_handler import SkillsHandler
 
 

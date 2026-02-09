@@ -3,7 +3,7 @@
 from pathlib import Path
 import yaml
 
-from ade_bench.models.plugin_set import PluginSet, PluginSetsConfig
+from ade_bench.harness_models import PluginSet, PluginSetsConfig
 
 
 class PluginSetLoader:

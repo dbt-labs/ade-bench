@@ -62,7 +62,7 @@ class ClaudeCodeAgent(AbstractInstalledAgent):
         """
         Format the Claude Code agent's log file into a human-readable string.
 
-        Also generates an HTML transcript to log_path.parent / "transcript/"
+        Also generates an HTML transcript at log_path.parent / "transcript.html"
         using claude-code-transcripts if available.
 
         Args:
@@ -71,9 +71,9 @@ class ClaudeCodeAgent(AbstractInstalledAgent):
         Returns:
             Formatted log content as a string, or None if formatting failed
         """
-        # Generate HTML transcript (to sessions/transcript/)
-        transcript_dir = log_path.parent / "transcript"
-        self._log_formatter.generate_html_transcript(log_path, transcript_dir)
+        # Generate HTML transcript as a single well-known file
+        transcript_path = log_path.parent / "transcript.html"
+        self._log_formatter.generate_html_transcript(log_path, transcript_path)
 
         # Return text-formatted log
         return self._log_formatter.format_log(log_path)

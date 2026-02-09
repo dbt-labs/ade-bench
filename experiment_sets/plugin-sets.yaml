@@ -4,7 +4,7 @@
 sets:
   - name: all-dbt-skills
     description: All dbt skills
-    default: true
+    default: false
     skills:
       - location: dbt-labs/dbt-agent-skills
     mcp_servers: {}

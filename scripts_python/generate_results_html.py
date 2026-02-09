@@ -315,17 +315,14 @@ class ResultsHTMLGenerator:
         import shutil
 
         panes_dir = task_dir / "panes"
-        transcript_dir = task_dir / "sessions" / "transcript"
+        transcript_path = task_dir / "sessions" / "transcript.html"
 
-        # Check for HTML transcript (always use page-001.html since there's only 1 prompt)
+        # Check for HTML transcript (single well-known file)
         transcript_html = None
-        if transcript_dir.exists() and (transcript_dir / "page-001.html").exists():
-            # Copy transcript directory to HTML output
-            output_transcript_dir = task_html_dir / "transcript"
-            if output_transcript_dir.exists():
-                shutil.rmtree(output_transcript_dir)
-            shutil.copytree(transcript_dir, output_transcript_dir)
-            transcript_html = "transcript/page-001.html"
+        if transcript_path.exists():
+            # Copy transcript file to HTML output
+            shutil.copy2(transcript_path, task_html_dir / "transcript.html")
+            transcript_html = "transcript.html"
 
         # Build content sections in chronological order
         sections = []

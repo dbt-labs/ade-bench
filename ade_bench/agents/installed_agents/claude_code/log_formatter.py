@@ -282,26 +282,27 @@ class ClaudeCodeLogFormatter(LogFormatter):
 
         return output.getvalue()
 
-    def generate_html_transcript(self, log_path: Path, output_dir: Path) -> Path | None:
+    def generate_html_transcript(self, log_path: Path, output_path: Path) -> Path | None:
         """
         Generate an HTML transcript using claude-code-transcripts.
 
         This method extracts JSON lines from the log file (which may contain
         mixed terminal output and JSON) and uses claude-code-transcripts to
-        generate a clean HTML transcript.
+        generate a clean HTML transcript at the specified output path.
 
         Args:
             log_path: Path to the log file (may contain mixed content)
-            output_dir: Directory to write HTML transcript files
+            output_path: Desired output file path (e.g., sessions/transcript.html)
 
         Returns:
-            Path to the generated index.html, or None if generation failed
+            Path to the generated HTML file, or None if generation failed
         """
         if not log_path.exists():
             logger.warning(f"Log file not found: {log_path}")
             return None
 
         try:
+            import shutil
             from claude_code_transcripts import generate_html
 
             # Extract only JSON lines from the log file
@@ -310,36 +311,42 @@ class ClaudeCodeLogFormatter(LogFormatter):
                 logger.warning(f"No JSON content found in {log_path}")
                 return None
 
-            # Write clean JSONL to a temporary file for claude-code-transcripts
-            output_dir.mkdir(parents=True, exist_ok=True)
+            output_path.parent.mkdir(parents=True, exist_ok=True)
 
-            with tempfile.NamedTemporaryFile(
-                mode='w', suffix='.jsonl', delete=False
-            ) as tmp_file:
-                tmp_file.write(jsonl_content)
-                tmp_path = Path(tmp_file.name)
+            # Use a temporary directory for claude-code-transcripts output,
+            # then copy the result to the single well-known output path
+            with tempfile.TemporaryDirectory() as tmp_output_dir:
+                tmp_output = Path(tmp_output_dir)
 
-            try:
-                # Generate HTML transcript (suppress stdout/stderr from library)
-                with contextlib.redirect_stdout(io.StringIO()), \
-                     contextlib.redirect_stderr(io.StringIO()):
-                    generate_html(tmp_path, output_dir)
+                with tempfile.NamedTemporaryFile(
+                    mode='w', suffix='.jsonl', delete=False
+                ) as tmp_file:
+                    tmp_file.write(jsonl_content)
+                    tmp_path = Path(tmp_file.name)
 
-                # Check for generated files
-                index_path = output_dir / "index.html"
-                if index_path.exists():
-                    return index_path
+                try:
+                    # Generate HTML transcript (suppress stdout/stderr from library)
+                    with contextlib.redirect_stdout(io.StringIO()), \
+                         contextlib.redirect_stderr(io.StringIO()):
+                        generate_html(tmp_path, tmp_output)
 
-                # Check for page-001.html if index.html doesn't exist
-                page_path = output_dir / "page-001.html"
-                if page_path.exists():
-                    return page_path
+                    # Find the generated file (index.html or page-001.html)
+                    generated = None
+                    for candidate in ["index.html", "page-001.html"]:
+                        candidate_path = tmp_output / candidate
+                        if candidate_path.exists():
+                            generated = candidate_path
+                            break
 
-                logger.warning(f"No HTML output found in {output_dir}")
-                return None
-            finally:
-                # Clean up temporary file
-                tmp_path.unlink(missing_ok=True)
+                    if generated is None:
+                        logger.warning(f"No HTML output found in {tmp_output}")
+                        return None
+
+                    # Copy to the well-known output path
+                    shutil.copy2(generated, output_path)
+                    return output_path
+                finally:
+                    tmp_path.unlink(missing_ok=True)
 
         except ImportError:
             logger.warning(

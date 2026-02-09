@@ -1,7 +1,7 @@
 import pytest
 from pathlib import Path
 from ade_bench.plugins.loader import PluginSetLoader
-from ade_bench.models.plugin_set import PluginSetsConfig
+from ade_bench.harness_models import PluginSetsConfig
 
 
 def test_loader_loads_yaml(tmp_path):

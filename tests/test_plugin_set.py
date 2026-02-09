@@ -1,5 +1,5 @@
 import pytest
-from ade_bench.models.plugin_set import PluginSet, McpServerConfig, PluginSetsConfig, SkillOrigin
+from ade_bench.harness_models import PluginSet, McpServerConfig, PluginSetsConfig, SkillOrigin
 
 
 def test_mcp_server_config_minimal():

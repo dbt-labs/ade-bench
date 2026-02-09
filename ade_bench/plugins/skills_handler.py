@@ -1,7 +1,7 @@
 """Handler for installing skills via Vercel Skills CLI."""
 
 import logging
-from ade_bench.models.plugin_set import PluginSet, SkillOrigin
+from ade_bench.harness_models import PluginSet, SkillOrigin
 from ade_bench.terminal.docker_compose_manager import DockerComposeManager
 
 logger = logging.getLogger(__name__)

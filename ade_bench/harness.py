@@ -25,10 +25,10 @@ from ade_bench.handlers.trial_handler import TrialHandler
 from ade_bench.harness_models import (
     BenchmarkResults,
     FailureMode,
+    PluginSet,
     RunMetadata,
     TrialResults,
 )
-from ade_bench.models.plugin_set import PluginSet
 from ade_bench.plugins.loader import PluginSetLoader
 from ade_bench.setup.setup_orchestrator import SetupOrchestrator
 from ade_bench.llms.base_llm import ContextLengthExceededError, ParseError
@@ -658,6 +658,7 @@ class Harness:
             plugin_set_name=self._current_plugin_set.name if self._current_plugin_set else None,
             plugin_set_skills=self._current_plugin_set.skill_locations if self._current_plugin_set else None,
             plugin_set_mcp_servers=list(self._current_plugin_set.mcp_servers.keys()) if self._current_plugin_set else None,
+            prompt_suffix=self._current_plugin_set.prompt_suffix if self._current_plugin_set else None,
         )
 
         with spin_up_terminal(
@@ -757,20 +758,17 @@ class Harness:
             parts = full_pane.split('=== ADE_BENCH_PHASE_DELIMITER_AGENT_START ===')
             post_agent_pane = parts[-1].strip()
 
-            # Only write agent.log and format it for agents with log formatters (e.g., Claude Code)
+            # Write agent.log and attempt formatting via BaseAgent interface
+            agent_log_path = trial_handler.sessions_path / "agent.log"
             formatted_content = None
-            agent_log_path = None
-            if hasattr(task_agent, '_log_formatter') and task_agent._log_formatter is not None:
-                agent_log_path = trial_handler.sessions_path / "agent.log"
-                try:
-                    agent_log_path.write_text(post_agent_pane)
-                    # Get formatted content from agent (returns string or None)
-                    formatted_content = task_agent.format_agent_log(agent_log_path)
-                    if formatted_content:
-                        self._logger.debug(f"Generated formatted agent.txt from agent.log using agent's formatter")
-                except Exception as e:
-                    self._logger.warning(f"Failed to write/format agent.log: {e}. Using raw pane output.")
-                    agent_log_path = None  # Mark as unavailable on error
+            try:
+                agent_log_path.write_text(post_agent_pane)
+                # format_agent_log() returns None for agents without formatting (BaseAgent default)
+                formatted_content = task_agent.format_agent_log(agent_log_path)
+                if formatted_content:
+                    self._logger.debug(f"Generated formatted agent.txt from agent.log using agent's formatter")
+            except Exception as e:
+                self._logger.warning(f"Failed to write/format agent.log: {e}. Using raw pane output.")
 
             # Write to file - either formatted content or fallback to raw pane
             if formatted_content:
@@ -778,8 +776,8 @@ class Harness:
             else:
                 trial_handler.agent_pane_path.write_text(post_agent_pane)
 
-            # Extract tools used if log file is available
-            if agent_log_path and agent_log_path.exists():
+            # Extract tools used (returns None for agents without tool extraction)
+            if agent_log_path.exists():
                 try:
                     results.tools_used = task_agent.extract_tools_used(agent_log_path)
                 except Exception as e:
@@ -1275,6 +1273,7 @@ class Harness:
                 plugin_set_name=self._current_plugin_set.name if self._current_plugin_set else None,
                 plugin_set_skills=self._current_plugin_set.skill_locations if self._current_plugin_set else None,
                 plugin_set_mcp_servers=list(self._current_plugin_set.mcp_servers.keys()) if self._current_plugin_set else None,
+                prompt_suffix=self._current_plugin_set.prompt_suffix if self._current_plugin_set else None,
             )
             return trial_results
 
