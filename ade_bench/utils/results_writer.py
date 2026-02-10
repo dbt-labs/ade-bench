@@ -127,11 +127,13 @@ def write_results_tsv(results: BenchmarkResults, output_path: Path, run_id: str)
         "output_tokens",
         "cache_tokens",
         "turns",
+        "tools",
         "agent",
         "model_name",
         "db_type",
         "project_type",
-        "used_mcp"
+        "plugin_set",
+        "prompt_suffix"
     ]
 
     with open(output_path, 'w', newline='') as f:
@@ -156,6 +158,8 @@ def write_results_tsv(results: BenchmarkResults, output_path: Path, run_id: str)
             # Get failure type
             failure_type = get_failure_type(trial_result)
 
+            tools_str = ",".join(trial_result.tools_used) if trial_result.tools_used else ""
+
             row = [
                 run_id,
                 calc['task_id'],
@@ -171,11 +175,13 @@ def write_results_tsv(results: BenchmarkResults, output_path: Path, run_id: str)
                 calc['_output_tokens'],
                 calc['_cache_tokens'],
                 calc['_turns'],
+                tools_str,
                 trial_result.agent or "",
                 trial_result.model_name or "",
                 trial_result.db_type or "",
                 trial_result.project_type or "",
-                trial_result.used_mcp if trial_result.used_mcp is not None else ""
+                trial_result.plugin_set_name or "",
+                trial_result.prompt_suffix or ""
             ]
 
             writer.writerow(row)

@@ -2,16 +2,22 @@
 Log formatter for Claude Code agent.
 
 This module provides parsing and formatting utilities for Claude Code agent
-log files (JSON-lines format).
+log files (JSON-lines format), and generates HTML transcripts using
+claude-code-transcripts.
 """
 
+import contextlib
+import io
 import json
+import logging
 import re
-from io import StringIO
+import tempfile
 from pathlib import Path
 from typing import Any, Dict, List
 
 from ade_bench.agents.log_formatter import LogFormatter
+
+logger = logging.getLogger(__name__)
 
 
 class ClaudeCodeLogFormatter(LogFormatter):
@@ -22,6 +28,66 @@ class ClaudeCodeLogFormatter(LogFormatter):
         """Remove ANSI color codes from text."""
         ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
         return ansi_escape.sub('', text)
+
+    @staticmethod
+    def extract_jsonl_content(log_path: Path, inject_prompt: str | None = None) -> str:
+        """
+        Extract only the JSON lines from a log file that may contain mixed content.
+
+        The log file may contain terminal output before the JSON lines begin.
+        This method extracts only valid JSON lines.
+
+        Claude Code's stream-json output doesn't include the initial user prompt,
+        only the assistant responses and tool results. If no user prompt with text
+        is found in the log, a synthetic one is injected so that transcript
+        generation tools can identify conversation boundaries.
+
+        Args:
+            log_path: Path to the log file
+            inject_prompt: Optional prompt text to inject if none found
+
+        Returns:
+            String containing only the JSON lines, newline-separated
+        """
+        json_lines = []
+        has_user_text_prompt = False
+
+        with open(log_path, 'r') as f:
+            for line in f:
+                stripped = line.strip()
+                if stripped.startswith('{'):
+                    try:
+                        # Validate it's actually JSON
+                        data = json.loads(stripped)
+                        json_lines.append(stripped)
+
+                        # Check if this is a user message with actual text content
+                        if data.get('type') == 'user':
+                            content = data.get('message', {}).get('content', [])
+                            if isinstance(content, str) and content.strip():
+                                has_user_text_prompt = True
+                            elif isinstance(content, list):
+                                for item in content:
+                                    if isinstance(item, dict) and item.get('type') == 'text':
+                                        has_user_text_prompt = True
+                                        break
+                    except json.JSONDecodeError:
+                        continue
+
+        # If no user prompt found, inject a synthetic one at the beginning
+        if not has_user_text_prompt and json_lines:
+            prompt_text = inject_prompt or "Claude Code Agent Session"
+            synthetic_prompt = json.dumps({
+                "type": "user",
+                "timestamp": "",
+                "message": {
+                    "role": "user",
+                    "content": prompt_text
+                }
+            })
+            json_lines.insert(0, synthetic_prompt)
+
+        return '\n'.join(json_lines)
 
     @staticmethod
     def format_tool_input(tool_name: str, tool_input: Dict[str, Any]) -> str:
@@ -161,7 +227,7 @@ class ClaudeCodeLogFormatter(LogFormatter):
 
     def format_readable_log(self, turns: List[Dict[str, Any]]) -> str:
         """Format the parsed turns into a readable text string."""
-        output = StringIO()
+        output = io.StringIO()
 
         output.write("=" * 80 + "\n")
         output.write("CLAUDE CODE AGENT INTERACTION LOG\n")
@@ -215,3 +281,79 @@ class ClaudeCodeLogFormatter(LogFormatter):
         output.write("=" * 80 + "\n")
 
         return output.getvalue()
+
+    def generate_html_transcript(self, log_path: Path, output_path: Path) -> Path | None:
+        """
+        Generate an HTML transcript using claude-code-transcripts.
+
+        This method extracts JSON lines from the log file (which may contain
+        mixed terminal output and JSON) and uses claude-code-transcripts to
+        generate a clean HTML transcript at the specified output path.
+
+        Args:
+            log_path: Path to the log file (may contain mixed content)
+            output_path: Desired output file path (e.g., sessions/transcript.html)
+
+        Returns:
+            Path to the generated HTML file, or None if generation failed
+        """
+        if not log_path.exists():
+            logger.warning(f"Log file not found: {log_path}")
+            return None
+
+        try:
+            import shutil
+            from claude_code_transcripts import generate_html
+
+            # Extract only JSON lines from the log file
+            jsonl_content = self.extract_jsonl_content(log_path)
+            if not jsonl_content:
+                logger.warning(f"No JSON content found in {log_path}")
+                return None
+
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+
+            # Use a temporary directory for claude-code-transcripts output,
+            # then copy the result to the single well-known output path
+            with tempfile.TemporaryDirectory() as tmp_output_dir:
+                tmp_output = Path(tmp_output_dir)
+
+                with tempfile.NamedTemporaryFile(
+                    mode='w', suffix='.jsonl', delete=False
+                ) as tmp_file:
+                    tmp_file.write(jsonl_content)
+                    tmp_path = Path(tmp_file.name)
+
+                try:
+                    # Generate HTML transcript (suppress stdout/stderr from library)
+                    with contextlib.redirect_stdout(io.StringIO()), \
+                         contextlib.redirect_stderr(io.StringIO()):
+                        generate_html(tmp_path, tmp_output)
+
+                    # Find the generated file (index.html or page-001.html)
+                    generated = None
+                    for candidate in ["index.html", "page-001.html"]:
+                        candidate_path = tmp_output / candidate
+                        if candidate_path.exists():
+                            generated = candidate_path
+                            break
+
+                    if generated is None:
+                        logger.warning(f"No HTML output found in {tmp_output}")
+                        return None
+
+                    # Copy to the well-known output path
+                    shutil.copy2(generated, output_path)
+                    return output_path
+                finally:
+                    tmp_path.unlink(missing_ok=True)
+
+        except ImportError:
+            logger.warning(
+                "claude-code-transcripts not installed. "
+                "Install with: pip install claude-code-transcripts"
+            )
+            return None
+        except Exception as e:
+            logger.warning(f"Transcript generation failed: {e}")
+            return None

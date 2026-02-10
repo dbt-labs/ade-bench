@@ -1,3 +1,5 @@
+import html
+
 from tabulate import tabulate
 from ade_bench.harness_models import BenchmarkResults
 from ade_bench.utils.results_writer import format_trial_result, get_failure_type, is_error_result
@@ -81,6 +83,7 @@ def summarize_results(results: BenchmarkResults) -> Dict[str, Any]:
             'output_tokens': output_tokens_str,
             'cache_tokens': cache_tokens_str,
             'turns': turns_str,
+            'tools_used': result.tools_used or [],
             # Store numeric values for totals calculation
             '_tests_num': calc['_tests'],
             '_passed_num': calc['_tests_passed'],
@@ -134,7 +137,7 @@ def summarize_results(results: BenchmarkResults) -> Dict[str, Any]:
             'inferred_model': inferred_model,
             'db_type': first_result.db_type if first_result else None,
             'project_type': first_result.project_type if first_result else None,
-            'used_mcp': first_result.used_mcp if first_result else None,
+            'plugin_set': first_result.plugin_set_name if first_result else None,
             'agent': first_result.agent if first_result else None,
         }
     }
@@ -190,7 +193,7 @@ def generate_html_table(results: BenchmarkResults) -> str:
 
     # Generate table with unique placeholders for action links and task button
     # Insert 'Task' as second column (after 'Task' id)
-    headers = [summary['headers'][0], 'Task'] + summary['headers'][1:] + ['Actions']
+    headers = [summary['headers'][0], 'Task'] + summary['headers'][1:] + ['Tools', 'Actions']
     table_data = []
 
     # Add task rows with unique placeholders
@@ -209,6 +212,7 @@ def generate_html_table(results: BenchmarkResults) -> str:
             task['output_tokens'],
             task['cache_tokens'],
             task['turns'],
+            f"__TOOLS_{i}__",  # Placeholder for tools list
             f"__ACTION_LINKS_{i}__",  # Unique placeholder for action links
         ]
         table_data.append(row)
@@ -229,6 +233,7 @@ def generate_html_table(results: BenchmarkResults) -> str:
         total_row['output_tokens'],
         total_row['cache_tokens'],
         total_row['turns'],
+        "",  # No tools for total row
         "",  # No action links for total row
     ]
     table_data.append(total_row_data)
@@ -236,13 +241,21 @@ def generate_html_table(results: BenchmarkResults) -> str:
     # Generate the base table
     html_table = tabulate(table_data, headers=headers, tablefmt="html")
 
-    # Now replace the placeholders with actual action links and task buttons
+    # Now replace the placeholders with actual action links, task buttons, and tools
     for i, task in enumerate(summary['tasks']):
         action_links = f'<div class="links"><a href="{task["task_id"]}/results.html" class="link results">Results</a> <a href="{task["task_id"]}/panes.html" class="link panes">Panes</a> <a href="{task["task_id"]}/diffs.html" class="link diffs">Diffs</a></div>'
         html_table = html_table.replace(f"__ACTION_LINKS_{i}__", action_links)
 
         task_button = f'<button class="link task-btn" onclick="showTaskYaml(\'{task["task_id"]}\')">View</button>'
         html_table = html_table.replace(f"__TASK_BUTTON_{i}__", task_button)
+
+        # Format tools as comma-separated list with styled spans
+        tools_list = task.get('tools_used', [])
+        if tools_list:
+            tools_html = ', '.join(f'<span class="tool-tag">{html.escape(tool)}</span>' for tool in tools_list)
+        else:
+            tools_html = '<span class="no-tools">-</span>'
+        html_table = html_table.replace(f"__TOOLS_{i}__", tools_html)
 
     return html_table
 

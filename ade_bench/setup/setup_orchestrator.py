@@ -1,5 +1,5 @@
 """
-Simple setup orchestrator - just calls functions directly.
+Setup orchestrator - coordinates task setup and plugin configuration.
 """
 
 from typing import Dict, Any
@@ -10,17 +10,21 @@ from .dbt_setup import setup_dbt_project
 from .migration_setup import setup_migration
 from .agent_setup import setup_agent_config
 from ..utils.logger import log_harness_info
+from ..harness_models import PluginSet
+from ..plugins.skills_handler import SkillsHandler
 
 
 class SetupOrchestrator:
-    """Simple orchestrator that calls setup functions directly."""
+    """Orchestrator that calls setup functions and configures plugins."""
 
-    def __init__(self, logger=None, terminal=None, session=None, file_diff_handler=None, trial_handler=None):
+    def __init__(self, logger=None, terminal=None, session=None, file_diff_handler=None, trial_handler=None, plugin_set: PluginSet | None = None):
         self.logger = logger
         self.terminal = terminal
         self.session = session
         self.file_diff_handler = file_diff_handler
         self.trial_handler = trial_handler
+        self.plugin_set = plugin_set
+        self._skills_handler = SkillsHandler()
 
     def setup_task(self, task_id: str, variant: Dict[str, Any]) -> bool:
         """Setup a task for the given variant."""
@@ -40,6 +44,12 @@ class SetupOrchestrator:
         # Setup agent-specific configuration files
         # Logging is in the setup_agent_config function
         setup_agent_config(self.terminal, task_id, self.trial_handler, self.logger)
+
+        # Install skills if plugin set specified (MCP is configured after agent installation)
+        if self.plugin_set and self.plugin_set.skills:
+            log_harness_info(self.logger, task_id, "setup", "Installing skills...")
+            self._skills_handler.install(self.plugin_set, self.terminal)
+            log_harness_info(self.logger, task_id, "setup", "Skills installed")
 
 
         # Set up the database

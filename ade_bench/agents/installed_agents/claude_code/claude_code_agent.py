@@ -15,7 +15,6 @@ from ade_bench.config import config
 
 class ClaudeCodeAgent(AbstractInstalledAgent):
     NAME = AgentName.CLAUDE_CODE
-    ALLOWED_TOOLS = ["Bash", "Edit", "Write", "NotebookEdit", "WebFetch", "mcp__dbt"]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -40,7 +39,8 @@ class ClaudeCodeAgent(AbstractInstalledAgent):
         if self._model_name:
             command += f" --model {self._model_name}"
 
-        command += f" --allowedTools {' '.join(self.ALLOWED_TOOLS)}"
+        if self._allowed_tools:
+            command += f" --allowedTools {' '.join(self._allowed_tools)}"
 
         return [
             TerminalCommand(
@@ -61,11 +61,51 @@ class ClaudeCodeAgent(AbstractInstalledAgent):
     def format_agent_log(self, log_path: Path) -> str | None:
         """
         Format the Claude Code agent's log file into a human-readable string.
-        
+
+        Also generates an HTML transcript at log_path.parent / "transcript.html"
+        using claude-code-transcripts if available.
+
         Args:
             log_path: Path to the raw agent.log file (JSON-lines format)
-            
+
         Returns:
             Formatted log content as a string, or None if formatting failed
         """
+        # Generate HTML transcript as a single well-known file
+        transcript_path = log_path.parent / "transcript.html"
+        self._log_formatter.generate_html_transcript(log_path, transcript_path)
+
+        # Return text-formatted log
         return self._log_formatter.format_log(log_path)
+
+    # Generic tools to filter out from tools_used reporting
+    _GENERIC_TOOLS = frozenset({
+        'Bash', 'Edit', 'Glob', 'Grep', 'Read', 'Write',
+        'WebFetch', 'WebSearch', 'Task', 'NotebookEdit',
+        'TodoRead', 'TodoWrite',
+    })
+
+    def extract_tools_used(self, log_path: Path) -> list[str] | None:
+        """
+        Extract deduplicated tool names from Claude Code agent logs.
+
+        Filters out generic tools (Bash, Edit, Glob, etc.) and expands
+        Skill tool calls to their actual skill names.
+        """
+        try:
+            turns = self._log_formatter.parse_log_file(log_path)
+            tool_names = set()
+            for turn in turns:
+                for tool in turn.get('tools', []):
+                    name = tool['name']
+                    # Expand Skill tool to actual skill name
+                    if name == 'Skill':
+                        skill_name = tool.get('input', {}).get('skill')
+                        if skill_name:
+                            tool_names.add(f"skill:{skill_name}")
+                    # Filter out generic tools
+                    elif name not in self._GENERIC_TOOLS:
+                        tool_names.add(name)
+            return sorted(tool_names) if tool_names else None
+        except Exception:
+            return None

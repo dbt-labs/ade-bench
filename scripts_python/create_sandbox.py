@@ -310,11 +310,6 @@ def main():
     parser.add_argument("--task", help="Name of the task to create sandbox for")
     parser.add_argument("--db", required=True, help="Database type (duckdb, sqlite, postgres, snowflake)")
     parser.add_argument("--project-type", required=True, help="Project type (dbt, other)")
-    parser.add_argument("--agent", required=False, help="Ignored")
-    parser.add_argument("--use-mcp", required=False, action="store_true", help="Ignored")
-    parser.add_argument("--persist", required=False, action="store_true", help="Ignored")
-    parser.add_argument("--no-diffs", required=False, action="store_true", help="Ignored")
-    parser.add_argument("--seed", required=False, action="store_true", help="Ignored")
 
     args = parser.parse_args()
 
