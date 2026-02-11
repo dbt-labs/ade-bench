@@ -113,8 +113,8 @@ class AbstractInstalledAgent(BaseAgent, ABC):
             if env_vars:
                 log_harness_info(logger, task_name, "agent", f"Setting env vars: {list(env_vars.keys())}")
 
-            # Build mcp add command
-            parts = [agent_cli, "mcp", "add"] + env_flags + [server_name, "--", mcp_config.command] + mcp_config.args
+            # Build mcp add command (server name before -e to avoid variadic flag consuming it)
+            parts = [agent_cli, "mcp", "add", server_name] + env_flags + ["--", mcp_config.command] + mcp_config.args
             mcp_cmd = " ".join(parts)
 
             result = session.container.exec_run(
