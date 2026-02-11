@@ -4,4 +4,4 @@ select
     Catastrophe_Name,
     Industry_Catastrophe_Code,
     Company_Catastrophe_Code
-from {{ ref('Catastrophe') }}
+from {{ source('acme_raw', 'Catastrophe') }}

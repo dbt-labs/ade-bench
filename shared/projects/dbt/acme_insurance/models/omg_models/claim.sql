@@ -14,4 +14,4 @@ select
     Claim_Status_Code,
     Claim_Reported_Date
 from 
-    {{ ref('Claim') }}
+    {{ source('acme_raw', 'Claim') }}

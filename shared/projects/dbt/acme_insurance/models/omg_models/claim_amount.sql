@@ -7,4 +7,4 @@ select
     Claim_Amount,
     Insurance_Type_Code
 from 
-    {{ ref('Claim_Amount') }}
+    {{ source('acme_raw', 'Claim_Amount') }}

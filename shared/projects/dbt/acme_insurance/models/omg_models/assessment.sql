@@ -4,4 +4,4 @@ select
     Assessment_Description,
     End_Date,
     Assessment_Reason_Description
-from {{ ref('Assessment') }}
+from {{ source('acme_raw', 'Assessment') }}

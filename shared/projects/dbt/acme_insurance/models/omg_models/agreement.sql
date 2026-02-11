@@ -4,4 +4,4 @@ select
     Agreement_Original_Inception_Date,
     Product_Identifier
 from 
-    {{ ref('Agreement') }}
+    {{ source('acme_raw', 'Agreement') }}

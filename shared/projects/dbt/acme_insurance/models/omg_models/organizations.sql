@@ -8,4 +8,4 @@ select
     Organization_Description,
     Acronym_Name,
     Industry_Type_Code
-from {{ ref('Organization') }}
+from {{ source('acme_raw', 'Organization') }}

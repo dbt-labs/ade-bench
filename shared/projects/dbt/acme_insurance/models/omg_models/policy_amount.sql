@@ -10,4 +10,4 @@ select
     Policy_Amount,
     Insurable_Object_Identifier,
     Insurance_Type_Code
-from {{ ref('Policy_Amount') }}
+from {{ source('acme_raw', 'Policy_Amount') }}

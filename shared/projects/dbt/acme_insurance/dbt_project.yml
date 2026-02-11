@@ -6,7 +6,6 @@ profile: 'acme_insurance-duckdb'
 
 model-paths: ["models"]
 analysis-paths: ["analyses"]
-seed-paths: ["seeds"]
 macro-paths: ["macros"]
 snapshot-paths: ["snapshots"]
 
@@ -17,10 +16,3 @@ clean-targets:
 
 models:
   +materialized: table
-
-seeds:
-  +schema: main
-  acme_insurance:
-    Policy:
-      +column_types:
-        Policy_Number: "BIGINT"

@@ -3,4 +3,4 @@ select
     Assessment_Identifier,
     Assessment_Result_Type_Code
 from 
-    {{ ref('Assessment_Result') }}
+    {{ source('acme_raw', 'Assessment_Result') }}

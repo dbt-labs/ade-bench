@@ -4,4 +4,4 @@ select
     Party_Role_Code,
     Begin_Date,
     End_Date
-from {{ ref('Assesment_Party_Role') }}
+from {{ source('acme_raw', 'Assesment_Party_Role') }}

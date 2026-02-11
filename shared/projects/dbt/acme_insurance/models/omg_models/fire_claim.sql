@@ -8,4 +8,4 @@ select
     Number_of_Firefighters,
     Fireplace,
     Year_Built
-from {{ ref('FireClaim') }}
+from {{ source('acme_raw', 'FireClaim') }}

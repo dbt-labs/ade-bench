@@ -5,4 +5,4 @@ select
     Policy_Number,
     Status_Code,
     Geographic_Location_Identifier
-from {{ ref('Policy') }}
+from {{ source('acme_raw', 'Policy') }}

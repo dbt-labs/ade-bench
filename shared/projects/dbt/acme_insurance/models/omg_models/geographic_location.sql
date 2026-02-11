@@ -8,4 +8,4 @@ select
     State_Code,
     Location_Address_Identifier,
     Physical_Location_Identifier
-from {{ ref('Geographic_Location') }}
+from {{ source('acme_raw', 'Geographic_Location') }}

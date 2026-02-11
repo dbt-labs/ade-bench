@@ -7,4 +7,4 @@ select
     Occurrence_Begin_Time,
     Occurrence_End_Time,
     Occurrence_Name
-from {{ ref('Occurrence') }}
+from {{ source('acme_raw', 'Occurrence') }}

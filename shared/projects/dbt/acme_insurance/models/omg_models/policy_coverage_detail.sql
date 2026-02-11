@@ -8,4 +8,4 @@ select
     Coverage_Description,
     Expiration_Date,
     Coverage_Inclusion_Exclusion_Code
-from {{ ref('Policy_Coverage_Detail') }}
+from {{ source('acme_raw', 'Policy_Coverage_Detail') }}

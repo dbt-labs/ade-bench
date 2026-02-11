@@ -9,4 +9,4 @@ select
     Vertical_Accuracy_Value,
     Travel_Direction_Description,
     Location_Address_Identifier
-from {{ ref('Physical_Location') }}
+from {{ source('acme_raw', 'Physical_Location') }}

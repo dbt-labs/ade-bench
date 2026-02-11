@@ -8,4 +8,4 @@ Country_Code,
 State_Code,
 Begin_Date,
 End_Date
-from {{ ref('Location_Address') }}
+from {{ source('acme_raw', 'Location_Address') }}

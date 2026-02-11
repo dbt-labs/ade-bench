@@ -1,3 +1,3 @@
 select
     Policy_Amount_Identifier
-from {{ ref('Premium') }}
+from {{ source('acme_raw', 'Premium') }}

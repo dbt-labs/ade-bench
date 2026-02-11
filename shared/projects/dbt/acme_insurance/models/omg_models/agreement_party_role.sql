@@ -5,4 +5,4 @@ select
     Effective_Date,
     Expiration_Date
 from 
-    {{ ref('Agreement_Party_Role') }}
+    {{ source('acme_raw', 'Agreement_Party_Role') }}

@@ -1,3 +1,3 @@
 select
     Claim_Amount_Identifier
-from {{ ref('Loss_Payment') }}
+from {{ source('acme_raw', 'Loss_Payment') }}

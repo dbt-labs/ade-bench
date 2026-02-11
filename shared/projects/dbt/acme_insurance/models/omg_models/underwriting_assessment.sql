@@ -1,3 +1,3 @@
 select
     Assessment_Result_Identifier
-from {{ ref('Underwriting_Assessment') }}
+from {{ source('acme_raw', 'Underwriting_Assessment') }}

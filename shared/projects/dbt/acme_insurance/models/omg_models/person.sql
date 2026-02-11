@@ -10,4 +10,4 @@ select
     Birth_Place_Name,
     Gender_Code,
     Prefix_Name
-from {{ ref('Person') }}
+from {{ source('acme_raw', 'Person') }}

@@ -4,4 +4,4 @@ select
     Begin_Date,
     End_Date,
     Party_Type_Code
-from {{ ref('Party') }}
+from {{ source('acme_raw', 'Party') }}

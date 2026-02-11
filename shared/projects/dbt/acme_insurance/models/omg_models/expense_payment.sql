@@ -1,4 +1,4 @@
 select
     Claim_Amount_Identifier
 from 
-    {{ ref('Expense_Payment') }}
+    {{ source('acme_raw', 'Expense_Payment') }}
