@@ -1,0 +1,35 @@
+task_id: free_text_acme_lqhs_001
+status: ready
+description: 'LQHS: Policy Holder - Policy - Coverage - Claim - Catastrophe'
+prompts:
+- key: base
+  prompt: 'Return policy holders and the claims they have made and the correspoinding
+    catastrophe
+
+
+    Write a model called result.sql containing your answer.'
+- key: with_sl
+  prompt: 'Using the dbt semantic layer, answer this question:
+
+
+    Return policy holders and the claims they have made and the correspoinding catastrophe
+
+
+    Write a model called result.sql containing your answer.'
+author_name: dbt-labs
+author_email: noreply@getdbt.com
+difficulty: hard
+tags:
+- semantic-layer
+- metricflow
+- free-text
+- acme-insurance
+- lqhs
+test_setup: dbt run --select result
+solution_seeds:
+- table_name: result
+variants:
+- db_type: duckdb
+  db_name: acme_insurance
+  project_type: dbt
+  project_name: acme_insurance

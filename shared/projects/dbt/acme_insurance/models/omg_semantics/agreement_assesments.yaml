@@ -1,0 +1,9 @@
+semantic_models:
+  - name: agreement_assessments
+    model: ref('agreement_assessment')
+    primary_entity: agreement_assessment
+    entities:
+      - name: agreement_identifier
+        type: foreign
+      - name: assessment_identifier
+        type: foreign

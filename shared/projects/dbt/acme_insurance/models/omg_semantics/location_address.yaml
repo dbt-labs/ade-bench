@@ -1,0 +1,46 @@
+semantic_models:
+  - name: location_address
+    model: ref('location_address')
+    description: "This table contains address information, including historical data for addresses that can change over time."
+    defaults:
+      agg_time_dimension: begin_date
+
+    entities:
+      - name: location_address
+        type: primary
+        expr: location_address_identifier
+
+    dimensions:
+      - name: line_1_address
+        type: categorical
+        expr: line_1_address
+
+      - name: municipality_name
+        type: categorical
+        expr: municipality_name
+
+      - name: line_2_address
+        type: categorical
+        expr: line_2_address
+
+      - name: postal_code
+        type: categorical
+        expr: postal_code
+
+      - name: country_code
+        type: categorical
+        expr: country_code
+
+      - name: state_code
+        type: categorical
+        expr: state_code
+
+      - name: begin_date
+        type: time
+        type_params:
+          time_granularity: day
+
+      - name: end_date
+        type: time
+        type_params:
+          time_granularity: day

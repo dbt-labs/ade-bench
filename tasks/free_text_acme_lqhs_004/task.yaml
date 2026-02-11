@@ -1,0 +1,39 @@
+task_id: free_text_acme_lqhs_004
+status: ready
+description: 'LQHS: Agent - Policy - Coverage - Premium - Claim - Catastrophe - Loss
+  Payment&Expense Payment&Expense Reserve&Loss Rese'
+prompts:
+- key: base
+  prompt: 'What are the loss payment, loss reserve, expense payment, expense reserve
+    amount by claim number and corresponding policy number, policy holder, premium
+    amount paid, the catastrophe it had, and the agent who sold it?
+
+
+    Write a model called result.sql containing your answer.'
+- key: with_sl
+  prompt: 'Using the dbt semantic layer, answer this question:
+
+
+    What are the loss payment, loss reserve, expense payment, expense reserve amount
+    by claim number and corresponding policy number, policy holder, premium amount
+    paid, the catastrophe it had, and the agent who sold it?
+
+
+    Write a model called result.sql containing your answer.'
+author_name: dbt-labs
+author_email: noreply@getdbt.com
+difficulty: hard
+tags:
+- semantic-layer
+- metricflow
+- free-text
+- acme-insurance
+- lqhs
+test_setup: dbt run --select result
+solution_seeds:
+- table_name: result
+variants:
+- db_type: duckdb
+  db_name: acme_insurance
+  project_type: dbt
+  project_name: acme_insurance

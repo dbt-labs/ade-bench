@@ -1,0 +1,34 @@
+task_id: free_text_acme_hqls_011
+status: ready
+description: 'HQLS: Policy - Policy Holder'
+prompts:
+- key: base
+  prompt: 'How many policies does each policy holder have by policy holder id?
+
+
+    Write a model called result.sql containing your answer.'
+- key: with_sl
+  prompt: 'Using the dbt semantic layer, answer this question:
+
+
+    How many policies does each policy holder have by policy holder id?
+
+
+    Write a model called result.sql containing your answer.'
+author_name: dbt-labs
+author_email: noreply@getdbt.com
+difficulty: medium
+tags:
+- semantic-layer
+- metricflow
+- free-text
+- acme-insurance
+- hqls
+test_setup: dbt run --select result
+solution_seeds:
+- table_name: result
+variants:
+- db_type: duckdb
+  db_name: acme_insurance
+  project_type: dbt
+  project_name: acme_insurance

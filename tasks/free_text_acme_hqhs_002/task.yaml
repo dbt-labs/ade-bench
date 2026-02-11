@@ -1,0 +1,37 @@
+task_id: free_text_acme_hqhs_002
+status: ready
+description: 'HQHS: SUM-Policy - Coverage - Claim - Catastrophe - Loss Payment&Expense
+  Payment&Expense Reserve&Loss Reserve'
+prompts:
+- key: base
+  prompt: 'What are the total loss, which is the sum of loss payment, loss reserve,
+    expense payment, expense reserve amount by catastrophe and policy number?
+
+
+    Write a model called result.sql containing your answer.'
+- key: with_sl
+  prompt: 'Using the dbt semantic layer, answer this question:
+
+
+    What are the total loss, which is the sum of loss payment, loss reserve, expense
+    payment, expense reserve amount by catastrophe and policy number?
+
+
+    Write a model called result.sql containing your answer.'
+author_name: dbt-labs
+author_email: noreply@getdbt.com
+difficulty: hard
+tags:
+- semantic-layer
+- metricflow
+- free-text
+- acme-insurance
+- hqhs
+test_setup: dbt run --select result
+solution_seeds:
+- table_name: result
+variants:
+- db_type: duckdb
+  db_name: acme_insurance
+  project_type: dbt
+  project_name: acme_insurance

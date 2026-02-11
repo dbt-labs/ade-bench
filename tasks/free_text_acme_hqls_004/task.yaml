@@ -1,0 +1,36 @@
+task_id: free_text_acme_hqls_004
+status: ready
+description: 'HQLS: Policy - Coverage - Premium'
+prompts:
+- key: base
+  prompt: 'What is the average policy size which is the the total amount of premium
+    divided by the number of policies?
+
+
+    Write a model called result.sql containing your answer.'
+- key: with_sl
+  prompt: 'Using the dbt semantic layer, answer this question:
+
+
+    What is the average policy size which is the the total amount of premium divided
+    by the number of policies?
+
+
+    Write a model called result.sql containing your answer.'
+author_name: dbt-labs
+author_email: noreply@getdbt.com
+difficulty: hard
+tags:
+- semantic-layer
+- metricflow
+- free-text
+- acme-insurance
+- hqls
+test_setup: dbt run --select result
+solution_seeds:
+- table_name: result
+variants:
+- db_type: duckdb
+  db_name: acme_insurance
+  project_type: dbt
+  project_name: acme_insurance

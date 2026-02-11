@@ -1,0 +1,36 @@
+task_id: free_text_acme_lqhs_010
+status: ready
+description: 'LQHS: Agent - Policy - Coverage - Claim - Loss Payment'
+prompts:
+- key: base
+  prompt: 'Return agents and the policies they have sold that have had a claim and
+    the corresponding loss payment amount by agent id, policy number and claim number
+
+
+    Write a model called result.sql containing your answer.'
+- key: with_sl
+  prompt: 'Using the dbt semantic layer, answer this question:
+
+
+    Return agents and the policies they have sold that have had a claim and the corresponding
+    loss payment amount by agent id, policy number and claim number
+
+
+    Write a model called result.sql containing your answer.'
+author_name: dbt-labs
+author_email: noreply@getdbt.com
+difficulty: hard
+tags:
+- semantic-layer
+- metricflow
+- free-text
+- acme-insurance
+- lqhs
+test_setup: dbt run --select result
+solution_seeds:
+- table_name: result
+variants:
+- db_type: duckdb
+  db_name: acme_insurance
+  project_type: dbt
+  project_name: acme_insurance

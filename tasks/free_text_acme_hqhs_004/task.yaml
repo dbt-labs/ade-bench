@@ -1,0 +1,37 @@
+task_id: free_text_acme_hqhs_004
+status: ready
+description: 'HQHS: 2Agent - Policy - Coverage - Claim - Loss Payment&Expense Payment&Expense
+  Reserve&Loss Reserve'
+prompts:
+- key: base
+  prompt: 'What is the loss ratio of each policy and agent who sold it by policy number
+    and agent id?
+
+
+    Write a model called result.sql containing your answer.'
+- key: with_sl
+  prompt: 'Using the dbt semantic layer, answer this question:
+
+
+    What is the loss ratio of each policy and agent who sold it by policy number and
+    agent id?
+
+
+    Write a model called result.sql containing your answer.'
+author_name: dbt-labs
+author_email: noreply@getdbt.com
+difficulty: hard
+tags:
+- semantic-layer
+- metricflow
+- free-text
+- acme-insurance
+- hqhs
+test_setup: dbt run --select result
+solution_seeds:
+- table_name: result
+variants:
+- db_type: duckdb
+  db_name: acme_insurance
+  project_type: dbt
+  project_name: acme_insurance

@@ -1,0 +1,34 @@
+task_id: free_text_acme_lqls_004
+status: ready
+description: 'LQLS: Return all the claims by claim number that were closed in 2019'
+prompts:
+- key: base
+  prompt: 'Return all the claims by claim number that were closed in 2019
+
+
+    Write a model called result.sql containing your answer.'
+- key: with_sl
+  prompt: 'Using the dbt semantic layer, answer this question:
+
+
+    Return all the claims by claim number that were closed in 2019
+
+
+    Write a model called result.sql containing your answer.'
+author_name: dbt-labs
+author_email: noreply@getdbt.com
+difficulty: easy
+tags:
+- semantic-layer
+- metricflow
+- free-text
+- acme-insurance
+- lqls
+test_setup: dbt run --select result
+solution_seeds:
+- table_name: result
+variants:
+- db_type: duckdb
+  db_name: acme_insurance
+  project_type: dbt
+  project_name: acme_insurance

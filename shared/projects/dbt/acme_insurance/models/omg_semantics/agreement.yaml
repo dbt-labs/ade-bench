@@ -1,0 +1,15 @@
+semantic_models:
+  - name: agreement
+    model: ref('agreement')
+    entities:
+      - name: agreement_type_code
+        type: primary
+      - name: product_identifier
+        type: foreign
+    dimensions:
+      - name: agreement_name
+        type: categorical
+      - name: agreement_original_inception_date
+        type: time
+        type_params:
+          time_granularity: day
