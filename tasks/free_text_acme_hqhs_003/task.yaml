@@ -29,9 +29,9 @@ tags:
 - free-text
 - acme-insurance
 - hqhs
-test_setup: dbt run --select result
-solution_seeds:
-- table_name: result
+test_setup: |-
+  dbt run --select result
+  python /scripts/fuzzy_compare.py result /seeds/solution__result.csv
 variants:
 - db_type: duckdb
   db_name: acme_insurance

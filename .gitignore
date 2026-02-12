@@ -47,6 +47,7 @@ profiling/statistics
 
 # Docker
 .docker/
+docker/base/bin/
 
 # dbt
 target/

@@ -15,6 +15,7 @@ RUN pip install --no-cache-dir \
     dbt-snowflake==1.10.2 \
     snowflake-connector-python==3.13.1 \
     "dbt-metricflow[dbt-snowflake]" \
+    pandas \
     pyyaml>=6.0 \
     uv>=0.7
 
