@@ -59,9 +59,7 @@ class AbstractInstalledAgent(BaseAgent, ABC):
         pass
 
     def _create_env_setup_file(self) -> str:
-        return "\n".join(
-            [f"export {key}='{value}'" for key, value in self._env.items()]
-        )
+        return "\n".join([f"export {key}='{value}'" for key, value in self._env.items()])
 
     def perform_task(
         self,
@@ -84,10 +82,7 @@ class AbstractInstalledAgent(BaseAgent, ABC):
                 [
                     "sh",
                     "-c",
-                    (
-                        f"echo {shlex.quote(env_setup_content)} > "
-                        "/installed-agent/setup-env.sh"
-                    ),
+                    (f"echo {shlex.quote(env_setup_content)} > " "/installed-agent/setup-env.sh"),
                 ]
             )
 
@@ -111,7 +106,12 @@ class AbstractInstalledAgent(BaseAgent, ABC):
 
             # Optionally setup dbt MCP server
             if self._use_mcp:
-                dbt_mcp_script = Path(__file__).parent.parent.parent.parent / "shared" / "scripts" / "setup-dbt-mcp.sh"
+                dbt_mcp_script = (
+                    Path(__file__).parent.parent.parent.parent
+                    / "shared"
+                    / "scripts"
+                    / "setup-dbt-mcp.sh"
+                )
                 session.copy_to_container(
                     dbt_mcp_script,
                     container_dir="/scripts",
@@ -119,9 +119,9 @@ class AbstractInstalledAgent(BaseAgent, ABC):
                 )
 
                 # Pass db_type, project_type, and agent name
-                db_type = self._variant_config.get('db_type', 'unknown')
-                project_type = self._variant_config.get('project_type', 'unknown')
-                agent_name = self.NAME.value if hasattr(self.NAME, 'value') else str(self.NAME)
+                db_type = self._variant_config.get("db_type", "unknown")
+                project_type = self._variant_config.get("project_type", "unknown")
+                agent_name = self.NAME.value if hasattr(self.NAME, "value") else str(self.NAME)
                 session.send_keys(
                     [
                         f"bash /scripts/setup-dbt-mcp.sh {db_type} {project_type} {agent_name}",
@@ -135,7 +135,7 @@ class AbstractInstalledAgent(BaseAgent, ABC):
                 logger,
                 task_name,
                 "agent",
-                f"Agent setup timed out after {config.setup_timeout_sec}s during setup and installation phase"
+                f"Agent setup timed out after {config.setup_timeout_sec}s during setup and installation phase",
             )
             return AgentResult(
                 input_tokens=0,
@@ -152,7 +152,12 @@ class AbstractInstalledAgent(BaseAgent, ABC):
 
         run_agent_commands = self._run_agent_commands(task_prompt)
         for command in run_agent_commands:
-            log_harness_info(logger, task_name, "agent", f"Calling agent: {task_prompt.replace(chr(10), ' ').replace(chr(13), '')[:100]}")
+            log_harness_info(
+                logger,
+                task_name,
+                "agent",
+                f"Calling agent: {task_prompt.replace(chr(10), ' ').replace(chr(13), '')[:100]}",
+            )
 
             # Redirect output to log file
             modified_command = TerminalCommand(
@@ -184,7 +189,7 @@ class AbstractInstalledAgent(BaseAgent, ABC):
                 f"Tokens: in-{parsed_metrics.get('input_tokens', 0)} "
                 f"out-{parsed_metrics.get('output_tokens', 0)} "
                 f"cache-{parsed_metrics.get('cache_tokens', 0)}, "
-                f"SUCCESS: {parsed_metrics.get('success', False)}"
+                f"SUCCESS: {parsed_metrics.get('success', False)}",
             )
 
         # Map error string to FailureMode

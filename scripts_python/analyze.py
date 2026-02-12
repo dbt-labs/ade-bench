@@ -21,7 +21,9 @@ from typing import Dict, List, Any
 import yaml
 
 
-def load_migration_config(migration_file: Path | None, project_root: Path) -> tuple[Dict[str, Dict], Dict[str, Dict[str, Dict]], Dict[str, Any]]:
+def load_migration_config(
+    migration_file: Path | None, project_root: Path
+) -> tuple[Dict[str, Dict], Dict[str, Dict[str, Dict]], Dict[str, Any]]:
     """
     Load migration configuration from a YAML file.
 
@@ -35,35 +37,35 @@ def load_migration_config(migration_file: Path | None, project_root: Path) -> tu
         - task_migrations: {experiment_id: {task_id: {field: value}}}
         - default_migration: {field: value}
     """
-    migrations_dir = project_root / 'shared' / 'migrations' / 'analysis'
+    migrations_dir = project_root / "shared" / "migrations" / "analysis"
 
     if migration_file is None:
-        config_path = migrations_dir / 'default.yaml'
+        config_path = migrations_dir / "default.yaml"
     else:
         config_path = migrations_dir / migration_file
 
     if not config_path.exists():
         raise FileNotFoundError(f"Migration file not found: {config_path}")
 
-    with open(config_path, 'r') as f:
+    with open(config_path, "r") as f:
         config = yaml.safe_load(f)
 
-    default_migration = config.get('defaults', {})
+    default_migration = config.get("defaults", {})
 
     # Parse experiments - extract task migrations from nested 'tasks' key
     experiment_migrations = {}
     task_migrations = {}
 
-    for exp_id, exp_config in config.get('experiments', {}).items():
+    for exp_id, exp_config in config.get("experiments", {}).items():
         if exp_config is None:
             continue
 
         # Extract task-specific migrations
-        if 'tasks' in exp_config:
-            task_migrations[exp_id] = exp_config['tasks']
+        if "tasks" in exp_config:
+            task_migrations[exp_id] = exp_config["tasks"]
 
         # Everything else is experiment-level migration
-        experiment_migrations[exp_id] = {k: v for k, v in exp_config.items() if k != 'tasks'}
+        experiment_migrations[exp_id] = {k: v for k, v in exp_config.items() if k != "tasks"}
 
     return experiment_migrations, task_migrations, default_migration
 
@@ -75,7 +77,7 @@ def migrate_field(
     field_name: str,
     experiment_migrations: Dict[str, Dict],
     task_migrations: Dict[str, Dict[str, Dict]],
-    default_migration: Dict[str, Any]
+    default_migration: Dict[str, Any],
 ) -> str:
     """
     Apply standard migration logic for a field.
@@ -102,7 +104,10 @@ def migrate_field(
                 return str(task_migrations[experiment_id][task_id][field_name])
 
     # Check for experiment-specific migration
-    if experiment_id in experiment_migrations and field_name in experiment_migrations[experiment_id]:
+    if (
+        experiment_id in experiment_migrations
+        and field_name in experiment_migrations[experiment_id]
+    ):
         return str(experiment_migrations[experiment_id][field_name])
 
     # Use existing value if present
@@ -110,7 +115,7 @@ def migrate_field(
         return str(row[field_name])
 
     # Fall back to default
-    return str(default_migration.get(field_name, ''))
+    return str(default_migration.get(field_name, ""))
 
 
 def migrate_row(
@@ -118,13 +123,13 @@ def migrate_row(
     experiment_id: str,
     experiment_migrations: Dict[str, Dict],
     task_migrations: Dict[str, Dict[str, Dict]],
-    default_migration: Dict[str, Any]
+    default_migration: Dict[str, Any],
 ) -> Dict[str, str]:
     """
     Apply migrations to normalize a row's structure based on experiment and task config.
     """
     migrated_row = row.copy()
-    task_id = row.get('task_id', '')
+    task_id = row.get("task_id", "")
 
     # Get list of all fields that could be migrated
     fields_to_migrate = []
@@ -143,13 +148,18 @@ def migrate_row(
     # Apply migrations for each field
     for field_name in fields_to_migrate:
         migrated_row[field_name] = migrate_field(
-            row, experiment_id, task_id, field_name,
-            experiment_migrations, task_migrations, default_migration
+            row,
+            experiment_id,
+            task_id,
+            field_name,
+            experiment_migrations,
+            task_migrations,
+            default_migration,
         )
 
     # Remove old columns
-    if 'result_num' in migrated_row:
-        del migrated_row['result_num']
+    if "result_num" in migrated_row:
+        del migrated_row["result_num"]
 
     return migrated_row
 
@@ -159,24 +169,24 @@ def get_canonical_column_order() -> List[str]:
     Define the canonical column order for the merged TSV.
     """
     return [
-        'experiment_id',
-        'task_id',
-        'result',
-        'failure_type',
-        'tests',
-        'passed',
-        'passed_percentage',
-        'time_seconds',
-        'cost',
-        'input_tokens',
-        'output_tokens',
-        'cache_tokens',
-        'turns',
-        'agent',
-        'model_name',
-        'db_type',
-        'project_type',
-        'used_mcp'
+        "experiment_id",
+        "task_id",
+        "result",
+        "failure_type",
+        "tests",
+        "passed",
+        "passed_percentage",
+        "time_seconds",
+        "cost",
+        "input_tokens",
+        "output_tokens",
+        "cache_tokens",
+        "turns",
+        "agent",
+        "model_name",
+        "db_type",
+        "project_type",
+        "used_mcp",
     ]
 
 
@@ -185,7 +195,7 @@ def merge_experiment_results(
     output_file: Path,
     experiment_migrations: Dict[str, Dict],
     task_migrations: Dict[str, Dict[str, Dict]],
-    default_migration: Dict[str, Any]
+    default_migration: Dict[str, Any],
 ) -> None:
     """
     Merge all results.tsv files from saved experiments into a single TSV.
@@ -201,7 +211,7 @@ def merge_experiment_results(
     canonical_columns = get_canonical_column_order()
 
     # Find all results.tsv files in subdirectories
-    tsv_files = sorted(experiments_dir.glob('*/results.tsv'))
+    tsv_files = sorted(experiments_dir.glob("*/results.tsv"))
 
     if not tsv_files:
         print(f"No results.tsv files found in {experiments_dir}")
@@ -216,22 +226,24 @@ def merge_experiment_results(
         experiment_id = tsv_file.parent.name
         print(f"Processing {experiment_id}...")
 
-        with open(tsv_file, 'r', encoding='utf-8') as f:
-            reader = csv.DictReader(f, delimiter='\t')
+        with open(tsv_file, "r", encoding="utf-8") as f:
+            reader = csv.DictReader(f, delimiter="\t")
             rows = list(reader)
 
             print(f"  - Read {len(rows)} rows")
 
             # Apply migrations to each row with the experiment_id
-            migrated_rows = [migrate_row(row, experiment_id, experiment_migrations, task_migrations, default_migration) for row in rows]
+            migrated_rows = [
+                migrate_row(
+                    row, experiment_id, experiment_migrations, task_migrations, default_migration
+                )
+                for row in rows
+            ]
             all_rows.extend(migrated_rows)
 
-    with open(output_file, 'w', encoding='utf-8', newline='') as f:
+    with open(output_file, "w", encoding="utf-8", newline="") as f:
         writer = csv.DictWriter(
-            f,
-            fieldnames=canonical_columns,
-            delimiter='\t',
-            extrasaction='ignore'
+            f, fieldnames=canonical_columns, delimiter="\t", extrasaction="ignore"
         )
         writer.writeheader()
         writer.writerows(all_rows)
@@ -250,6 +262,7 @@ def extract_and_save_tasks(output_file: Path) -> None:
     """
     try:
         from extract_task_details import main as extract_main
+
         extract_main(output_file=output_file, quiet=False)
     except ImportError as e:
         print(f"Warning: Could not import extract_task_details: {e}")
@@ -260,29 +273,31 @@ def extract_and_save_tasks(output_file: Path) -> None:
 def parse_args() -> argparse.Namespace:
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
-        description='Analyze and merge experiment results from saved experiments.',
+        description="Analyze and merge experiment results from saved experiments.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
     uv run scripts_python/analyze.py -o my_analysis
     uv run scripts_python/analyze.py -o my_analysis --migration custom.yaml
     uv run scripts_python/analyze.py -o my_analysis -e experiments
-        """
+        """,
     )
     parser.add_argument(
-        '-o', '--output-directory',
+        "-o",
+        "--output-directory",
         required=True,
-        help='Name of output directory (will be created in dev/analysis/)'
+        help="Name of output directory (will be created in dev/analysis/)",
     )
     parser.add_argument(
-        '--migration',
+        "--migration",
         default=None,
-        help='Migration YAML file name (in shared/migrations/analysis/). Defaults to default.yaml'
+        help="Migration YAML file name (in shared/migrations/analysis/). Defaults to default.yaml",
     )
     parser.add_argument(
-        '-e', '--experiment-directory',
-        default='experiments_saved',
-        help='Directory containing experiment results. Defaults to experiments_saved'
+        "-e",
+        "--experiment-directory",
+        default="experiments_saved",
+        help="Directory containing experiment results. Defaults to experiments_saved",
     )
     return parser.parse_args()
 
@@ -296,16 +311,18 @@ def main():
     project_root = script_dir.parent
 
     # Define paths
-    dev_dir = project_root / 'dev'
-    output_dir = dev_dir / 'analysis' / args.output_directory
+    dev_dir = project_root / "dev"
+    output_dir = dev_dir / "analysis" / args.output_directory
     experiments_dir = project_root / args.experiment_directory
-    merged_results_file = output_dir / 'merged_results.tsv'
-    tasks_file = output_dir / 'tasks.tsv'
+    merged_results_file = output_dir / "merged_results.tsv"
+    tasks_file = output_dir / "tasks.tsv"
 
     # Step 1: Load migration configuration
     print("STARTING...")
     migration_file = args.migration
-    experiment_migrations, task_migrations, default_migration = load_migration_config(migration_file, project_root)
+    experiment_migrations, task_migrations, default_migration = load_migration_config(
+        migration_file, project_root
+    )
     if migration_file:
         print(f"Loaded migration config from: {migration_file}")
     else:
@@ -320,7 +337,13 @@ def main():
         print(f"Error: {experiments_dir} does not exist")
         return
 
-    merge_experiment_results(experiments_dir, merged_results_file, experiment_migrations, task_migrations, default_migration)
+    merge_experiment_results(
+        experiments_dir,
+        merged_results_file,
+        experiment_migrations,
+        task_migrations,
+        default_migration,
+    )
 
     # Step 4: Extract and save task details
     extract_and_save_tasks(tasks_file)
@@ -330,6 +353,5 @@ def main():
     print("COMPLETE.")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
-

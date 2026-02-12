@@ -40,7 +40,7 @@ class ResultsHTMLGenerator:
         self._generate_summary_page(experiment_data)
 
         # Generate detail pages for each task
-        for task_data in experiment_data['tasks']:
+        for task_data in experiment_data["tasks"]:
             self._generate_task_detail_pages(task_data)
 
         return True
@@ -55,17 +55,17 @@ class ResultsHTMLGenerator:
             return None
 
         try:
-            with open(results_path, 'r') as f:
+            with open(results_path, "r") as f:
                 results_data = json.load(f)
 
             metadata = {}
             if metadata_path.exists():
-                with open(metadata_path, 'r') as f:
+                with open(metadata_path, "r") as f:
                     metadata = json.load(f)
 
             # Process results into a more usable format
             tasks = []
-            for result in results_data.get('results', []):
+            for result in results_data.get("results", []):
                 # Results are already in the correct format, just use them directly
                 tasks.append(result)
 
@@ -74,12 +74,12 @@ class ResultsHTMLGenerator:
             # metadata here that isn't available from the results.
 
             return {
-                'experiment_id': self.experiment_dir.name,
-                'start_time': metadata.get('start_time', 'Unknown'),
-                'experiment_runtime': self._calculate_duration(metadata),
-                'agent_from_metadata': metadata.get('agent_name', 'Unknown'),
-                'model_from_metadata': metadata.get('model_name'),
-                'tasks': tasks
+                "experiment_id": self.experiment_dir.name,
+                "start_time": metadata.get("start_time", "Unknown"),
+                "experiment_runtime": self._calculate_duration(metadata),
+                "agent_from_metadata": metadata.get("agent_name", "Unknown"),
+                "model_from_metadata": metadata.get("model_name"),
+                "tasks": tasks,
             }
 
         except Exception as e:
@@ -109,15 +109,15 @@ class ResultsHTMLGenerator:
 
     def _calculate_duration(self, metadata: Dict[str, Any]) -> str:
         """Calculate total experiment duration."""
-        start_time = metadata.get('start_time')
-        end_time = metadata.get('end_time')
+        start_time = metadata.get("start_time")
+        end_time = metadata.get("end_time")
 
         if start_time and end_time:
             try:
-                start = datetime.fromisoformat(start_time.replace('Z', '+00:00'))
-                end = datetime.fromisoformat(end_time.replace('Z', '+00:00'))
+                start = datetime.fromisoformat(start_time.replace("Z", "+00:00"))
+                end = datetime.fromisoformat(end_time.replace("Z", "+00:00"))
                 duration = end - start
-                return str(duration).split('.')[0]  # Remove microseconds
+                return str(duration).split(".")[0]  # Remove microseconds
             except:  # noqa: E722
                 pass
 
@@ -130,46 +130,75 @@ class ResultsHTMLGenerator:
             print(f"Error: Template not found: {template_path}")
             return
 
-        with open(template_path, 'r') as f:
+        with open(template_path, "r") as f:
             template_content = f.read()
 
         # Use the results directly - they're already in the correct format
-        benchmark_results = BenchmarkResults(results=experiment_data['tasks'])
+        benchmark_results = BenchmarkResults(results=experiment_data["tasks"])
 
         # Generate HTML table and get summary stats (computed once in summarize_results)
         from scripts_python.summarize_results import summarize_results
+
         summary_data = summarize_results(benchmark_results)
         html_table = generate_html_table(benchmark_results)
 
         # Extract summary stats
-        summary = summary_data['summary']
+        summary = summary_data["summary"]
 
         # Use model from metadata if available, otherwise use inferred model
-        model = experiment_data.get('model_from_metadata') or summary['inferred_model'] or 'Unknown'
+        model = experiment_data.get("model_from_metadata") or summary["inferred_model"] or "Unknown"
 
         # Use agent from metadata if available, otherwise use from results
-        agent = experiment_data.get('agent_from_metadata') or summary['agent'] or 'Unknown'
+        agent = experiment_data.get("agent_from_metadata") or summary["agent"] or "Unknown"
 
         # Simple template replacement
-        html_content = template_content.replace('{{ experiment_id }}', html.escape(experiment_data['experiment_id']))
-        html_content = html_content.replace('{{ start_time }}', html.escape(experiment_data['start_time']))
-        html_content = html_content.replace('{{ experiment_runtime }}', html.escape(experiment_data['experiment_runtime']))
-        html_content = html_content.replace('{{ total_task_runtime }}', html.escape(self._format_duration_seconds(summary['total_runtime_seconds'])))
-        html_content = html_content.replace('{{ total_tasks }}', html.escape(str(summary['total_tasks'])))
-        html_content = html_content.replace('{{ successful_tasks }}', html.escape(str(summary['passed_count'])))
-        html_content = html_content.replace('{{ failed_tasks }}', html.escape(str(summary['failed_count'])))
-        html_content = html_content.replace('{{ errored_tasks }}', html.escape(str(summary['errored_count'])))
-        html_content = html_content.replace('{{ success_pct }}', html.escape(f"{summary['success_rate']:.1f}"))
-        html_content = html_content.replace('{{ total_cost }}', html.escape(f"${summary['total_cost']:.4f}"))
-        html_content = html_content.replace('{{ agent }}', html.escape(agent))
-        html_content = html_content.replace('{{ model }}', html.escape(model))
-        html_content = html_content.replace('{{ db_type }}', html.escape(summary['db_type'] or 'Unknown'))
-        html_content = html_content.replace('{{ project_type }}', html.escape(summary['project_type'] or 'Unknown'))
-        html_content = html_content.replace('{{ used_mcp }}', 'Yes' if summary['used_mcp'] else 'No')
+        html_content = template_content.replace(
+            "{{ experiment_id }}", html.escape(experiment_data["experiment_id"])
+        )
+        html_content = html_content.replace(
+            "{{ start_time }}", html.escape(experiment_data["start_time"])
+        )
+        html_content = html_content.replace(
+            "{{ experiment_runtime }}", html.escape(experiment_data["experiment_runtime"])
+        )
+        html_content = html_content.replace(
+            "{{ total_task_runtime }}",
+            html.escape(self._format_duration_seconds(summary["total_runtime_seconds"])),
+        )
+        html_content = html_content.replace(
+            "{{ total_tasks }}", html.escape(str(summary["total_tasks"]))
+        )
+        html_content = html_content.replace(
+            "{{ successful_tasks }}", html.escape(str(summary["passed_count"]))
+        )
+        html_content = html_content.replace(
+            "{{ failed_tasks }}", html.escape(str(summary["failed_count"]))
+        )
+        html_content = html_content.replace(
+            "{{ errored_tasks }}", html.escape(str(summary["errored_count"]))
+        )
+        html_content = html_content.replace(
+            "{{ success_pct }}", html.escape(f"{summary['success_rate']:.1f}")
+        )
+        html_content = html_content.replace(
+            "{{ total_cost }}", html.escape(f"${summary['total_cost']:.4f}")
+        )
+        html_content = html_content.replace("{{ agent }}", html.escape(agent))
+        html_content = html_content.replace("{{ model }}", html.escape(model))
+        html_content = html_content.replace(
+            "{{ db_type }}", html.escape(summary["db_type"] or "Unknown")
+        )
+        html_content = html_content.replace(
+            "{{ project_type }}", html.escape(summary["project_type"] or "Unknown")
+        )
+        html_content = html_content.replace(
+            "{{ used_mcp }}", "Yes" if summary["used_mcp"] else "No"
+        )
 
         # Replace the entire table section with the generated HTML table
         import re
-        pattern = r'<table[^>]*>.*?</table>'
+
+        pattern = r"<table[^>]*>.*?</table>"
         html_content = re.sub(pattern, html_table, html_content, flags=re.DOTALL)
 
         # Load task.yaml contents and embed as JavaScript object
@@ -178,11 +207,11 @@ class ResultsHTMLGenerator:
         task_yamls_script = f"<script>\n        const TASK_YAMLS = {task_yamls_js};\n    </script>"
 
         # Insert the task yamls script before the closing </head> tag
-        html_content = html_content.replace('</head>', f'{task_yamls_script}\n</head>')
+        html_content = html_content.replace("</head>", f"{task_yamls_script}\n</head>")
 
         # Write the HTML file
         output_path = self.html_dir / "index.html"
-        with open(output_path, 'w') as f:
+        with open(output_path, "w") as f:
             f.write(html_content)
 
         # Copy TSV files to HTML directory
@@ -204,12 +233,12 @@ class ResultsHTMLGenerator:
         shutil.copy2(source_tsv, dest_tsv)
 
         # Create TSV without headers as .txt
-        with open(source_tsv, 'r') as f:
+        with open(source_tsv, "r") as f:
             lines = f.readlines()
 
         dest_tsv_no_header = self.html_dir / "results_tsv_no_header.txt"
         if len(lines) > 1:
-            with open(dest_tsv_no_header, 'w') as f:
+            with open(dest_tsv_no_header, "w") as f:
                 f.writelines(lines[1:])
         else:
             dest_tsv_no_header.touch()
@@ -223,12 +252,12 @@ class ResultsHTMLGenerator:
         """
         # Task variants follow pattern: base_task_id.variant_name.n-of-m
         # Split and check if it looks like a variant
-        parts = task_id.split('.')
+        parts = task_id.split(".")
         if len(parts) >= 2:
             # Check if last part matches n-of-m pattern
-            if len(parts) >= 2 and '-of-' in parts[-1]:
+            if len(parts) >= 2 and "-of-" in parts[-1]:
                 # Return everything except the last two parts (variant name and n-of-m)
-                return '.'.join(parts[:-2]) if len(parts) > 2 else parts[0]
+                return ".".join(parts[:-2]) if len(parts) > 2 else parts[0]
             # Check if second-to-last part is a known variant name
             # and return the base
             return parts[0]
@@ -239,13 +268,13 @@ class ResultsHTMLGenerator:
         tasks_dir = Path(__file__).parent.parent / "tasks"
         task_yamls = {}
 
-        for task_data in experiment_data['tasks']:
-            task_id = task_data['task_id']
+        for task_data in experiment_data["tasks"]:
+            task_id = task_data["task_id"]
             base_task_id = self._get_base_task_id(task_id)
             source_yaml = tasks_dir / base_task_id / "task.yaml"
 
             if source_yaml.exists():
-                with open(source_yaml, 'r') as f:
+                with open(source_yaml, "r") as f:
                     task_yamls[task_id] = f.read()
             else:
                 task_yamls[task_id] = f"# task.yaml not found for {task_id} (base: {base_task_id})"
@@ -255,7 +284,7 @@ class ResultsHTMLGenerator:
 
     def _generate_task_detail_pages(self, task_data: Dict[str, Any]):
         """Generate detail pages for a specific task."""
-        task_id = task_data['task_id']
+        task_id = task_data["task_id"]
         task_base_dir = self.experiment_dir / task_id
 
         # Find the actual task directory (could be task_id.base.1-of-1, task_id.medium.1-of-1, etc.)
@@ -284,24 +313,22 @@ class ResultsHTMLGenerator:
         # Generate diffs page
         self._generate_diffs_page(task_data, task_dir, task_html_dir)
 
-    def _generate_results_page(self, task_data: Dict[str, Any], task_dir: Path, task_html_dir: Path):
+    def _generate_results_page(
+        self, task_data: Dict[str, Any], task_dir: Path, task_html_dir: Path
+    ):
         """Generate results.json detail page."""
         results_path = task_dir / "results.json"
         content = ""
 
         if results_path.exists():
-            with open(results_path, 'r') as f:
+            with open(results_path, "r") as f:
                 results_data = json.load(f)
             content = json.dumps(results_data, indent=2)
         else:
             content = "No results.json file found."
 
         self._write_detail_page(
-            task_html_dir / "results.html",
-            "Results JSON",
-            task_data['task_id'],
-            content,
-            "json"
+            task_html_dir / "results.html", "Results JSON", task_data["task_id"], content, "json"
         )
 
     def _generate_panes_page(self, task_data: Dict[str, Any], task_dir: Path, task_html_dir: Path):
@@ -325,18 +352,14 @@ class ResultsHTMLGenerator:
                 content += f"\n{'='*80}\n"
                 content += f"FILE: {pane_file.name}\n"
                 content += f"{'='*80}\n\n"
-                with open(pane_file, 'r') as f:
+                with open(pane_file, "r") as f:
                     content += f.read()
                 content += "\n\n"
         else:
             content = "No panes directory found."
 
         self._write_detail_page(
-            task_html_dir / "panes.html",
-            "Terminal Panes",
-            task_data['task_id'],
-            content,
-            "panes"
+            task_html_dir / "panes.html", "Terminal Panes", task_data["task_id"], content, "panes"
         )
 
     def _generate_diffs_page(self, task_data: Dict[str, Any], task_dir: Path, task_html_dir: Path):
@@ -347,44 +370,42 @@ class ResultsHTMLGenerator:
         if diff_log_path.exists():
             # Try to generate HTML diff
             try:
-                html_content = render_diff_log_html(diff_log_path, task_data['task_id'])
+                html_content = render_diff_log_html(diff_log_path, task_data["task_id"])
                 # Write the HTML content directly to our task directory
-                with open(task_html_dir / "diffs.html", 'w') as f:
+                with open(task_html_dir / "diffs.html", "w") as f:
                     f.write(html_content)
                 return  # We've created the diffs.html file directly
             except Exception as e:
                 print(f"Warning: Could not generate HTML diff: {e}")
                 # Fall back to text content
-                with open(diff_log_path, 'r') as f:
+                with open(diff_log_path, "r") as f:
                     content = f.read()
         else:
             content = "No file diff log found."
 
         self._write_detail_page(
-            task_html_dir / "diffs.html",
-            "File Diffs",
-            task_data['task_id'],
-            content,
-            "diffs"
+            task_html_dir / "diffs.html", "File Diffs", task_data["task_id"], content, "diffs"
         )
 
-    def _write_detail_page(self, output_path: Path, title: str, task_id: str, content: str, content_type: str):
+    def _write_detail_page(
+        self, output_path: Path, title: str, task_id: str, content: str, content_type: str
+    ):
         """Write a detail page using the template."""
         template_path = self.templates_dir / "detail.html"
         if not template_path.exists():
             print(f"Error: Template not found: {template_path}")
             return
 
-        with open(template_path, 'r') as f:
+        with open(template_path, "r") as f:
             template_content = f.read()
 
         # Simple template replacement
-        html_content = template_content.replace('{{ title }}', html.escape(title))
-        html_content = html_content.replace('{{ task_id }}', html.escape(task_id))
-        html_content = html_content.replace('{{ content }}', html.escape(content))
-        html_content = html_content.replace('{{ content_type }}', html.escape(content_type))
+        html_content = template_content.replace("{{ title }}", html.escape(title))
+        html_content = html_content.replace("{{ task_id }}", html.escape(task_id))
+        html_content = html_content.replace("{{ content }}", html.escape(content))
+        html_content = html_content.replace("{{ content_type }}", html.escape(content_type))
 
-        with open(output_path, 'w') as f:
+        with open(output_path, "w") as f:
             f.write(html_content)
 
 

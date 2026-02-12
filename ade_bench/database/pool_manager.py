@@ -31,6 +31,7 @@ class DatabaseType(Enum):
 @dataclass
 class DatabaseInfo:
     """Information about a shared database."""
+
     name: str
     type: DatabaseType
     path: Path
@@ -44,9 +45,13 @@ class DatabaseInfo:
 class DatabasePoolManager:
     """Manages shared database files and provides copy-on-write functionality."""
 
-    def __init__(self, shared_db_dir: Optional[Path] = None, logger: Optional[logging.Logger] = None):
+    def __init__(
+        self, shared_db_dir: Optional[Path] = None, logger: Optional[logging.Logger] = None
+    ):
         self.logger = logger or logging.getLogger(__name__)
-        self.shared_db_dir = shared_db_dir or Path(__file__).parent.parent.parent / "shared" / "databases"
+        self.shared_db_dir = (
+            shared_db_dir or Path(__file__).parent.parent.parent / "shared" / "databases"
+        )
         self.catalog_path = self.shared_db_dir / "catalog.yaml"
         self._catalog: Optional[Dict[str, Any]] = None
 
@@ -71,8 +76,7 @@ class DatabasePoolManager:
         with open(self.catalog_path, "w") as f:
             yaml.dump(self._catalog, f, default_flow_style=False, sort_keys=False)
 
-    def get_database(self, name: str, db_type: DatabaseType,
-                    target_dir: Path) -> Path:
+    def get_database(self, name: str, db_type: DatabaseType, target_dir: Path) -> Path:
         """
         Get a copy of a database file for use outside of containers.
 
@@ -113,7 +117,7 @@ class DatabasePoolManager:
         extensions = {
             DatabaseType.DUCKDB: [".duckdb"],
             DatabaseType.SQLITE: [".db", ".sqlite", ".sqlite3"],
-            DatabaseType.POSTGRES: [".sql"]
+            DatabaseType.POSTGRES: [".sql"],
         }
 
         for ext in extensions.get(db_type, []):
@@ -128,11 +132,14 @@ class DatabasePoolManager:
 
         return None
 
-    def register_database(self, db_path: Path,
-                         description: Optional[str] = None,
-                         tables: Optional[List[str]] = None,
-                         tags: Optional[List[str]] = None,
-                         metadata: Optional[Dict[str, Any]] = None) -> DatabaseInfo:
+    def register_database(
+        self,
+        db_path: Path,
+        description: Optional[str] = None,
+        tables: Optional[List[str]] = None,
+        tags: Optional[List[str]] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> DatabaseInfo:
         """
         Register a new database in the shared pool.
 
@@ -171,7 +178,7 @@ class DatabasePoolManager:
             description=description,
             tables=tables,
             tags=tags,
-            metadata=metadata
+            metadata=metadata,
         )
 
         # Update catalog
@@ -182,7 +189,7 @@ class DatabasePoolManager:
             "description": description,
             "tables": tables,
             "tags": tags,
-            "metadata": metadata
+            "metadata": metadata,
         }
         self._save_catalog()
 
@@ -200,7 +207,7 @@ class DatabasePoolManager:
                 continue
 
             for db_file in type_dir.iterdir():
-                if db_file.is_file() and not db_file.name.startswith('.'):
+                if db_file.is_file() and not db_file.name.startswith("."):
                     # Get info from catalog if available
                     catalog_info = self.catalog.get("databases", {}).get(db_file.stem, {})
 
@@ -212,7 +219,7 @@ class DatabasePoolManager:
                         description=catalog_info.get("description"),
                         tables=catalog_info.get("tables"),
                         tags=catalog_info.get("tags"),
-                        metadata=catalog_info.get("metadata")
+                        metadata=catalog_info.get("metadata"),
                     )
                     databases.append(db_info)
 
@@ -243,7 +250,9 @@ class DatabasePoolManager:
 
         return False
 
-    def get_database_info(self, name: str, db_type: Optional[DatabaseType] = None) -> Optional[DatabaseInfo]:
+    def get_database_info(
+        self, name: str, db_type: Optional[DatabaseType] = None
+    ) -> Optional[DatabaseInfo]:
         """Get information about a specific database."""
         if db_type:
             db_path = self.find_database_file(name, db_type)
@@ -257,7 +266,7 @@ class DatabasePoolManager:
                     description=catalog_info.get("description"),
                     tables=catalog_info.get("tables"),
                     tags=catalog_info.get("tags"),
-                    metadata=catalog_info.get("metadata")
+                    metadata=catalog_info.get("metadata"),
                 )
         else:
             # Try all types

@@ -23,25 +23,25 @@ def load_diff_json(diff_log_path: Path) -> dict:
         return {}
 
     try:
-        with open(json_path, 'r') as f:
+        with open(json_path, "r") as f:
             return json.load(f)
     except Exception as e:
         print(f"Warning: Could not load JSON diff data: {e}")
         return {}
 
 
-def get_file_content(json_data: dict, file_path: str, snapshot_type: str = 'after') -> str:
+def get_file_content(json_data: dict, file_path: str, snapshot_type: str = "after") -> str:
     """Get file content from optimized JSON data structure."""
-    if not json_data or 'content_manager' not in json_data:
+    if not json_data or "content_manager" not in json_data:
         return ""
 
-    content_manager = json_data['content_manager']
-    content_store = content_manager.get('content_store', {})
+    content_manager = json_data["content_manager"]
+    content_store = content_manager.get("content_store", {})
 
     # Look through diffs to find the file in the specified snapshot type
-    for diff_data in json_data.get('diffs', []):
+    for diff_data in json_data.get("diffs", []):
         snapshot_data = diff_data.get(snapshot_type, {})
-        file_hashes = snapshot_data.get('file_hashes', {})
+        file_hashes = snapshot_data.get("file_hashes", {})
 
         # Get the content hash for this file from the snapshot
         content_hash = file_hashes.get(file_path)
@@ -56,26 +56,26 @@ def parse_diff_log(log_content: str) -> list[dict]:
     phases = []
     current_phase = None
 
-    lines = log_content.split('\n')
+    lines = log_content.split("\n")
     i = 0
 
     while i < len(lines):
         line = lines[i].strip()
 
         # Look for phase headers
-        if line.startswith('=' * 60):
+        if line.startswith("=" * 60):
             i += 1
-            if i < len(lines) and 'FILE DIFF' in lines[i]:
+            if i < len(lines) and "FILE DIFF" in lines[i]:
                 phase_line = lines[i].strip()
-                phase_match = re.search(r'FILE DIFF - (\w+) PHASE', phase_line)
+                phase_match = re.search(r"FILE DIFF - (\w+) PHASE", phase_line)
                 if phase_match:
                     phase_name = phase_match.group(1).lower()
                     i += 1
 
                     # Get timestamp
                     timestamp = None
-                    if i < len(lines) and lines[i].strip().startswith('Timestamp:'):
-                        timestamp_str = lines[i].strip().replace('Timestamp:', '').strip()
+                    if i < len(lines) and lines[i].strip().startswith("Timestamp:"):
+                        timestamp_str = lines[i].strip().replace("Timestamp:", "").strip()
                         try:
                             timestamp = datetime.fromisoformat(timestamp_str)
                         except ValueError:
@@ -84,44 +84,46 @@ def parse_diff_log(log_content: str) -> list[dict]:
 
                     # Initialize phase data
                     current_phase = {
-                        'name': phase_name,
-                        'timestamp': timestamp,
-                        'added_files': [],
-                        'removed_files': [],
-                        'modified_files': [],
-                        'unified_diffs': {}
+                        "name": phase_name,
+                        "timestamp": timestamp,
+                        "added_files": [],
+                        "removed_files": [],
+                        "modified_files": [],
+                        "unified_diffs": {},
                     }
                     phases.append(current_phase)
                     continue
 
         # Look for file lists (but don't collect files here - they're listed individually)
-        if current_phase and ('ADDED FILES' in line or 'REMOVED FILES' in line or 'MODIFIED FILES' in line):
+        if current_phase and (
+            "ADDED FILES" in line or "REMOVED FILES" in line or "MODIFIED FILES" in line
+        ):
             # Just skip the header line - files are listed individually with ~ prefix
             pass
 
         # Look for individual file entries (with +, -, or ~ prefix)
-        if current_phase and lines[i].startswith('  + '):
+        if current_phase and lines[i].startswith("  + "):
             # This is an added file entry
             file_path = lines[i][4:].strip()  # Remove the '  + ' prefix
-            if file_path not in current_phase['added_files']:
-                current_phase['added_files'].append(file_path)
-        elif current_phase and lines[i].startswith('  - '):
+            if file_path not in current_phase["added_files"]:
+                current_phase["added_files"].append(file_path)
+        elif current_phase and lines[i].startswith("  - "):
             # This is a removed file entry
             file_path = lines[i][4:].strip()  # Remove the '  - ' prefix
-            if file_path not in current_phase['removed_files']:
-                current_phase['removed_files'].append(file_path)
-        elif current_phase and lines[i].startswith('  ~ '):
+            if file_path not in current_phase["removed_files"]:
+                current_phase["removed_files"].append(file_path)
+        elif current_phase and lines[i].startswith("  ~ "):
             # This is a modified file entry
             file_path = lines[i][4:].strip()  # Remove the '  ~ ' prefix
-            if file_path not in current_phase['modified_files']:
-                current_phase['modified_files'].append(file_path)
+            if file_path not in current_phase["modified_files"]:
+                current_phase["modified_files"].append(file_path)
 
         # Look for unified diff sections
-        if current_phase and 'UNIFIED DIFF for' in line:
+        if current_phase and "UNIFIED DIFF for" in line:
             # Extract file path from the line
-            file_path = line.replace('UNIFIED DIFF for', '').strip()
+            file_path = line.replace("UNIFIED DIFF for", "").strip()
             # Remove trailing colon if present
-            if file_path.endswith(':'):
+            if file_path.endswith(":"):
                 file_path = file_path[:-1]
             i += 1
 
@@ -131,18 +133,20 @@ def parse_diff_log(log_content: str) -> list[dict]:
                 current_line = lines[i]
                 # Stop if we hit another unified diff, phase separator, or file entry
                 # Don't stop at empty lines as they can be part of the diff
-                if ('UNIFIED DIFF for' in current_line or
-                    current_line.strip().startswith('=' * 60) or
-                    current_line.strip().startswith('ADDED FILES') or
-                    current_line.strip().startswith('REMOVED FILES') or
-                    current_line.strip().startswith('MODIFIED FILES') or
-                    current_line.startswith('  ~ ')):
+                if (
+                    "UNIFIED DIFF for" in current_line
+                    or current_line.strip().startswith("=" * 60)
+                    or current_line.strip().startswith("ADDED FILES")
+                    or current_line.strip().startswith("REMOVED FILES")
+                    or current_line.strip().startswith("MODIFIED FILES")
+                    or current_line.startswith("  ~ ")
+                ):
                     break
                 diff_lines.append(current_line)
                 i += 1
 
             if diff_lines:
-                current_phase['unified_diffs'][file_path] = '\n'.join(diff_lines)
+                current_phase["unified_diffs"][file_path] = "\n".join(diff_lines)
 
         i += 1
 
@@ -346,9 +350,9 @@ def generate_html(phases: list[dict], task_id: str = None, json_data: dict = Non
         phase_id = f"phase-{i}"
 
         # Calculate stats for this phase
-        added_count = len(phase['added_files'])
-        removed_count = len(phase['removed_files'])
-        modified_count = len(phase['modified_files'])
+        added_count = len(phase["added_files"])
+        removed_count = len(phase["removed_files"])
+        modified_count = len(phase["modified_files"])
 
         # Build stats HTML
         stats_parts = []
@@ -379,26 +383,28 @@ def generate_html(phases: list[dict], task_id: str = None, json_data: dict = Non
                 <div class="file-list">
                     <div class="file-list-title">Added Files ({added_count})</div>
 """
-            for file_path in phase['added_files']:
+            for file_path in phase["added_files"]:
                 html += f'                    <div class="file-item added">{file_path}</div>\n'
             html += "                </div>\n"
 
             # Show full content for added files
             html += '                <div class="diff-container">\n'
-            for file_path in phase['added_files']:
+            for file_path in phase["added_files"]:
                 # Clean the file path (remove + prefix if present)
-                clean_file_path = file_path.lstrip('+ ').strip()
+                clean_file_path = file_path.lstrip("+ ").strip()
 
                 # Get file content from JSON data
-                file_content = get_file_content(json_data, clean_file_path, 'after')
+                file_content = get_file_content(json_data, clean_file_path, "after")
 
                 if file_content is not None:
                     html += f"""
                     <div class="diff-header">{file_path} (Added)</div>
                     <div class="diff-content">
 """
-                    for line in file_content.split('\n'):
-                        html += f'                        <div class="diff-line added">+{line}</div>\n'
+                    for line in file_content.split("\n"):
+                        html += (
+                            f'                        <div class="diff-line added">+{line}</div>\n'
+                        )
                     html += "                    </div>\n"
             html += "                </div>\n"
 
@@ -407,25 +413,25 @@ def generate_html(phases: list[dict], task_id: str = None, json_data: dict = Non
                 <div class="file-list">
                     <div class="file-list-title">Removed Files ({removed_count})</div>
 """
-            for file_path in phase['removed_files']:
+            for file_path in phase["removed_files"]:
                 html += f'                    <div class="file-item removed">{file_path}</div>\n'
             html += "                </div>\n"
 
             # Show full content for removed files
             html += '                <div class="diff-container">\n'
-            for file_path in phase['removed_files']:
+            for file_path in phase["removed_files"]:
                 # Clean the file path (remove - prefix if present)
-                clean_file_path = file_path.lstrip('- ').strip()
+                clean_file_path = file_path.lstrip("- ").strip()
 
                 # Get file content from JSON data
-                file_content = get_file_content(json_data, clean_file_path, 'before')
+                file_content = get_file_content(json_data, clean_file_path, "before")
 
                 if file_content is not None:
                     html += f"""
                     <div class="diff-header">{file_path} (Removed)</div>
                     <div class="diff-content">
 """
-                    for line in file_content.split('\n'):
+                    for line in file_content.split("\n"):
                         html += f'                        <div class="diff-line removed">-{line}</div>\n'
                     html += "                    </div>\n"
             html += "                </div>\n"
@@ -435,39 +441,48 @@ def generate_html(phases: list[dict], task_id: str = None, json_data: dict = Non
                 <div class="file-list">
                     <div class="file-list-title">Modified Files ({modified_count})</div>
 """
-            for file_path in phase['modified_files']:
+            for file_path in phase["modified_files"]:
                 html += f'                    <div class="file-item modified">{file_path}</div>\n'
             html += "                </div>\n"
 
         # Add unified diffs for modified files only
-        if phase['unified_diffs']:
+        if phase["unified_diffs"]:
             # Filter to only show modified files (not added/removed)
             # Clean the modified files list for matching
-            clean_modified_files = [f.lstrip('~ ').strip() for f in phase['modified_files']]
-            modified_files_in_diffs = [f for f in phase['unified_diffs'].keys()
-                                     if f in clean_modified_files]
+            clean_modified_files = [f.lstrip("~ ").strip() for f in phase["modified_files"]]
+            modified_files_in_diffs = [
+                f for f in phase["unified_diffs"].keys() if f in clean_modified_files
+            ]
 
             if modified_files_in_diffs:
                 html += '                <div class="diff-container">\n'
                 for file_path in modified_files_in_diffs:
-                    diff_content = phase['unified_diffs'][file_path]
+                    diff_content = phase["unified_diffs"][file_path]
                     # Skip temporary file headers
-                    if file_path.startswith('--- /tmp') or file_path.startswith('+++ /tmp') or '/var/folders' in file_path:
+                    if (
+                        file_path.startswith("--- /tmp")
+                        or file_path.startswith("+++ /tmp")
+                        or "/var/folders" in file_path
+                    ):
                         continue
 
                     html += f"""
                     <div class="diff-header">{file_path} (Modified)</div>
                     <div class="diff-content">
 """
-                    for line in diff_content.split('\n'):
+                    for line in diff_content.split("\n"):
                         # Skip temporary file headers
-                        if line.startswith('--- /tmp') or line.startswith('+++ /tmp') or '/var/folders' in line:
+                        if (
+                            line.startswith("--- /tmp")
+                            or line.startswith("+++ /tmp")
+                            or "/var/folders" in line
+                        ):
                             continue
                         # Check for added/removed lines (with optional leading spaces)
                         stripped = line.lstrip()
-                        if stripped.startswith('+') and not stripped.startswith('+++'):
+                        if stripped.startswith("+") and not stripped.startswith("+++"):
                             html += f'                        <div class="diff-line added">{line}</div>\n'
-                        elif stripped.startswith('-') and not stripped.startswith('---'):
+                        elif stripped.startswith("-") and not stripped.startswith("---"):
                             html += f'                        <div class="diff-line removed">{line}</div>\n'
                         else:
                             html += f'                        <div class="diff-line context">{line}</div>\n'
@@ -476,7 +491,9 @@ def generate_html(phases: list[dict], task_id: str = None, json_data: dict = Non
 
         # Show "no changes" message if nothing happened
         if added_count == 0 and removed_count == 0 and modified_count == 0:
-            html += '                <div class="no-changes">No changes detected in this phase</div>\n'
+            html += (
+                '                <div class="no-changes">No changes detected in this phase</div>\n'
+            )
 
         html += "            </div>\n        </div>\n"
 
@@ -506,7 +523,7 @@ def render_diff_log_html(diff_log_path: Path, task_id: str = None) -> Path:
     if not diff_log_path.exists():
         raise FileNotFoundError(f"Diff log file not found: {diff_log_path}")
 
-    with open(diff_log_path, 'r') as f:
+    with open(diff_log_path, "r") as f:
         log_content = f.read()
 
     phases = parse_diff_log(log_content)
@@ -528,6 +545,7 @@ def render_diff_log_html(diff_log_path: Path, task_id: str = None) -> Path:
 if __name__ == "__main__":
     # Simple CLI for testing
     import argparse
+
     parser = argparse.ArgumentParser(description="Render file diff logs as HTML")
     parser.add_argument("diff_log_path", type=Path, help="Path to file_diff_log.txt")
     parser.add_argument("--task-id", help="Task ID for the title")

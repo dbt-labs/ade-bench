@@ -44,18 +44,18 @@ class Dataset:
     def _load_specific_tasks(self) -> None:
         """Load specific tasks from the task_ids."""
         for task_pattern in self._requested_task_ids:
-            if task_pattern.startswith('@'):
+            if task_pattern.startswith("@"):
                 # Experiment set pattern - load tasks from experiment set file
                 experiment_set_name = task_pattern[1:]  # Remove the '@'
                 self._load_experiment_set(experiment_set_name)
-            elif task_pattern.endswith('+'):
+            elif task_pattern.endswith("+"):
                 # Wildcard pattern - find all tasks that start with the prefix
                 prefix = task_pattern[:-1]  # Remove the '+'
                 self._load_wildcard_tasks(prefix)
             else:
                 # Get task name and key
-                if '.' in task_pattern:
-                    task_name, task_key = task_pattern.split('.', 1)
+                if "." in task_pattern:
+                    task_name, task_key = task_pattern.split(".", 1)
                 else:
                     task_name, task_key = task_pattern, None
 
@@ -95,8 +95,8 @@ class Dataset:
 
         # Load each task from the experiment set
         for task_id in task_ids:
-            if '.' in task_id:
-                task_name, task_key = task_id.split('.', 1)
+            if "." in task_id:
+                task_name, task_key = task_id.split(".", 1)
             else:
                 task_name, task_key = task_id, None
 

@@ -29,13 +29,19 @@ def get_failure_type(result: TrialResults) -> str:
         return ""
 
     # Check for timeout (regardless of is_resolved state)
-    if result.failure_mode in [FailureMode.AGENT_TIMEOUT, FailureMode.AGENT_SETUP_TIMEOUT, FailureMode.SETUP_TIMEOUT, FailureMode.TEST_TIMEOUT]:
+    if result.failure_mode in [
+        FailureMode.AGENT_TIMEOUT,
+        FailureMode.AGENT_SETUP_TIMEOUT,
+        FailureMode.SETUP_TIMEOUT,
+        FailureMode.TEST_TIMEOUT,
+    ]:
         return result.failure_mode.value
 
     # If is_resolved is False and failure_mode is UNSET, check parser results
     if result.is_resolved is False and result.failure_mode == FailureMode.UNSET:
         if result.parser_results and "dbt_compile" in result.parser_results:
             from ade_bench.parsers.base_parser import UnitTestStatus
+
             if result.parser_results["dbt_compile"] == UnitTestStatus.FAILED:
                 return "compile_error"
             else:
@@ -66,7 +72,9 @@ def format_trial_result(result: TrialResults) -> Dict[str, any]:
     # expected_test_count does NOT include dbt_compile, so add offset if dbt_compile is present
     if result.parser_results:
         tests_ran = len(result.parser_results)
-        tests_passed = sum(1 for status in result.parser_results.values() if status.value == "passed")
+        tests_passed = sum(
+            1 for status in result.parser_results.values() if status.value == "passed"
+        )
         # Check if dbt_compile is in results (it's added for dbt projects)
         has_dbt_compile = "dbt_compile" in result.parser_results
         compile_offset = 1 if has_dbt_compile else 0
@@ -86,20 +94,20 @@ def format_trial_result(result: TrialResults) -> Dict[str, any]:
 
     return {
         # Raw calculated values
-        '_tests': tests,
-        '_tests_passed': tests_passed,
-        '_passed_percentage': passed_percentage,
-        '_runtime_seconds': runtime_seconds,
-        '_runtime_ms': result.runtime_ms or 0,
-        '_cost_usd': result.cost_usd or 0.0,
-        '_input_tokens': result.input_tokens or 0,
-        '_output_tokens': result.output_tokens or 0,
-        '_cache_tokens': result.cache_tokens or 0,
-        '_turns': result.num_turns or 0,
-        '_is_resolved': result.is_resolved,
+        "_tests": tests,
+        "_tests_passed": tests_passed,
+        "_passed_percentage": passed_percentage,
+        "_runtime_seconds": runtime_seconds,
+        "_runtime_ms": result.runtime_ms or 0,
+        "_cost_usd": result.cost_usd or 0.0,
+        "_input_tokens": result.input_tokens or 0,
+        "_output_tokens": result.output_tokens or 0,
+        "_cache_tokens": result.cache_tokens or 0,
+        "_turns": result.num_turns or 0,
+        "_is_resolved": result.is_resolved,
         # Common metadata
-        'task_id': result.task_id,
-        'status_class': 'success' if result.is_resolved else 'failed',
+        "task_id": result.task_id,
+        "status_class": "success" if result.is_resolved else "failed",
     }
 
 
@@ -131,11 +139,11 @@ def write_results_tsv(results: BenchmarkResults, output_path: Path, run_id: str)
         "model_name",
         "db_type",
         "project_type",
-        "used_mcp"
+        "used_mcp",
     ]
 
-    with open(output_path, 'w', newline='') as f:
-        writer = csv.writer(f, delimiter='\t')
+    with open(output_path, "w", newline="") as f:
+        writer = csv.writer(f, delimiter="\t")
         writer.writerow(headers)
 
         for trial_result in sorted(results.results, key=lambda x: x.task_id):
@@ -143,10 +151,10 @@ def write_results_tsv(results: BenchmarkResults, output_path: Path, run_id: str)
             calc = format_trial_result(trial_result)
 
             # Determine result status
-            if calc['_is_resolved']:
+            if calc["_is_resolved"]:
                 result_status = "pass"
                 result_status_num = 1
-            elif calc['_is_resolved'] is None:
+            elif calc["_is_resolved"] is None:
                 result_status = ""
                 result_status_num = None
             else:
@@ -158,25 +166,24 @@ def write_results_tsv(results: BenchmarkResults, output_path: Path, run_id: str)
 
             row = [
                 run_id,
-                calc['task_id'],
+                calc["task_id"],
                 result_status,
                 result_status_num,
                 failure_type,
-                calc['_tests'],
-                calc['_tests_passed'],
-                calc['_passed_percentage'],
-                calc['_runtime_seconds'],
-                calc['_cost_usd'],
-                calc['_input_tokens'],
-                calc['_output_tokens'],
-                calc['_cache_tokens'],
-                calc['_turns'],
+                calc["_tests"],
+                calc["_tests_passed"],
+                calc["_passed_percentage"],
+                calc["_runtime_seconds"],
+                calc["_cost_usd"],
+                calc["_input_tokens"],
+                calc["_output_tokens"],
+                calc["_cache_tokens"],
+                calc["_turns"],
                 trial_result.agent or "",
                 trial_result.model_name or "",
                 trial_result.db_type or "",
                 trial_result.project_type or "",
-                trial_result.used_mcp if trial_result.used_mcp is not None else ""
+                trial_result.used_mcp if trial_result.used_mcp is not None else "",
             ]
 
             writer.writerow(row)
-
