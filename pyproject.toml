@@ -1,6 +1,6 @@
 [project]
 name = "ade-bench"
-version = "0.1.0"
+version = "1.0.0rc1"
 description = "A benchmarking framework for data analyst tasks using dbt and SQL"
 readme = "README.md"
 license = { file = "LICENSE" }
