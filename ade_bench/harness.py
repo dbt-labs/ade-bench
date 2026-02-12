@@ -457,13 +457,31 @@ class Harness:
                 f"TIMEOUT - agent execution timed out after {timeouts.total_agent_operation} seconds (total operation including setup + execution + cleanup)"
             )
 
-            # Try to copy logs before killing the session (for agents that support it)
+            # Salvage partial output before killing the session
+            partial_result = None
             if hasattr(agent, '_copy_log_file_from_container'):
                 try:
-                    self._logger.info(f"Attempting to copy logs for timed-out task {trial_handler.task_id}")
-                    agent._copy_log_file_from_container(session, trial_handler.agent_logging_dir)
+                    self._logger.info(f"Attempting to salvage agent output for timed-out task {trial_handler.task_id}")
+                    content = agent._copy_log_file_from_container(session.container, trial_handler.agent_logging_dir)
+                    if content:
+                        parsed_metrics = agent._parse_agent_output(content)
+                        if parsed_metrics:
+                            partial_result = AgentResult(
+                                input_tokens=parsed_metrics.get("input_tokens", 0),
+                                output_tokens=parsed_metrics.get("output_tokens", 0),
+                                cache_tokens=parsed_metrics.get("cache_tokens", 0),
+                                num_turns=parsed_metrics.get("num_turns", 0),
+                                runtime_ms=parsed_metrics.get("runtime_ms", 0),
+                                cost_usd=parsed_metrics.get("cost_usd", 0.0),
+                                model_name=parsed_metrics.get("model_name"),
+                                failure_mode=FailureMode.AGENT_TIMEOUT,
+                            )
+                            self._logger.info(
+                                f"Salvaged partial metrics for {trial_handler.task_id}: "
+                                f"turns={partial_result.num_turns}, cost=${partial_result.cost_usd:.4f}"
+                            )
                 except Exception as log_error:
-                    self._logger.warning(f"Failed to copy logs after timeout: {log_error}")
+                    self._logger.warning(f"Failed to salvage agent output after timeout: {log_error}")
 
             # Kill the session immediately to stop the agent
             try:
@@ -472,7 +490,7 @@ class Harness:
             except Exception as e:
                 self._logger.error(f"Failed to kill session after timeout: {e}")
 
-            return None, FailureMode.AGENT_TIMEOUT
+            return partial_result, FailureMode.AGENT_TIMEOUT
 
         except RetryError as e:
             last_exception = e.last_attempt.exception()
@@ -710,18 +728,17 @@ class Harness:
                     self._logger.debug(f"Session already killed or error during cleanup: {e}")
                 return results
 
-            # If agent timed out, stop the task immediately (don't run tests)
+            # If agent timed out, still run tests to capture partial progress
             elif agent_failure_mode == FailureMode.AGENT_TIMEOUT:
                 results.failure_mode = agent_failure_mode
-                self._logger.info(f"Task {trial_handler.task_id} halted due to agent execution timeout")
+                self._logger.info(f"Task {trial_handler.task_id} timed out — running tests to capture partial progress")
                 # Session already killed in _run_agent, but try again to be safe
                 try:
                     session.kill_session()
                 except Exception as e:
                     self._logger.debug(f"Session already killed or error during cleanup: {e}")
-                return results
 
-            elif agent_failure_mode != FailureMode.NONE:
+            elif agent_failure_mode not in (FailureMode.NONE, FailureMode.AGENT_TIMEOUT):
                 # Any other agent failure should also halt the task
                 results.failure_mode = agent_failure_mode
                 self._logger.warning(f"Task {trial_handler.task_id} halted due to agent failure: {agent_failure_mode}")

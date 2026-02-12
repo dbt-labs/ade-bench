@@ -194,6 +194,26 @@ class AbstractInstalledAgent(BaseAgent, ABC):
             cost_usd=parsed_metrics["cost_usd"],
         )
 
+    def _copy_log_file_from_container(self, container, logging_dir: Path) -> str:
+        """Read the agent output log from the container and save it locally.
+
+        Args:
+            container: Docker container object
+            logging_dir: Directory to write the log file to
+
+        Returns:
+            The log file content as a string, or empty string on failure
+        """
+        try:
+            result = container.exec_run(["cat", "/tmp/agent_output.log"])
+            if result.exit_code != 0:
+                return ""
+            content = result.output.decode("utf-8")
+            (logging_dir / "agent_output.log").write_text(content)
+            return content
+        except Exception:
+            return ""
+
     def _parse_agent_output(self, output: str) -> dict[str, Any]:
         """Parse the agent output to extract metrics. Override in subclasses if needed."""
         # Default implementation returns 0 values
