@@ -32,7 +32,7 @@
     {% if "using_exchange_rate" in raw_sql %}
         select 'none' as error_message where false union all
     {% else %}
-        select 'using_department is in {{ table_name }} should not be' as error_message union all
+        select 'using_exchange_rate is not in {{ table_name }}' as error_message union all
     {% endif %}
 
 {% endfor %}
