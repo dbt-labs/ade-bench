@@ -3,12 +3,10 @@
 Script to create a sandbox environment from a task.
 """
 
-import os
 import sys
 import shutil
 import yaml
 import argparse
-import logging
 from pathlib import Path
 
 # Add the project root to the Python path so we can import ade_bench modules
@@ -47,7 +45,7 @@ def wipe_sandbox_directory():
             elif item.is_dir():
                 shutil.rmtree(item)
 
-        print(f"✓ Wiped contents of sandbox directory")
+        print("✓ Wiped contents of sandbox directory")
         return True
     except Exception as e:
         print(f"Error wiping sandbox directory: {e}")
@@ -367,9 +365,9 @@ def main():
         sys.exit(1)
 
     # Step 9: Update dbt configuration files
-    print(f"✓ Updating dbt configuration files...")
+    print("✓ Updating dbt configuration files...")
     if not update_dbt_config(variant, task_name):
-        print(f"❌ Failed to update dbt configuration files")
+        print("❌ Failed to update dbt configuration files")
         sys.exit(1)
 
     print("-" * 50)
@@ -379,7 +377,7 @@ def main():
     # Get the absolute path to the sandbox directory
     sandbox_dir = Path("dev/sandbox").absolute()
     print(f"Sandbox location: {sandbox_dir}")
-    print(f"\nTo change to the sandbox directory, run:")
+    print("\nTo change to the sandbox directory, run:")
     print(f"cd {sandbox_dir}")
 
 

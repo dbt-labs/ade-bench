@@ -20,7 +20,7 @@ from ade_bench.agents.agent_name import AgentName
 from ade_bench.agents.base_agent import AgentResult, BaseAgent
 from ade_bench.config import config as ade_bench_config
 from ade_bench.handlers.asciinema_handler import AsciinemaHandler
-from ade_bench.handlers.file_diff_handler import FileDiffHandler, FileSnapshot
+from ade_bench.handlers.file_diff_handler import FileDiffHandler
 from ade_bench.handlers.trial_handler import TrialHandler
 from ade_bench.harness_models import (
     BenchmarkResults,
@@ -38,7 +38,7 @@ from ade_bench.utils.dataset import Dataset
 from ade_bench.utils.logger import logger, log_harness_info, rich_logger, initialize_dynamic_logging
 from ade_bench.utils.test_generator import generate_solution_tests
 from ade_bench.utils.timeout_manager import TimeoutManager
-from ade_bench.utils.debug_breakpoint import breakpoint, DebugBreakpointException
+from ade_bench.utils.debug_breakpoint import DebugBreakpointException
 from ade_bench.utils.results_writer import write_results_tsv
 
 
@@ -392,7 +392,7 @@ class Harness:
         if not trial_handler.task.solution_seeds:
             return
 
-        log_harness_info(self._logger, trial_handler.task_id, "eval", f"Generating solution tests...")
+        log_harness_info(self._logger, trial_handler.task_id, "eval", "Generating solution tests...")
 
         # Ensure target directory exists
         target_dir.mkdir(parents=True, exist_ok=True)
@@ -692,7 +692,7 @@ class Harness:
             if hasattr(task_agent, 'set_variant_config'):
                 task_agent.set_variant_config(config)
 
-            log_harness_info(self._logger, trial_handler.task_id, "agent", f"Starting agent...")
+            log_harness_info(self._logger, trial_handler.task_id, "agent", "Starting agent...")
             try:
                 agent_result, agent_failure_mode = self._run_agent(
                     session=session,
@@ -719,7 +719,7 @@ class Harness:
                     # Get formatted content from agent (returns string or None)
                     formatted_content = task_agent.format_agent_log(agent_log_path)
                     if formatted_content:
-                        self._logger.debug(f"Generated formatted agent.txt from agent.log using agent's formatter")
+                        self._logger.debug("Generated formatted agent.txt from agent.log using agent's formatter")
                 except Exception as e:
                     self._logger.warning(f"Failed to format agent.log: {e}. Using raw pane output.")
 
@@ -928,7 +928,7 @@ class Harness:
                 self._logger.warning(f"Invalid solution_seed item type (expected dict): {type(item)}")
 
         if not tables_to_extract:
-            log_harness_info(self._logger, trial_handler.task_id, "seed", f"No valid tables to extract")
+            log_harness_info(self._logger, trial_handler.task_id, "seed", "No valid tables to extract")
             return
 
         log_harness_info(self._logger, trial_handler.task_id, "seed", f"Extracting tables: {tables_to_extract}")
@@ -1361,7 +1361,7 @@ class Harness:
                 generator = ResultsHTMLGenerator(self._run_path)
                 generator.generate_all()
                 log_harness_info(self._logger, "system", "finish", "Generated HTML dashboard.")
-            except Exception as e:
+            except Exception:
                 log_harness_info(self._logger, "system", "finish", "Failed to generate HTML dashboard.")
 
         # Log harness completion

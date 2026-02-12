@@ -2,7 +2,6 @@
 Base setup functions for copying files and running scripts.
 """
 
-from pathlib import Path
 from typing import Dict, Any
 from ..utils.logger import logger
 from ..terminal.docker_compose_manager import DockerComposeManager

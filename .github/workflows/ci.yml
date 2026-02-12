@@ -5,20 +5,41 @@ on:
     branches:
       - main
     paths:
-      - 'ade_bench/**'
-      - 'tasks/**'
-      - 'shared/**'
-      - 'docker/**'
-      - 'scripts_python/**'
-      - 'pyproject.toml'
-      - 'uv.lock'
-      - '.github/workflows/ci.yml'
+      - "ade_bench/**"
+      - "tasks/**"
+      - "shared/**"
+      - "docker/**"
+      - "scripts_python/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/ci.yml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  ruff-check:
+    name: Ruff check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.10"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@803947b9bd8e9f986429fa0c5a41c367cd732b41
+
+      - name: Install dependencies
+        run: uv sync --extra dev
+
+      - name: Run ruff check
+        run: uv run ruff check .
+
   check-regressions:
     name: ${{ matrix.agent == 'sage' && 'Sage agent always passes' || 'None agent always fails' }}
     runs-on: ubuntu-latest
@@ -31,15 +52,15 @@ jobs:
             expect_success: false
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
-          python-version: '3.10'
+          python-version: "3.10"
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@803947b9bd8e9f986429fa0c5a41c367cd732b41
 
       - name: Install dependencies
         run: uv sync
@@ -75,7 +96,7 @@ jobs:
 
       - name: Upload results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: benchmark-results-${{ matrix.agent }}
           path: experiments/
@@ -84,28 +105,28 @@ jobs:
         run: |
           # Find the results.json file in the run directory
           RESULTS_FILE=$(find experiments -maxdepth 2 -name "results.json" | head -1)
-          
+
           if [ -z "$RESULTS_FILE" ]; then
             echo "Error: No results.json file found"
             exit 1
           fi
-          
+
           echo "Checking results in: $RESULTS_FILE"
           echo "Expecting success: ${{ matrix.expect_success }}"
-          
+
           # Check results against expectations
           python3 << EOF
           import json
           import sys
-          
+
           EXPECT_SUCCESS = "${{ matrix.expect_success }}" == "true"
-          
+
           with open("${RESULTS_FILE}") as f:
               results = json.load(f)
-          
+
           # Tasks that are allowed to pass even for the "none" agent
           ALLOWED_TO_PASS = {"analytics_engineering001"}
-          
+
           failed_tasks = []
           passed_tasks = []
           for task in results["results"]:
@@ -119,9 +140,9 @@ jobs:
                       "task_id": task_id,
                       "failed_tests": failed_tests
                   })
-          
+
           total = len(results["results"])
-          
+
           if EXPECT_SUCCESS:
               if not failed_tasks:
                   print(f"✅ All {total} task(s) passed successfully (as expected)")

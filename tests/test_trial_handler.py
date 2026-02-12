@@ -1,6 +1,4 @@
 import subprocess
-from pathlib import Path
-import pytest
 from ade_bench.handlers.trial_handler import TrialHandler
 
 

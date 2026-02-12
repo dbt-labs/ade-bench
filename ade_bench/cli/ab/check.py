@@ -113,7 +113,7 @@ def is_dotenv_available():
         load_dotenv(".env")
         add_success(".env file loaded successfully.")
         return True
-    except:
+    except:  # noqa: E722
         add_failure("Failed to load .env file.")
         return False
 
@@ -175,7 +175,7 @@ def is_docker_available():
         docker.from_env()
         add_success("Connected to a running docker daemon.")
         container_runtime_available = True
-    except:
+    except:  # noqa: E722
         add_failure("Could not connect to a running docker daemon.")
 
 
@@ -189,7 +189,7 @@ def is_podman_available():
         podman.from_env()
         add_success("Connected to a running podman daemon.")
         add_failure("Note: ADE does not support podman, yet. This message will be removed when it is supported.")
-    except:
+    except:  # noqa: E722
         add_failure("Could not connect to a running podman daemon.")
 
 

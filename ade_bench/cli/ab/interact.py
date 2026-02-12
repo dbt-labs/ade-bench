@@ -10,7 +10,6 @@ from typing import Annotated
 from ade_bench.handlers.trial_handler import TrialHandler
 from ade_bench.terminal.docker_compose_manager import DockerComposeManager
 from ade_bench.utils.logger import logger
-from ade_bench.agents.agent_name import AgentName
 
 
 def interact(
@@ -77,11 +76,8 @@ def interact(
         typer.echo(f"Step '{step}' requires specifying an agent with --agent")
         raise typer.Exit(1)
     # Import necessary modules from harness
-    from ade_bench import Harness
-    from ade_bench.handlers.trial_handler import TrialHandler
     from ade_bench.setup.setup_orchestrator import SetupOrchestrator
     from ade_bench.agents import AgentName
-    from ade_bench.utils.logger import logger
     from datetime import datetime
 
     # Set up logging
@@ -126,7 +122,6 @@ def interact(
         raise typer.Exit(code=1)
 
     # Set up Docker container using DockerComposeManager
-    from ade_bench.terminal.docker_compose_manager import DockerComposeManager
 
     typer.echo(f"Setting up container for {task_id} with {db}/{project_type}...")
     docker_manager = DockerComposeManager(
@@ -165,7 +160,6 @@ def interact(
     session_name = f"task-{task_id}"
 
     # Patch TmuxSession._recording_path to return None to disable recording
-    from ade_bench.terminal.tmux_session import TmuxSession
 
     # Save the original property
     original_recording_path = TmuxSession._recording_path
@@ -402,7 +396,7 @@ def interact(
                 if hasattr(agent_instance, '_run_agent_commands'):
                     # Get the commands from the agent
                     commands = agent_instance._run_agent_commands(prompt)
-                    typer.echo(f"Running agent commands in tmux session...")
+                    typer.echo("Running agent commands in tmux session...")
 
                     # Execute each command through the tmux session's send_command method
                     # exactly as the harness would
