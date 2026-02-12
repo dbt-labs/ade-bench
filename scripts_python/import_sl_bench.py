@@ -235,7 +235,7 @@ GOLD_SQL
 dbt run --select result
 """
     (task_dir / "solution.sh").write_text(solution_sh)
-    os.chmod(task_dir / "solution.sh", 0o755)
+    os.chmod(task_dir / "solution.sh", 0o700)
 
     return True
 
