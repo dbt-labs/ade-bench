@@ -1,0 +1,38 @@
+task_id: free_text_acme_hqhs_007
+status: ready
+description: 'HQHS: What is the loss ratio by policy number?'
+prompts:
+- key: base
+  prompt: 'What is the loss ratio, number of claims, total loss by policy number and
+    premium where total loss is the sum of loss payment, loss reserve, expense payment,
+    expense reserve amount and loss ratio is total loss divided by premium?
+
+
+    Write a model called result.sql containing your answer.'
+- key: with_sl
+  prompt: 'Using the dbt semantic layer, answer this question:
+
+
+    What is the loss ratio, number of claims, total loss by policy number and premium
+    where total loss is the sum of loss payment, loss reserve, expense payment, expense
+    reserve amount and loss ratio is total loss divided by premium?
+
+
+    Write a model called result.sql containing your answer.'
+author_name: dbt-labs
+author_email: noreply@getdbt.com
+difficulty: hard
+tags:
+- semantic-layer
+- metricflow
+- free-text
+- acme-insurance
+- hqhs
+test_setup: |-
+  dbt run --select result
+  python /scripts/fuzzy_compare.py result /seeds/solution__result.csv
+variants:
+- db_type: duckdb
+  db_name: acme_insurance
+  project_type: dbt
+  project_name: acme_insurance

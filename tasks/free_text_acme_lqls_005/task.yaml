@@ -1,0 +1,37 @@
+task_id: free_text_acme_lqls_005
+status: ready
+description: 'LQLS: What is the premium amount of all policies by policy number, coverage
+  effective date and coverage expiration date'
+prompts:
+- key: base
+  prompt: 'What is the premium amount of all policies by policy number, coverage effective
+    date and coverage expiration date
+
+
+    Write a model called result.sql containing your answer.'
+- key: with_sl
+  prompt: 'Using the dbt semantic layer, answer this question:
+
+
+    What is the premium amount of all policies by policy number, coverage effective
+    date and coverage expiration date
+
+
+    Write a model called result.sql containing your answer.'
+author_name: dbt-labs
+author_email: noreply@getdbt.com
+difficulty: medium
+tags:
+- semantic-layer
+- metricflow
+- free-text
+- acme-insurance
+- lqls
+test_setup: |-
+  dbt run --select result
+  python /scripts/fuzzy_compare.py result /seeds/solution__result.csv
+variants:
+- db_type: duckdb
+  db_name: acme_insurance
+  project_type: dbt
+  project_name: acme_insurance

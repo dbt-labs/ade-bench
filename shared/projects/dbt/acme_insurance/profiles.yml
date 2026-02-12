@@ -1,0 +1,20 @@
+acme_insurance-duckdb:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "./acme_insurance.duckdb"
+      schema: main
+
+acme_insurance-snowflake:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      account: <account>
+      user: <user>
+      password: <password>
+      role: <role>
+      database: <database>
+      schema: <schema>
+      warehouse: <warehouse>

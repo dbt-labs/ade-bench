@@ -11,6 +11,8 @@ RUN pip install --no-cache-dir \
     dbt-core==1.10.11 \
     dbt-duckdb==1.9.3 \
     duckdb==1.3.0 \
+    "dbt-metricflow[dbt-duckdb]" \
+    pandas \
     pyyaml>=6.0 \
     uv>=0.7
 

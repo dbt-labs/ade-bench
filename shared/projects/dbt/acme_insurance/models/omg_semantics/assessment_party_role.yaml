@@ -1,0 +1,20 @@
+semantic_models:
+  - name: assessment_party_role
+    model: ref('assesment_party_role')
+    primary_entity: assessment_party_role
+    entities:
+      - name: party_identifier
+        type: foreign
+      - name: assessment_identifier
+        type: foreign
+    dimensions:
+      - name: end_date
+        type: time
+        type_params:
+          time_granularity: day
+      - name: begin_date
+        type: time
+        type_params:
+          time_granularity: day
+      - name: party_role_code
+        type: categorical

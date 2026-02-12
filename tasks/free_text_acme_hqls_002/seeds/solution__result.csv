@@ -1,0 +1,2 @@
+Policy_Number,"avg(datediff('day', claim_open_date, claim_close_date))"
+31003000336,20.5

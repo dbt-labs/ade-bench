@@ -17,6 +17,7 @@ RUN export SHELL=/bin/bash && \
 # Install Snowflake connector (still needed for Snowflake connections)
 RUN pip install --no-cache-dir \
     snowflake-connector-python==3.13.1 \
+    pandas \
     pyyaml>=6.0 \
     uv>=0.7
 

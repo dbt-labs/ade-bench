@@ -1,0 +1,12 @@
+semantic_models:
+  - name: expense_payment
+    model: ref('expense_payment')
+    description: "Table containting expense_payment information."
+    entities:
+      - name: claim_amount
+        type: primary
+        expr: Claim_Amount_Identifier
+    dimensions:
+      - name: has_expense_payment
+        type: categorical
+        expr: "1"

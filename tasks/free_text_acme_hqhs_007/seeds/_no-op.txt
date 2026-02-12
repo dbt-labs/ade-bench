@@ -1,0 +1,11 @@
+
+
+seeds:
+  acme_insurance:
+    solution__result:
+      +column_types:
+        Policy_Number: bigint
+        premium: integer
+        NoOfClaims: bigint
+        TotalLoss: bigint
+        LossRatio: double

@@ -1,0 +1,35 @@
+semantic_models:
+  - name: policy
+    model: ref('policy')
+    description: "Table containting policy data"
+    defaults:
+      # Assuming Occurrence_Begin_Date is the most relevant date for aggregation
+      agg_time_dimension: policy_effective_date
+    entities:
+      - name: policy
+        type: primary
+        expr: Policy_Identifier
+      - name: geographic_location_identifier
+        type: foreign
+        expr: Geographic_Location_Identifier
+    dimensions:
+      - name: policy_number
+        type: categorical
+      - name: status_code
+        type: categorical
+      - name: policy_effective_date
+        type: time
+        type_params:
+          time_granularity: day
+        expr: Effective_Date
+      - name: policy_expiration_date
+        type: time
+        type_params:
+          time_granularity: day
+        expr: Expiration_Date
+    measures:
+      - name: number_of_policies
+        description: "The total number of policies."
+        agg: sum
+        expr: 1
+        create_metric: true

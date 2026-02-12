@@ -1,0 +1,11 @@
+
+
+seeds:
+  acme_insurance:
+    solution__result:
+      +column_types:
+        Party_Identifier: integer
+        Policy_Number: bigint
+        premium: integer
+        Company_Claim_Number: integer
+        Loss: integer

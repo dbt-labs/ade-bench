@@ -1,0 +1,12 @@
+semantic_models:
+  - name: loss_payment
+    model: ref('loss_payment')
+    description: "Table containting loss_payment information."
+    entities:
+      - name: claim_amount
+        type: primary
+        expr: Claim_Amount_Identifier
+    dimensions:
+      - name: has_loss_payment
+        type: categorical
+        expr: "1"

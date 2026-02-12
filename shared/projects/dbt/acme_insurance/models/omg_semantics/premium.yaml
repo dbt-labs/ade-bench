@@ -1,0 +1,13 @@
+semantic_models:
+  - name: premium
+    model: ref('premium')
+    description: "Table containting premium information."
+    entities:
+      - name: policy_amount
+        type: primary
+        expr: Policy_Amount_Identifier
+    dimensions:
+      - name: has_premium
+        type: categorical
+        description: "Filter on this to determine if row represents a premium. Filter should evaluate to 'has_premium = 1' if a premium and not if not a premium"
+        expr: "1"
