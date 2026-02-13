@@ -1,5 +1,6 @@
 import re
 import time
+from collections.abc import Callable
 from pathlib import Path
 
 import docker
@@ -195,19 +196,58 @@ class TmuxSession:
 
         return keys, True
 
+    _POLL_INTERVAL_SEC = 5.0
+    _COMPLETION_GRACE_SEC = 10.0
+
+    def _kill_pane_processes(self) -> None:
+        """Kill all processes in the tmux pane's process group."""
+        try:
+            self.container.exec_run([
+                "bash", "-c",
+                f"kill -- -$(tmux display-message -p -t {self._session_name} '#{{pane_pid}}')"
+            ])
+        except Exception as e:
+            self._logger.warning(f"Failed to kill pane processes: {e}")
+
     def _send_blocking_keys(
         self,
         keys: list[str],
         max_timeout_sec: float,
+        completion_check: Callable[[], bool] | None = None,
     ):
         start_time_sec = time.time()
         self.container.exec_run(self._tmux_send_keys(keys))
 
-        result = self.container.exec_run(
-            ["timeout", f"{max_timeout_sec}s", "tmux", "wait", "done"]
-        )
-        if result.exit_code != 0:
-            raise TimeoutError(f"Command timed out after {max_timeout_sec} seconds")
+        if completion_check is None:
+            result = self.container.exec_run(
+                ["timeout", f"{max_timeout_sec}s", "tmux", "wait", "done"]
+            )
+            if result.exit_code != 0:
+                raise TimeoutError(f"Command timed out after {max_timeout_sec} seconds")
+        else:
+            completion_detected_at = None
+            while True:
+                elapsed = time.time() - start_time_sec
+                if elapsed >= max_timeout_sec:
+                    raise TimeoutError(f"Command timed out after {max_timeout_sec} seconds")
+
+                remaining = max_timeout_sec - elapsed
+                wait_sec = min(self._POLL_INTERVAL_SEC, remaining)
+                result = self.container.exec_run(
+                    ["timeout", f"{wait_sec}s", "tmux", "wait", "done"]
+                )
+                if result.exit_code == 0:
+                    break
+
+                if completion_detected_at is None and completion_check():
+                    completion_detected_at = time.time()
+                    self._logger.debug("Agent output complete, waiting grace period before cleanup.")
+
+                if completion_detected_at is not None:
+                    if time.time() - completion_detected_at >= self._COMPLETION_GRACE_SEC:
+                        self._logger.debug("Grace period expired, killing stuck process tree.")
+                        self._kill_pane_processes()
+                        break
 
         elapsed_time_sec = time.time() - start_time_sec
         self._logger.debug(f"Blocking command completed in {elapsed_time_sec:.2f}s.")
@@ -241,6 +281,7 @@ class TmuxSession:
         block: bool = False,
         min_timeout_sec: float = 0.0,
         max_timeout_sec: float = 180.0,
+        completion_check: Callable[[], bool] | None = None,
     ):
         """
         Execute a command in the tmux session.
@@ -252,6 +293,9 @@ class TmuxSession:
                 Defaults to 0.
             max_timeout_sec (float): Maximum time in seconds to wait for blocking
                 commands. Defaults to 3 minutes.
+            completion_check: Optional callable that returns True when the command's
+                output indicates completion. Used to detect and clean up stuck processes
+                that prevent normal shell completion.
         """
         if block and min_timeout_sec > 0.0:
             self._logger.debug("min_timeout_sec will be ignored because block is True.")
@@ -275,6 +319,7 @@ class TmuxSession:
             self._send_blocking_keys(
                 keys=prepared_keys,
                 max_timeout_sec=max_timeout_sec,
+                completion_check=completion_check,
             )
         else:
             self._send_non_blocking_keys(
@@ -282,7 +327,11 @@ class TmuxSession:
                 min_timeout_sec=min_timeout_sec,
             )
 
-    def send_command(self, command: TerminalCommand) -> None:
+    def send_command(
+        self,
+        command: TerminalCommand,
+        completion_check: Callable[[], bool] | None = None,
+    ) -> None:
         if command.append_enter:
             keys = [command.command, "Enter"]
         else:
@@ -293,6 +342,7 @@ class TmuxSession:
             block=command.block,
             min_timeout_sec=command.min_timeout_sec,
             max_timeout_sec=command.max_timeout_sec,
+            completion_check=completion_check,
         )
 
     def capture_pane(self, capture_entire: bool = False) -> str:

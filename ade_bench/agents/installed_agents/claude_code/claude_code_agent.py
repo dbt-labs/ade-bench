@@ -30,6 +30,24 @@ class ClaudeCodeAgent(AbstractInstalledAgent):
     def _install_agent_script(self) -> os.PathLike:
         return Path(__file__).parent / "claude-code-setup.sh"
 
+    def _is_agent_output_complete(self, container, output_file: str) -> bool:
+        """Detect Claude Code completion by checking for the result JSON line."""
+        try:
+            result = container.exec_run(
+                ["bash", "-c", f"tail -20 {output_file}"]
+            )
+            if result.exit_code != 0:
+                return False
+            for line in reversed(result.output.decode("utf-8", errors="replace").strip().split("\n")):
+                line = line.strip()
+                if not line:
+                    continue
+                if line.startswith("{") and '"type":"result"' in line:
+                    return True
+            return False
+        except Exception:
+            return False
+
     def _run_agent_commands(self, task_prompt: str) -> list[TerminalCommand]:
         header = "echo 'AGENT RESPONSE: ' && "
         escaped_prompt = shlex.quote(task_prompt)

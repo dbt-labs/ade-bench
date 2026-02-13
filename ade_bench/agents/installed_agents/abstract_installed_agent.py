@@ -58,6 +58,17 @@ class AbstractInstalledAgent(BaseAgent, ABC):
         """
         pass
 
+    def _is_agent_output_complete(self, container, output_file: str) -> bool:
+        """Check if the agent has produced its final output.
+
+        Override in subclasses to enable early termination when the agent
+        is done but its process tree hasn't exited (e.g., due to a stuck
+        subprocess).
+
+        Returns False by default (rely solely on process exit).
+        """
+        return False
+
     def _create_env_setup_file(self) -> str:
         return "\n".join(
             [f"export {key}='{value}'" for key, value in self._env.items()]
@@ -226,7 +237,10 @@ class AbstractInstalledAgent(BaseAgent, ABC):
                 block=command.block,
                 append_enter=command.append_enter,
             )
-            session.send_command(modified_command)
+            completion_check = lambda: self._is_agent_output_complete(
+                session.container, agent_output_file
+            )
+            session.send_command(modified_command, completion_check=completion_check)
 
         log_harness_info(logger, task_name, "agent", "Agent returned response")
 
