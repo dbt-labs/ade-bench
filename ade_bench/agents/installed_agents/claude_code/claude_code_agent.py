@@ -1,3 +1,4 @@
+import json
 import os
 import shlex
 from pathlib import Path
@@ -40,10 +41,14 @@ class ClaudeCodeAgent(AbstractInstalledAgent):
                 return False
             for line in reversed(result.output.decode("utf-8", errors="replace").strip().split("\n")):
                 line = line.strip()
-                if not line:
+                if not line or not line.startswith("{"):
                     continue
-                if line.startswith("{") and '"type":"result"' in line:
-                    return True
+                try:
+                    data = json.loads(line)
+                    if data.get("type") == "result":
+                        return True
+                except json.JSONDecodeError:
+                    continue
             return False
         except Exception:
             return False

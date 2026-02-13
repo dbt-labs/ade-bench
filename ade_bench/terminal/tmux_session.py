@@ -16,6 +16,8 @@ class TmuxSession:
     _ENDS_WITH_NEWLINE_PATTERN = r"[\r\n]$"
     _NEWLINE_CHARS = "\r\n"
     _TMUX_COMPLETION_COMMAND = "; tmux wait -S done"
+    _POLL_INTERVAL_SEC = 5.0
+    _COMPLETION_GRACE_SEC = 10.0
     _GET_ASCIINEMA_TIMESTAMP_SCRIPT_CONTAINER_PATH = Path(
         "/tmp/get-asciinema-timestamp.sh"
     )
@@ -196,9 +198,6 @@ class TmuxSession:
 
         return keys, True
 
-    _POLL_INTERVAL_SEC = 5.0
-    _COMPLETION_GRACE_SEC = 10.0
-
     def _kill_pane_processes(self) -> None:
         """Kill all processes in the tmux pane's process group."""
         try:
@@ -247,6 +246,7 @@ class TmuxSession:
                     if time.time() - completion_detected_at >= self._COMPLETION_GRACE_SEC:
                         self._logger.debug("Grace period expired, killing stuck process tree.")
                         self._kill_pane_processes()
+                        self.container.exec_run(["tmux", "wait", "-S", "done"])
                         break
 
         elapsed_time_sec = time.time() - start_time_sec
