@@ -63,6 +63,72 @@ class AbstractInstalledAgent(BaseAgent, ABC):
             [f"export {key}='{value}'" for key, value in self._env.items()]
         )
 
+    def _get_dbt_dynamic_env(self, session: TmuxSession, task_name: str | None) -> dict[str, str]:
+        """Get dynamic environment variables for dbt MCP server."""
+        env_vars = {}
+
+        # DBT_PROJECT_DIR is the container app directory
+        env_vars["DBT_PROJECT_DIR"] = str(DockerComposeManager.CONTAINER_APP_DIR)
+
+        # Get the dbt path from the container
+        result = session.container.exec_run(
+            ["sh", "-c", "which dbt"],
+            workdir=str(DockerComposeManager.CONTAINER_APP_DIR)
+        )
+        if result.exit_code == 0:
+            dbt_path = result.output.decode("utf-8").strip()
+            if dbt_path:
+                env_vars["DBT_PATH"] = dbt_path
+                log_harness_info(logger, task_name, "agent", f"Found dbt at: {dbt_path}")
+        else:
+            logger.warning("[MCP] dbt not found in PATH, MCP server may not work correctly")
+
+        # Enable the dbt CLI in dbt-mcp
+        env_vars["DISABLE_DBT_CLI"] = "false"
+
+        return env_vars
+
+    def _configure_mcp_servers(self, session: TmuxSession, task_name: str | None) -> None:
+        """Configure MCP servers after agent installation."""
+        agent_cli = self.NAME.value  # e.g., "claude", "gemini"
+
+        for server_name, mcp_config in self._mcp_servers.items():
+            log_harness_info(logger, task_name, "agent", f"Configuring MCP server '{server_name}'...")
+
+            # Start with static env vars from config
+            env_vars = dict(mcp_config.env)
+
+            # For dbt MCP server, add dynamic environment variables
+            # Check server name or if dbt-mcp appears in any of the args
+            is_dbt_mcp = server_name == "dbt" or any("dbt-mcp" in arg for arg in mcp_config.args)
+            if is_dbt_mcp:
+                dynamic_env = self._get_dbt_dynamic_env(session, task_name)
+                # Merge dynamic vars (don't override static config)
+                for key, value in dynamic_env.items():
+                    if key not in env_vars:
+                        env_vars[key] = value
+
+            # Build -e flags for `claude mcp add -e KEY=value` syntax
+            env_flags = [f"-e {k}={v}" for k, v in env_vars.items()]
+            if env_vars:
+                log_harness_info(logger, task_name, "agent", f"Setting env vars: {list(env_vars.keys())}")
+
+            # Build mcp add command
+            parts = [agent_cli, "mcp", "add"] + env_flags + [server_name, "--", mcp_config.command] + mcp_config.args
+            mcp_cmd = " ".join(parts)
+
+            result = session.container.exec_run(
+                ["sh", "-c", mcp_cmd],
+                workdir=str(DockerComposeManager.CONTAINER_APP_DIR)
+            )
+
+            if result.exit_code != 0:
+                logger.warning(
+                    f"[MCP] Server registration failed for {server_name}: "
+                    f"{result.output.decode('utf-8')}"
+                )
+            else:
+                log_harness_info(logger, task_name, "agent", f"MCP server '{server_name}' configured")
     def perform_task(
         self,
         task_prompt: str,
