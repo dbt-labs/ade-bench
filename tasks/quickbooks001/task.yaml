@@ -1,8 +1,8 @@
 task_id: quickbooks001
 status: ready
-description: Fix a data type issue in the Quickbooks source.
+description: Fix a data type issue where date columns are stored as unix timestamps, not the datetimes expected by the Fivetran package.
 notes: |-
-  The issue is with a few columns being numbers and not dates.
+  The source tables have date columns (transaction_date, due_date) stored as unix epoch integers instead of proper datetime values. The solution requires overriding the Fivetran staging models to convert the epochs back to dates.
 prompts:
   - key: base
     prompt: |-
@@ -20,14 +20,18 @@ tags:
   - model-refactor
 
 test_setup: |-
-  dbt deps
-  dbt run
+  DBT_STATIC_ANALYSIS=off dbt run
 
 # Tables to compare for solution
 solution_seeds:
   - table_name: int_quickbooks__refund_receipt_transactions
   - table_name: int_quickbooks__sales_receipt_transactions
   - table_name: int_quickbooks__invoice_join
+    exclude_columns:
+    - source_relation
+  - table_name: stg_quickbooks__sales_receipt
+  - table_name: stg_quickbooks__refund_receipt
+  - table_name: stg_quickbooks__estimate
     exclude_columns:
     - source_relation
 
@@ -37,3 +41,15 @@ variants:
   db_name: quickbooks
   project_type: dbt
   project_name: quickbooks
+
+- db_type: snowflake
+  db_name: quickbooks
+  project_type: dbt
+  project_name: quickbooks
+  migration_directory: quickbooks__duckdb_to_snowflake
+
+- db_type: snowflake
+  db_name: quickbooks
+  project_type: dbt-fusion
+  project_name: quickbooks
+  migration_directory: quickbooks__duckdb_to_snowflake_dbtf

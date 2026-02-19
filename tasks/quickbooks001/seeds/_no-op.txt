@@ -69,3 +69,50 @@ seeds:
         recent_payment_date: date
         total_current_payment: double
         total_current_converted_payment: double
+    solution__stg_quickbooks__sales_receipt:
+      +column_types:
+        sales_receipt_id: varchar
+        balance: integer
+        doc_number: varchar
+        total_amount: integer
+        deposit_to_account_id: varchar
+        created_at: timestamp
+        customer_id: varchar
+        department_id: varchar
+        class_id: varchar
+        currency_id: varchar
+        exchange_rate: integer
+        transaction_date: date
+        _fivetran_deleted: boolean
+        source_relation: varchar
+    solution__stg_quickbooks__refund_receipt:
+      +column_types:
+        refund_id: varchar
+        balance: integer
+        doc_number: varchar
+        total_amount: integer
+        class_id: varchar
+        deposit_to_account_id: varchar
+        created_at: timestamp
+        department_id: varchar
+        customer_id: varchar
+        currency_id: varchar
+        exchange_rate: integer
+        transaction_date: date
+        _fivetran_deleted: boolean
+        source_relation: varchar
+    solution__stg_quickbooks__estimate:
+      +column_types:
+        estimate_id: varchar
+        class_id: varchar
+        created_at: timestamp
+        currency_id: varchar
+        customer_id: integer
+        department_id: varchar
+        due_date: date
+        exchange_rate: integer
+        total_amount: double
+        transaction_date: date
+        transaction_status: varchar
+        _fivetran_deleted: boolean
+        source_relation: varchar

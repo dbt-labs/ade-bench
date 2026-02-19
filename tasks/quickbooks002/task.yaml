@@ -38,3 +38,9 @@ variants:
   db_name: quickbooks
   project_type: dbt
   project_name: quickbooks
+
+- db_type: snowflake
+  db_name: quickbooks
+  project_type: dbt
+  project_name: quickbooks
+  migration_directory: quickbooks__duckdb_to_snowflake

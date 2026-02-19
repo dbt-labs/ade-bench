@@ -105,10 +105,11 @@ models:
     description: "{{ doc('ap_ar_enhanced_table') }}"   
     tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - transaction_id
-            - source_relation
-            - estimate_id
+          arguments:
+            combination_of_columns:
+              - transaction_id
+              - source_relation
+              - estimate_id
     columns:
       - name: transaction_type
         description: Set to 'bill' of the transaction is a bill and 'invoice' if the transaction is an invoice.
@@ -168,7 +169,8 @@ models:
     description: "{{ doc('expenses_sales_enhanced_table') }}" 
     tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
+          arguments:
+            combination_of_columns:
             - transaction_id
             - source_relation
             - transaction_line_id
