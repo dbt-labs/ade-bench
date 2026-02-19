@@ -21,6 +21,9 @@ tags:
   - debugging
   - dbt-project-configuration
 
+test_setup: |-
+  dbt run --select constructor_points driver_points
+
 # Tables to compare for solution
 solution_seeds:
   - table_name: constructor_points
