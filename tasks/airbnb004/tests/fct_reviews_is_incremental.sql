@@ -3,7 +3,7 @@
 {% set mat = node.config.materialized %}
 
 {% if mat != 'incremental' %}
-    select 'Model is not a view' as error_message
+    select 'Model is not incremental' as error_message
 {% else %}
     select 1 where false
 {% endif %}
