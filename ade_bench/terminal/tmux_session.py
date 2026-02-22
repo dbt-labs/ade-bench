@@ -15,9 +15,7 @@ class TmuxSession:
     _ENDS_WITH_NEWLINE_PATTERN = r"[\r\n]$"
     _NEWLINE_CHARS = "\r\n"
     _TMUX_COMPLETION_COMMAND = "; tmux wait -S done"
-    _GET_ASCIINEMA_TIMESTAMP_SCRIPT_CONTAINER_PATH = Path(
-        "/tmp/get-asciinema-timestamp.sh"
-    )
+    _GET_ASCIINEMA_TIMESTAMP_SCRIPT_CONTAINER_PATH = Path("/tmp/get-asciinema-timestamp.sh")
     _GET_ASCIINEMA_TIMESTAMP_SCRIPT_HOST_PATH = Path(__file__).parent / (
         "get-asciinema-timestamp.sh"
     )
@@ -52,31 +50,22 @@ class TmuxSession:
 
         self.copy_to_container(
             paths=[self._GET_ASCIINEMA_TIMESTAMP_SCRIPT_HOST_PATH],
-            container_dir=str(
-                self._GET_ASCIINEMA_TIMESTAMP_SCRIPT_CONTAINER_PATH.parent
-            ),
+            container_dir=str(self._GET_ASCIINEMA_TIMESTAMP_SCRIPT_CONTAINER_PATH.parent),
         )
 
     @classmethod
-    def from_container_name(
-        cls, session_name: str, container_name: str
-    ) -> "TmuxSession":
+    def from_container_name(cls, session_name: str, container_name: str) -> "TmuxSession":
         client = docker.from_env()
         container = client.containers.get(container_name)
         return cls(session_name=session_name, container=container)
 
     @property
     def logging_path(self) -> Path:
-        return (
-            DockerComposeManager.CONTAINER_LOGS_PATH / f"{self._session_name}.log"
-        )
+        return DockerComposeManager.CONTAINER_LOGS_PATH / f"{self._session_name}.log"
 
     @property
     def _recording_path(self) -> Path:
-        return (
-            DockerComposeManager.CONTAINER_LOGS_PATH
-            / f"{self._session_name}.cast"
-        )
+        return DockerComposeManager.CONTAINER_LOGS_PATH / f"{self._session_name}.cast"
 
     @property
     def _tmux_start_session(self) -> list[str]:
@@ -203,9 +192,7 @@ class TmuxSession:
         start_time_sec = time.time()
         self.container.exec_run(self._tmux_send_keys(keys))
 
-        result = self.container.exec_run(
-            ["timeout", f"{max_timeout_sec}s", "tmux", "wait", "done"]
-        )
+        result = self.container.exec_run(["timeout", f"{max_timeout_sec}s", "tmux", "wait", "done"])
         if result.exit_code != 0:
             raise TimeoutError(f"Command timed out after {max_timeout_sec} seconds")
 
@@ -296,9 +283,7 @@ class TmuxSession:
         )
 
     def capture_pane(self, capture_entire: bool = False) -> str:
-        result = self.container.exec_run(
-            self._tmux_capture_pane(capture_entire=capture_entire)
-        )
+        result = self.container.exec_run(self._tmux_capture_pane(capture_entire=capture_entire))
         return result.output.decode()
 
     def copy_to_container(
@@ -318,9 +303,7 @@ class TmuxSession:
         """Kill the tmux session and all processes running in it."""
         try:
             # Kill the tmux session
-            result = self.container.exec_run([
-                "tmux", "kill-session", "-t", self._session_name
-            ])
+            result = self.container.exec_run(["tmux", "kill-session", "-t", self._session_name])
 
             if result.exit_code == 0:
                 self._logger.debug(f"Successfully killed tmux session {self._session_name}")
@@ -331,6 +314,4 @@ class TmuxSession:
                 )
 
         except Exception as e:
-            self._logger.error(
-                f"Error killing tmux session {self._session_name}: {e}"
-            )
+            self._logger.error(f"Error killing tmux session {self._session_name}: {e}")

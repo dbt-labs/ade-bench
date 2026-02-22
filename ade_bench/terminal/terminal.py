@@ -43,9 +43,7 @@ class Terminal:
 
         self.container = None
 
-    def create_session(
-        self, session_name: str
-    ) -> TmuxSession:
+    def create_session(self, session_name: str) -> TmuxSession:
         """Create a new tmux session with the given name."""
         if self.container is None:
             raise ValueError("Container not started. Run start() first.")
@@ -100,6 +98,7 @@ class Terminal:
             container_filename=container_filename,
         )
 
+
 @contextmanager
 def spin_up_terminal(
     client_container_name: str,
@@ -134,5 +133,7 @@ def spin_up_terminal(
             terminal.stop()
         else:
             # If keep_alive is True, just stop the services but don't remove containers
-            logger.info(f"Keeping container {client_container_name} alive for debugging (--persist flag was used)")
+            logger.info(
+                f"Keeping container {client_container_name} alive for debugging (--persist flag was used)"
+            )
             terminal.stop_services_only()
