@@ -17,8 +17,12 @@ from ade_bench.config import config
 
 # Default directories - can be overridden via environment variables
 _PACKAGE_ROOT = Path(str(files("ade_bench"))).parent
-DEFAULT_DATABASES_DIR = Path(os.environ.get("ADE_DATABASES_DIR", _PACKAGE_ROOT / "shared" / "databases"))
-DEFAULT_PROJECTS_DIR = Path(os.environ.get("ADE_PROJECTS_DIR", _PACKAGE_ROOT / "shared" / "projects"))
+DEFAULT_DATABASES_DIR = Path(
+    os.environ.get("ADE_DATABASES_DIR", _PACKAGE_ROOT / "shared" / "databases")
+)
+DEFAULT_PROJECTS_DIR = Path(
+    os.environ.get("ADE_PROJECTS_DIR", _PACKAGE_ROOT / "shared" / "projects")
+)
 
 
 class TaskPrompt(BaseModel):
@@ -64,14 +68,21 @@ class Task(BaseModel):
     # Configuration
     max_agent_timeout_sec: float = Field(
         default_factory=lambda: config.default_agent_timeout_sec,
-        description="Maximum timeout in seconds for the agent to run."
+        description="Maximum timeout in seconds for the agent to run.",
     )
     max_test_timeout_sec: float = Field(
         default_factory=lambda: config.default_test_timeout_sec,
-        description="Maximum timeout in seconds for each individual test"
+        description="Maximum timeout in seconds for each individual test",
     )
     test_scripts: list[str] = Field(
-        default=["setup-dbt-test.sh", "run-dbt-test.sh", "seed-schema.sh", "merge_yaml.py", "run_sql.py", "run_sql.sh"],
+        default=[
+            "setup-dbt-test.sh",
+            "run-dbt-test.sh",
+            "seed-schema.sh",
+            "merge_yaml.py",
+            "run_sql.py",
+            "run_sql.sh",
+        ],
         description="List of test scripts to use for the task",
     )
     run_tests_in_same_shell: bool = Field(
@@ -163,7 +174,7 @@ class TrialHandler:
         output_path: Path | None = None,
         task_key: str = "base",
         variant_config: dict | None = None,
-        agent_name = None,
+        agent_name=None,
     ):
         self.trial_name = trial_name
         self.input_path = input_path
@@ -235,7 +246,7 @@ class TrialHandler:
                 cwd=Path(__file__).parent,
                 capture_output=True,
                 text=True,
-                check=True
+                check=True,
             )
             git_dir = Path(result.stdout.strip())
 
@@ -280,12 +291,7 @@ class TrialHandler:
     @property
     def docker_compose_path(self) -> Path:
         if self.task.env_name is not None:
-            return (
-                self._shared_path
-                / "environments"
-                / self.task.env_name
-                / "docker-compose.yaml"
-            )
+            return self._shared_path / "environments" / self.task.env_name / "docker-compose.yaml"
 
         task_docker_compose_path = self.input_path / "docker-compose.yaml"
 
@@ -471,7 +477,9 @@ class TrialHandler:
             base_dir = DEFAULT_DATABASES_DIR / "duckdb"
         return (base_dir / f"{db_name}.duckdb").resolve()
 
-    def get_dbt_project_path(self, project_name: str, project_type: str = "dbt", project_dir: str | None = None) -> Path:
+    def get_dbt_project_path(
+        self, project_name: str, project_type: str = "dbt", project_dir: str | None = None
+    ) -> Path:
         """Get the path to a specific dbt project directory.
 
         Args:
@@ -485,7 +493,7 @@ class TrialHandler:
         if project_dir is not None:
             base_dir = Path(project_dir)
         else:
-            project_type_path = 'dbt' if project_type == 'dbt-fusion' else project_type
+            project_type_path = "dbt" if project_type == "dbt-fusion" else project_type
             base_dir = DEFAULT_PROJECTS_DIR / project_type_path
         return (base_dir / project_name).resolve()
 

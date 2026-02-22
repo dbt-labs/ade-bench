@@ -57,16 +57,10 @@ def _save_run(run_path: Path, saved_dir: Path, force: bool = False) -> bool:
 def save_callback(
     ctx: typer.Context,
     output_path: Path = typer.Option(
-        Path("experiments_saved"),
-        "--output-path",
-        "-o",
-        help="Path to save experiments to"
+        Path("experiments_saved"), "--output-path", "-o", help="Path to save experiments to"
     ),
     force: bool = typer.Option(
-        False,
-        "--force",
-        "-f",
-        help="Overwrite existing saved run without prompting"
+        False, "--force", "-f", help="Overwrite existing saved run without prompting"
     ),
 ):
     """Save ADE-bench results."""
@@ -97,20 +91,13 @@ def _save_most_recent(
 @app.command("run")
 def save_run(
     run_id: Optional[str] = typer.Argument(
-        None,
-        help="Run ID to save. If not provided, saves the most recent run."
+        None, help="Run ID to save. If not provided, saves the most recent run."
     ),
     output_path: Path = typer.Option(
-        Path("experiments_saved"),
-        "--output-path",
-        "-o",
-        help="Path to save experiments to"
+        Path("experiments_saved"), "--output-path", "-o", help="Path to save experiments to"
     ),
     force: bool = typer.Option(
-        False,
-        "--force",
-        "-f",
-        help="Overwrite existing saved run without prompting"
+        False, "--force", "-f", help="Overwrite existing saved run without prompting"
     ),
 ):
     """

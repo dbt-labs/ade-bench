@@ -43,6 +43,7 @@ version: 2
 
 sources:
   - name: f1_dataset
+    schema: main
     tables:
       - name: circuits
       - name: constructors
