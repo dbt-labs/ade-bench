@@ -2,7 +2,6 @@
 Agent-specific setup functions for copying configuration files and other agent resources.
 """
 
-from pathlib import Path
 from ..utils.logger import logger
 from ..terminal.docker_compose_manager import DockerComposeManager
 from ..agents.agent_name import AgentName

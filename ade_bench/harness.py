@@ -785,7 +785,7 @@ class Harness:
                 # format_agent_log() returns None for agents without formatting (BaseAgent default)
                 formatted_content = task_agent.format_agent_log(agent_log_path)
                 if formatted_content:
-                    self._logger.debug(f"Generated formatted agent.txt from agent.log using agent's formatter")
+                    self._logger.debug("Generated formatted agent.txt from agent.log using agent's formatter")
             except Exception as e:
                 self._logger.warning(f"Failed to write/format agent.log: {e}. Using raw pane output.")
 

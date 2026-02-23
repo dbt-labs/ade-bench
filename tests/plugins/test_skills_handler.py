@@ -1,5 +1,4 @@
-import pytest
-from unittest.mock import MagicMock, call
+from unittest.mock import MagicMock
 from ade_bench.plugins.skills_handler import SkillsHandler
 from ade_bench.harness_models import PluginSet, SkillOrigin
 
