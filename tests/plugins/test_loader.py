@@ -6,13 +6,15 @@ from ade_bench.harness_models import PluginSetsConfig
 
 def test_loader_loads_yaml(tmp_path):
     yaml_file = tmp_path / "plugin-sets.yaml"
-    yaml_file.write_text("""
+    yaml_file.write_text(
+        """
 sets:
   - name: test
     default: true
     skills: []
     allowed_tools: [Bash]
-""")
+"""
+    )
     loader = PluginSetLoader(yaml_file)
     config = loader.load()
     assert isinstance(config, PluginSetsConfig)
@@ -38,14 +40,12 @@ sets:
     allowed_tools: [Bash]
 """
     import tempfile
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
         f.write(yaml_content)
         f.flush()
         loader = PluginSetLoader(Path(f.name))
-        result = loader.resolve_plugin_sets(
-            plugin_set_names=["a"],
-            agent_name="claude"
-        )
+        result = loader.resolve_plugin_sets(plugin_set_names=["a"], agent_name="claude")
         assert len(result) == 1
         assert result[0].name == "a"
 
@@ -65,14 +65,12 @@ sets:
     allowed_tools: [Bash]
 """
     import tempfile
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
         f.write(yaml_content)
         f.flush()
         loader = PluginSetLoader(Path(f.name))
-        result = loader.resolve_plugin_sets(
-            plugin_set_names=None,
-            agent_name="claude"
-        )
+        result = loader.resolve_plugin_sets(plugin_set_names=None, agent_name="claude")
         assert len(result) == 2
         assert result[0].name == "b"
         assert result[1].name == "c"
@@ -91,7 +89,8 @@ sets:
     allowed_tools: [Bash]
 """
     import tempfile
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
         f.write(yaml_content)
         f.flush()
         loader = PluginSetLoader(Path(f.name))
@@ -115,7 +114,8 @@ sets:
     allowed_tools: [Bash]
 """
     import tempfile
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
         f.write(yaml_content)
         f.flush()
         loader = PluginSetLoader(Path(f.name))
@@ -134,7 +134,8 @@ sets:
     allowed_tools: [Bash]
 """
     import tempfile
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
         f.write(yaml_content)
         f.flush()
         loader = PluginSetLoader(Path(f.name))

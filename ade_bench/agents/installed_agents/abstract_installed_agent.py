@@ -28,7 +28,13 @@ from ade_bench.config import config
 class AbstractInstalledAgent(BaseAgent, ABC):
     NAME = AgentName.ABSTRACT_INSTALLED
 
-    def __init__(self, model_name: str | None = None, allowed_tools: list[str] | None = None, mcp_servers: dict[str, McpServerConfig] | None = None, **kwargs):
+    def __init__(
+        self,
+        model_name: str | None = None,
+        allowed_tools: list[str] | None = None,
+        mcp_servers: dict[str, McpServerConfig] | None = None,
+        **kwargs,
+    ):
         super().__init__(**kwargs)
         self._variant_config = {}
         self._model_name = model_name
@@ -73,8 +79,7 @@ class AbstractInstalledAgent(BaseAgent, ABC):
 
         # Get the dbt path from the container
         result = session.container.exec_run(
-            ["sh", "-c", "which dbt"],
-            workdir=str(DockerComposeManager.CONTAINER_APP_DIR)
+            ["sh", "-c", "which dbt"], workdir=str(DockerComposeManager.CONTAINER_APP_DIR)
         )
         if result.exit_code == 0:
             dbt_path = result.output.decode("utf-8").strip()
@@ -94,7 +99,9 @@ class AbstractInstalledAgent(BaseAgent, ABC):
         agent_cli = self.NAME.value  # e.g., "claude", "gemini"
 
         for server_name, mcp_config in self._mcp_servers.items():
-            log_harness_info(logger, task_name, "agent", f"Configuring MCP server '{server_name}'...")
+            log_harness_info(
+                logger, task_name, "agent", f"Configuring MCP server '{server_name}'..."
+            )
 
             # Start with static env vars from config
             env_vars = dict(mcp_config.env)
@@ -117,13 +124,19 @@ class AbstractInstalledAgent(BaseAgent, ABC):
                 write_cmd = f"cat > {env_file_path} << 'ENVEOF'\n{env_content}\nENVEOF"
 
                 result = session.container.exec_run(
-                    ["sh", "-c", write_cmd],
-                    workdir=str(DockerComposeManager.CONTAINER_APP_DIR)
+                    ["sh", "-c", write_cmd], workdir=str(DockerComposeManager.CONTAINER_APP_DIR)
                 )
                 if result.exit_code != 0:
-                    logger.warning(f"[MCP] Failed to write env file: {result.output.decode('utf-8')}")
+                    logger.warning(
+                        f"[MCP] Failed to write env file: {result.output.decode('utf-8')}"
+                    )
                 else:
-                    log_harness_info(logger, task_name, "agent", f"Wrote env file with vars: {list(env_vars.keys())}")
+                    log_harness_info(
+                        logger,
+                        task_name,
+                        "agent",
+                        f"Wrote env file with vars: {list(env_vars.keys())}",
+                    )
 
             # Build mcp add command
             args_str = " ".join(mcp_config.args)
@@ -133,8 +146,7 @@ class AbstractInstalledAgent(BaseAgent, ABC):
                 mcp_cmd = f"{agent_cli} mcp add {server_name} -- {mcp_config.command} {args_str}"
 
             result = session.container.exec_run(
-                ["sh", "-c", mcp_cmd],
-                workdir=str(DockerComposeManager.CONTAINER_APP_DIR)
+                ["sh", "-c", mcp_cmd], workdir=str(DockerComposeManager.CONTAINER_APP_DIR)
             )
 
             if result.exit_code != 0:
@@ -143,7 +155,9 @@ class AbstractInstalledAgent(BaseAgent, ABC):
                     f"{result.output.decode('utf-8')}"
                 )
             else:
-                log_harness_info(logger, task_name, "agent", f"MCP server '{server_name}' configured")
+                log_harness_info(
+                    logger, task_name, "agent", f"MCP server '{server_name}' configured"
+                )
 
     def perform_task(
         self,

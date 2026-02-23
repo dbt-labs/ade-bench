@@ -50,8 +50,7 @@ class SkillsHandler:
         logger.info(f"[SkillsHandler] Installing {desc}...")
 
         result = terminal.container.exec_run(
-            ["sh", "-c", cmd],
-            workdir=str(DockerComposeManager.CONTAINER_APP_DIR)
+            ["sh", "-c", cmd], workdir=str(DockerComposeManager.CONTAINER_APP_DIR)
         )
 
         if result.exit_code != 0:

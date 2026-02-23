@@ -52,23 +52,23 @@ class ClaudeCodeLogFormatter(LogFormatter):
         json_lines = []
         has_user_text_prompt = False
 
-        with open(log_path, 'r') as f:
+        with open(log_path, "r") as f:
             for line in f:
                 stripped = line.strip()
-                if stripped.startswith('{'):
+                if stripped.startswith("{"):
                     try:
                         # Validate it's actually JSON
                         data = json.loads(stripped)
                         json_lines.append(stripped)
 
                         # Check if this is a user message with actual text content
-                        if data.get('type') == 'user':
-                            content = data.get('message', {}).get('content', [])
+                        if data.get("type") == "user":
+                            content = data.get("message", {}).get("content", [])
                             if isinstance(content, str) and content.strip():
                                 has_user_text_prompt = True
                             elif isinstance(content, list):
                                 for item in content:
-                                    if isinstance(item, dict) and item.get('type') == 'text':
+                                    if isinstance(item, dict) and item.get("type") == "text":
                                         has_user_text_prompt = True
                                         break
                     except json.JSONDecodeError:
@@ -77,17 +77,16 @@ class ClaudeCodeLogFormatter(LogFormatter):
         # If no user prompt found, inject a synthetic one at the beginning
         if not has_user_text_prompt and json_lines:
             prompt_text = inject_prompt or "Claude Code Agent Session"
-            synthetic_prompt = json.dumps({
-                "type": "user",
-                "timestamp": "",
-                "message": {
-                    "role": "user",
-                    "content": prompt_text
+            synthetic_prompt = json.dumps(
+                {
+                    "type": "user",
+                    "timestamp": "",
+                    "message": {"role": "user", "content": prompt_text},
                 }
-            })
+            )
             json_lines.insert(0, synthetic_prompt)
 
-        return '\n'.join(json_lines)
+        return "\n".join(json_lines)
 
     @staticmethod
     def format_tool_input(tool_name: str, tool_input: Dict[str, Any]) -> str:
@@ -325,15 +324,17 @@ class ClaudeCodeLogFormatter(LogFormatter):
                 tmp_output = Path(tmp_output_dir)
 
                 with tempfile.NamedTemporaryFile(
-                    mode='w', suffix='.jsonl', delete=False
+                    mode="w", suffix=".jsonl", delete=False
                 ) as tmp_file:
                     tmp_file.write(jsonl_content)
                     tmp_path = Path(tmp_file.name)
 
                 try:
                     # Generate HTML transcript (suppress stdout/stderr from library)
-                    with contextlib.redirect_stdout(io.StringIO()), \
-                         contextlib.redirect_stderr(io.StringIO()):
+                    with (
+                        contextlib.redirect_stdout(io.StringIO()),
+                        contextlib.redirect_stderr(io.StringIO()),
+                    ):
                         generate_html(tmp_path, tmp_output)
 
                     # Find the generated file (index.html or page-001.html)

@@ -80,11 +80,22 @@ class ClaudeCodeAgent(AbstractInstalledAgent):
         return self._log_formatter.format_log(log_path)
 
     # Generic tools to filter out from tools_used reporting
-    _GENERIC_TOOLS = frozenset({
-        'Bash', 'Edit', 'Glob', 'Grep', 'Read', 'Write',
-        'WebFetch', 'WebSearch', 'Task', 'NotebookEdit',
-        'TodoRead', 'TodoWrite',
-    })
+    _GENERIC_TOOLS = frozenset(
+        {
+            "Bash",
+            "Edit",
+            "Glob",
+            "Grep",
+            "Read",
+            "Write",
+            "WebFetch",
+            "WebSearch",
+            "Task",
+            "NotebookEdit",
+            "TodoRead",
+            "TodoWrite",
+        }
+    )
 
     def extract_tools_used(self, log_path: Path) -> list[str] | None:
         """
@@ -97,11 +108,11 @@ class ClaudeCodeAgent(AbstractInstalledAgent):
             turns = self._log_formatter.parse_log_file(log_path)
             tool_names = set()
             for turn in turns:
-                for tool in turn.get('tools', []):
-                    name = tool['name']
+                for tool in turn.get("tools", []):
+                    name = tool["name"]
                     # Expand Skill tool to actual skill name
-                    if name == 'Skill':
-                        skill_name = tool.get('input', {}).get('skill')
+                    if name == "Skill":
+                        skill_name = tool.get("input", {}).get("skill")
                         if skill_name:
                             tool_names.add(f"skill:{skill_name}")
                     # Filter out generic tools

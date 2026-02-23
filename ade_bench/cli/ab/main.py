@@ -125,7 +125,7 @@ def run(
     plugin_set: Optional[str] = typer.Option(
         None,
         "--plugin-set",
-        help="Plugin set names from plugin-sets.yaml, space-separated (default: use all default sets)"
+        help="Plugin set names from plugin-sets.yaml, space-separated (default: use all default sets)",
     ),
     with_profiling: bool = typer.Option(
         False,

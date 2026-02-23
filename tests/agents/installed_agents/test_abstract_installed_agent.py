@@ -8,6 +8,7 @@ from ade_bench.harness_models import McpServerConfig, TerminalCommand
 
 class ConcreteInstalledAgent(AbstractInstalledAgent):
     """Concrete subclass for testing AbstractInstalledAgent."""
+
     NAME = AgentName.CLAUDE_CODE
 
     @property
@@ -26,9 +27,7 @@ def _make_session(exec_results=None):
     """Create a mock TmuxSession with configurable exec_run results."""
     session = MagicMock()
     if exec_results is None:
-        session.container.exec_run.return_value = MagicMock(
-            exit_code=0, output=b"Success"
-        )
+        session.container.exec_run.return_value = MagicMock(exit_code=0, output=b"Success")
     else:
         session.container.exec_run.side_effect = exec_results
     return session
@@ -114,11 +113,13 @@ class TestConfigureMcpServersDbtDetection:
         # Mock exec_run: first for which dbt, second for env file, third for mcp add
         which_dbt_result = MagicMock(exit_code=0, output=b"/usr/local/bin/dbt")
         default_result = MagicMock(exit_code=0, output=b"Success")
-        session = _make_session(exec_results=[
-            which_dbt_result,  # _get_dbt_dynamic_env: which dbt
-            default_result,    # write env file
-            default_result,    # mcp add
-        ])
+        session = _make_session(
+            exec_results=[
+                which_dbt_result,  # _get_dbt_dynamic_env: which dbt
+                default_result,  # write env file
+                default_result,  # mcp add
+            ]
+        )
 
         agent._configure_mcp_servers(session, "test_task")
 
@@ -147,11 +148,13 @@ class TestConfigureMcpServersDbtDetection:
 
         which_dbt_result = MagicMock(exit_code=0, output=b"/usr/bin/dbt")
         default_result = MagicMock(exit_code=0, output=b"Success")
-        session = _make_session(exec_results=[
-            which_dbt_result,  # which dbt
-            default_result,    # env file
-            default_result,    # mcp add
-        ])
+        session = _make_session(
+            exec_results=[
+                which_dbt_result,  # which dbt
+                default_result,  # env file
+                default_result,  # mcp add
+            ]
+        )
 
         agent._configure_mcp_servers(session, "test_task")
 
@@ -173,11 +176,13 @@ class TestConfigureMcpServersDbtDetection:
 
         which_dbt_result = MagicMock(exit_code=0, output=b"/usr/bin/dbt")
         default_result = MagicMock(exit_code=0, output=b"Success")
-        session = _make_session(exec_results=[
-            which_dbt_result,
-            default_result,
-            default_result,
-        ])
+        session = _make_session(
+            exec_results=[
+                which_dbt_result,
+                default_result,
+                default_result,
+            ]
+        )
 
         agent._configure_mcp_servers(session, "test_task")
 

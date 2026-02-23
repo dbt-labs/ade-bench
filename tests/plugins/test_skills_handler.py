@@ -19,7 +19,7 @@ def test_skills_handler_install_all_skills():
     plugin_set = PluginSet(
         name="test",
         skills=[SkillOrigin(location="dbt-labs/dbt-agent-skills")],
-        allowed_tools=["Bash"]
+        allowed_tools=["Bash"],
     )
     terminal = MagicMock()
     terminal.container.exec_run.return_value = MagicMock(exit_code=0, output=b"Success")
@@ -40,11 +40,13 @@ def test_skills_handler_install_specific_skills():
     """Installs only specified skills when skill_names is provided."""
     plugin_set = PluginSet(
         name="test",
-        skills=[SkillOrigin(
-            location="dbt-labs/dbt-agent-skills",
-            skill_names=["using-dbt-for-analytics-engineering", "fetching-dbt-docs"]
-        )],
-        allowed_tools=["Bash"]
+        skills=[
+            SkillOrigin(
+                location="dbt-labs/dbt-agent-skills",
+                skill_names=["using-dbt-for-analytics-engineering", "fetching-dbt-docs"],
+            )
+        ],
+        allowed_tools=["Bash"],
     )
     terminal = MagicMock()
     terminal.container.exec_run.return_value = MagicMock(exit_code=0, output=b"Success")
@@ -72,7 +74,7 @@ def test_skills_handler_install_multiple_origins():
             SkillOrigin(location="repo/a"),
             SkillOrigin(location="repo/b"),
         ],
-        allowed_tools=["Bash"]
+        allowed_tools=["Bash"],
     )
     terminal = MagicMock()
     terminal.container.exec_run.return_value = MagicMock(exit_code=0, output=b"Success")
@@ -86,15 +88,10 @@ def test_skills_handler_install_multiple_origins():
 def test_skills_handler_install_failure_logs_warning():
     """Logs warning but doesn't raise on install failure."""
     plugin_set = PluginSet(
-        name="test",
-        skills=[SkillOrigin(location="repo/failing")],
-        allowed_tools=["Bash"]
+        name="test", skills=[SkillOrigin(location="repo/failing")], allowed_tools=["Bash"]
     )
     terminal = MagicMock()
-    terminal.container.exec_run.return_value = MagicMock(
-        exit_code=1,
-        output=b"npm ERR! not found"
-    )
+    terminal.container.exec_run.return_value = MagicMock(exit_code=1, output=b"npm ERR! not found")
 
     handler = SkillsHandler()
     # Should not raise, just log warning

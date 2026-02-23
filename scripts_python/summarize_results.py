@@ -271,9 +271,11 @@ def generate_html_table(results: BenchmarkResults) -> str:
         html_table = html_table.replace(f"__TASK_BUTTON_{i}__", task_button)
 
         # Format tools as comma-separated list with styled spans
-        tools_list = task.get('tools_used', [])
+        tools_list = task.get("tools_used", [])
         if tools_list:
-            tools_html = ', '.join(f'<span class="tool-tag">{html.escape(tool)}</span>' for tool in tools_list)
+            tools_html = ", ".join(
+                f'<span class="tool-tag">{html.escape(tool)}</span>' for tool in tools_list
+            )
         else:
             tools_html = '<span class="no-tools">-</span>'
         html_table = html_table.replace(f"__TOOLS_{i}__", tools_html)

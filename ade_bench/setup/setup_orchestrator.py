@@ -59,7 +59,6 @@ class SetupOrchestrator:
             self._skills_handler.install(self.plugin_set, self.terminal)
             log_harness_info(self.logger, task_id, "setup", "Skills installed")
 
-
         # Set up the database
         db_type = variant.get("db_type")
         if db_type == "duckdb":

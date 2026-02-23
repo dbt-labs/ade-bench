@@ -238,6 +238,7 @@ class TerminalCommand(BaseModel):
 
 class McpServerConfig(BaseModel):
     """Configuration for an MCP server."""
+
     command: str
     args: list[str] = []
     env: dict[str, str] = {}
@@ -245,6 +246,7 @@ class McpServerConfig(BaseModel):
 
 class SkillOrigin(BaseModel):
     """Configuration for a skill origin."""
+
     location: str  # Skill origin (e.g., git URL, local path, GitHub shorthand)
     skill_names: list[str] = []  # Empty list means install all skills
 
@@ -255,6 +257,7 @@ class SkillOrigin(BaseModel):
 
 class PluginSet(BaseModel):
     """Configuration for a set of plugins (skills and MCP servers)."""
+
     name: str
     description: str = ""
     default: bool = False
@@ -278,6 +281,7 @@ class PluginSet(BaseModel):
 
 class PluginSetsConfig(BaseModel):
     """Root configuration containing all plugin sets."""
+
     sets: list[PluginSet]
 
     def get_defaults(self) -> list[PluginSet]:
@@ -298,8 +302,6 @@ class PluginSetsConfig(BaseModel):
             plugin_set = self.get_by_name(name)
             if plugin_set is None:
                 available = [s.name for s in self.sets]
-                raise ValueError(
-                    f"Unknown plugin set '{name}'. Available: {', '.join(available)}"
-                )
+                raise ValueError(f"Unknown plugin set '{name}'. Available: {', '.join(available)}")
             result.append(plugin_set)
         return result

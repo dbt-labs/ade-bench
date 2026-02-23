@@ -141,7 +141,7 @@ def write_results_tsv(results: BenchmarkResults, output_path: Path, run_id: str)
         "db_type",
         "project_type",
         "plugin_set",
-        "prompt_suffix"
+        "prompt_suffix",
     ]
 
     with open(output_path, "w", newline="") as f:
@@ -189,7 +189,7 @@ def write_results_tsv(results: BenchmarkResults, output_path: Path, run_id: str)
                 trial_result.db_type or "",
                 trial_result.project_type or "",
                 trial_result.plugin_set_name or "",
-                trial_result.prompt_suffix or ""
+                trial_result.prompt_suffix or "",
             ]
 
             writer.writerow(row)

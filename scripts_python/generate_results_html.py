@@ -359,7 +359,7 @@ class ResultsHTMLGenerator:
 
             # 1. Pre-agent section
             if "pre-agent.txt" in pane_dict:
-                with open(pane_dict["pre-agent.txt"], 'r') as f:
+                with open(pane_dict["pre-agent.txt"], "r") as f:
                     pre_content = f.read().strip()
                 if pre_content:
                     sections.append(("Pre-Agent Setup", pre_content, "text"))
@@ -368,23 +368,26 @@ class ResultsHTMLGenerator:
             if transcript_html:
                 sections.append(("Agent Transcript", transcript_html, "iframe"))
             elif "agent.txt" in pane_dict:
-                with open(pane_dict["agent.txt"], 'r') as f:
+                with open(pane_dict["agent.txt"], "r") as f:
                     agent_content = f.read().strip()
                 if agent_content:
                     sections.append(("Agent Output", agent_content, "text"))
 
             # 3. Post-agent section
             if "post-agent.txt" in pane_dict:
-                with open(pane_dict["post-agent.txt"], 'r') as f:
+                with open(pane_dict["post-agent.txt"], "r") as f:
                     post_content = f.read().strip()
                 if post_content:
                     sections.append(("Post-Agent Output", post_content, "text"))
 
             # Any other pane files not in the standard order
-            other_panes = [p for p in pane_dict.keys()
-                          if p not in ["pre-agent.txt", "agent.txt", "post-agent.txt"]]
+            other_panes = [
+                p
+                for p in pane_dict.keys()
+                if p not in ["pre-agent.txt", "agent.txt", "post-agent.txt"]
+            ]
             for pane_name in sorted(other_panes):
-                with open(pane_dict[pane_name], 'r') as f:
+                with open(pane_dict[pane_name], "r") as f:
                     other_content = f.read().strip()
                 if other_content:
                     sections.append((f"Other: {pane_name}", other_content, "text"))
@@ -393,16 +396,20 @@ class ResultsHTMLGenerator:
         content_parts = []
         for title, content, content_type in sections:
             if content_type == "iframe":
-                content_parts.append(f'''<div style="margin-bottom: 24px;">
+                content_parts.append(
+                    f"""<div style="margin-bottom: 24px;">
     <h2 style="color: #4ec9b0; margin-bottom: 10px;">{html.escape(title)}</h2>
     <iframe src="{html.escape(content)}" style="width: 100%; height: 700px; border: 1px solid #3c3c3c; border-radius: 4px; background: #fff;"></iframe>
     <p style="margin-top: 8px; font-size: 11px; color: #808080;"><a href="{html.escape(content)}" target="_blank" style="color: #9cdcfe;">Open transcript in new tab</a></p>
-</div>''')
+</div>"""
+                )
             else:
-                content_parts.append(f'''<div style="margin-bottom: 24px;">
+                content_parts.append(
+                    f"""<div style="margin-bottom: 24px;">
     <h2 style="color: #4ec9b0; margin-bottom: 10px;">{html.escape(title)}</h2>
     <pre style="white-space: pre-wrap; word-wrap: break-word; background: #1e1e1e; padding: 16px; border-radius: 4px; overflow-x: auto;">{html.escape(content)}</pre>
-</div>''')
+</div>"""
+                )
 
         if not content_parts:
             content_parts.append("<p>No panes data found.</p>")
@@ -412,7 +419,7 @@ class ResultsHTMLGenerator:
             task_html_dir / "panes.html",
             "Terminal Panes",
             task_data["task_id"],
-            "\n".join(content_parts)
+            "\n".join(content_parts),
         )
 
     def _generate_diffs_page(self, task_data: Dict[str, Any], task_dir: Path, task_html_dir: Path):
@@ -466,13 +473,7 @@ class ResultsHTMLGenerator:
         with open(output_path, "w") as f:
             f.write(html_content)
 
-    def _write_panes_page(
-        self,
-        output_path: Path,
-        title: str,
-        task_id: str,
-        content_html: str
-    ):
+    def _write_panes_page(self, output_path: Path, title: str, task_id: str, content_html: str):
         """Write the panes page with pre-built HTML content.
 
         Unlike _write_detail_page which escapes content, this method accepts
@@ -489,16 +490,16 @@ class ResultsHTMLGenerator:
             print(f"Error: Template not found: {template_path}")
             return
 
-        with open(template_path, 'r') as f:
+        with open(template_path, "r") as f:
             template_content = f.read()
 
         # Simple template replacement - content_html is already formatted
-        html_content = template_content.replace('{{ title }}', html.escape(title))
-        html_content = html_content.replace('{{ task_id }}', html.escape(task_id))
-        html_content = html_content.replace('{{ content }}', content_html)
-        html_content = html_content.replace('{{ content_type }}', 'panes')
+        html_content = template_content.replace("{{ title }}", html.escape(title))
+        html_content = html_content.replace("{{ task_id }}", html.escape(task_id))
+        html_content = html_content.replace("{{ content }}", content_html)
+        html_content = html_content.replace("{{ content_type }}", "panes")
 
-        with open(output_path, 'w') as f:
+        with open(output_path, "w") as f:
             f.write(html_content)
 
 

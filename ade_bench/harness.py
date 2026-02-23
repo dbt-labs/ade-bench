@@ -207,13 +207,17 @@ class Harness:
         config_path = self._dataset_path.parent / "experiment_sets" / "plugin-sets.yaml"
         if not config_path.exists():
             # No plugin sets config - use empty list (no plugins)
-            self._plugin_sets = [PluginSet(name="no-plugins", allowed_tools=["Bash", "Edit", "Write", "Read", "Glob", "Grep"])]
+            self._plugin_sets = [
+                PluginSet(
+                    name="no-plugins",
+                    allowed_tools=["Bash", "Edit", "Write", "Read", "Glob", "Grep"],
+                )
+            ]
             return
 
         loader = PluginSetLoader(config_path)
         self._plugin_sets = loader.resolve_plugin_sets(
-            plugin_set_names=self._plugin_set_names,
-            agent_name=self._agent_name.value
+            plugin_set_names=self._plugin_set_names, agent_name=self._agent_name.value
         )
 
     def _init_logger(self) -> None:
@@ -624,7 +628,7 @@ class Harness:
                 session=session,
                 file_diff_handler=file_diff_handler,
                 trial_handler=trial_handler,
-                plugin_set=self._current_plugin_set
+                plugin_set=self._current_plugin_set,
             )
 
             # Run setup with timeout using asyncio
@@ -675,9 +679,17 @@ class Harness:
             db_type=config.get("db_type"),
             project_type=config.get("project_type"),
             plugin_set_name=self._current_plugin_set.name if self._current_plugin_set else None,
-            plugin_set_skills=self._current_plugin_set.skill_locations if self._current_plugin_set else None,
-            plugin_set_mcp_servers=list(self._current_plugin_set.mcp_servers.keys()) if self._current_plugin_set else None,
-            prompt_suffix=self._current_plugin_set.prompt_suffix if self._current_plugin_set else None,
+            plugin_set_skills=(
+                self._current_plugin_set.skill_locations if self._current_plugin_set else None
+            ),
+            plugin_set_mcp_servers=(
+                list(self._current_plugin_set.mcp_servers.keys())
+                if self._current_plugin_set
+                else None
+            ),
+            prompt_suffix=(
+                self._current_plugin_set.prompt_suffix if self._current_plugin_set else None
+            ),
         )
 
         with spin_up_terminal(
@@ -785,9 +797,13 @@ class Harness:
                 # format_agent_log() returns None for agents without formatting (BaseAgent default)
                 formatted_content = task_agent.format_agent_log(agent_log_path)
                 if formatted_content:
-                    self._logger.debug("Generated formatted agent.txt from agent.log using agent's formatter")
+                    self._logger.debug(
+                        "Generated formatted agent.txt from agent.log using agent's formatter"
+                    )
             except Exception as e:
-                self._logger.warning(f"Failed to write/format agent.log: {e}. Using raw pane output.")
+                self._logger.warning(
+                    f"Failed to write/format agent.log: {e}. Using raw pane output."
+                )
 
             # Write to file - either formatted content or fallback to raw pane
             if formatted_content:
@@ -1323,9 +1339,17 @@ class Harness:
                 db_type=config.get("db_type"),
                 project_type=config.get("project_type"),
                 plugin_set_name=self._current_plugin_set.name if self._current_plugin_set else None,
-                plugin_set_skills=self._current_plugin_set.skill_locations if self._current_plugin_set else None,
-                plugin_set_mcp_servers=list(self._current_plugin_set.mcp_servers.keys()) if self._current_plugin_set else None,
-                prompt_suffix=self._current_plugin_set.prompt_suffix if self._current_plugin_set else None,
+                plugin_set_skills=(
+                    self._current_plugin_set.skill_locations if self._current_plugin_set else None
+                ),
+                plugin_set_mcp_servers=(
+                    list(self._current_plugin_set.mcp_servers.keys())
+                    if self._current_plugin_set
+                    else None
+                ),
+                prompt_suffix=(
+                    self._current_plugin_set.prompt_suffix if self._current_plugin_set else None
+                ),
             )
             return trial_results
 

@@ -10,11 +10,7 @@ def test_mcp_server_config_minimal():
 
 
 def test_mcp_server_config_with_env():
-    config = McpServerConfig(
-        command="uvx",
-        args=["dbt-mcp@latest"],
-        env={"DISABLE_SQL": "true"}
-    )
+    config = McpServerConfig(command="uvx", args=["dbt-mcp@latest"], env={"DISABLE_SQL": "true"})
     assert config.env == {"DISABLE_SQL": "true"}
 
 
@@ -27,10 +23,7 @@ def test_skill_origin_install_all():
 
 def test_skill_origin_specific_skills():
     """Non-empty skill_names means install only those skills."""
-    origin = SkillOrigin(
-        location="dbt-labs/dbt-agent-skills",
-        skill_names=["skill1", "skill2"]
-    )
+    origin = SkillOrigin(location="dbt-labs/dbt-agent-skills", skill_names=["skill1", "skill2"])
     assert origin.install_all() is False
     assert origin.skill_names == ["skill1", "skill2"]
 
@@ -53,10 +46,8 @@ def test_plugin_set_full():
         default=True,
         agents=["claude"],
         skills=[SkillOrigin(location="dbt-labs/dbt-agent-skills")],
-        mcp_servers={
-            "dbt": McpServerConfig(command="uvx", args=["dbt-mcp@latest"])
-        },
-        allowed_tools=["Bash", "Skill", "mcp__dbt__*"]
+        mcp_servers={"dbt": McpServerConfig(command="uvx", args=["dbt-mcp@latest"])},
+        allowed_tools=["Bash", "Skill", "mcp__dbt__*"],
     )
     assert plugin_set.default is True
     assert plugin_set.agents == ["claude"]
@@ -94,6 +85,7 @@ sets:
     allowed_tools: [Bash, Skill]
 """
     import yaml
+
     data = yaml.safe_load(yaml_content)
     config = PluginSetsConfig(**data)
     assert len(config.sets) == 2
@@ -103,11 +95,13 @@ sets:
 
 
 def test_plugin_sets_config_get_defaults():
-    config = PluginSetsConfig(sets=[
-        PluginSet(name="a", default=True, allowed_tools=["Bash"]),
-        PluginSet(name="b", default=False, allowed_tools=["Bash"]),
-        PluginSet(name="c", default=True, allowed_tools=["Bash"]),
-    ])
+    config = PluginSetsConfig(
+        sets=[
+            PluginSet(name="a", default=True, allowed_tools=["Bash"]),
+            PluginSet(name="b", default=False, allowed_tools=["Bash"]),
+            PluginSet(name="c", default=True, allowed_tools=["Bash"]),
+        ]
+    )
     defaults = config.get_defaults()
     assert len(defaults) == 2
     assert defaults[0].name == "a"
@@ -115,21 +109,25 @@ def test_plugin_sets_config_get_defaults():
 
 
 def test_plugin_sets_config_get_by_name():
-    config = PluginSetsConfig(sets=[
-        PluginSet(name="a", allowed_tools=["Bash"]),
-        PluginSet(name="b", allowed_tools=["Bash"]),
-    ])
+    config = PluginSetsConfig(
+        sets=[
+            PluginSet(name="a", allowed_tools=["Bash"]),
+            PluginSet(name="b", allowed_tools=["Bash"]),
+        ]
+    )
     assert config.get_by_name("a").name == "a"
     assert config.get_by_name("b").name == "b"
     assert config.get_by_name("nonexistent") is None
 
 
 def test_plugin_sets_config_get_by_names():
-    config = PluginSetsConfig(sets=[
-        PluginSet(name="a", allowed_tools=["Bash"]),
-        PluginSet(name="b", allowed_tools=["Bash"]),
-        PluginSet(name="c", allowed_tools=["Bash"]),
-    ])
+    config = PluginSetsConfig(
+        sets=[
+            PluginSet(name="a", allowed_tools=["Bash"]),
+            PluginSet(name="b", allowed_tools=["Bash"]),
+            PluginSet(name="c", allowed_tools=["Bash"]),
+        ]
+    )
     result = config.get_by_names(["a", "c"])
     assert len(result) == 2
     assert result[0].name == "a"
@@ -137,8 +135,10 @@ def test_plugin_sets_config_get_by_names():
 
 
 def test_plugin_sets_config_get_by_names_unknown_raises():
-    config = PluginSetsConfig(sets=[
-        PluginSet(name="a", allowed_tools=["Bash"]),
-    ])
+    config = PluginSetsConfig(
+        sets=[
+            PluginSet(name="a", allowed_tools=["Bash"]),
+        ]
+    )
     with pytest.raises(ValueError, match="Unknown plugin set"):
         config.get_by_names(["a", "nonexistent"])
