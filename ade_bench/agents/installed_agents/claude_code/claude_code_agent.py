@@ -65,6 +65,7 @@ class ClaudeCodeAgent(AbstractInstalledAgent):
         Also generates an HTML transcript at log_path.parent / "transcript.html"
         using claude-code-transcripts if available.
 
+
         Args:
             log_path: Path to the raw agent.log file (JSON-lines format)
 

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import ClassVar, Optional
+from typing import ClassVar
 
 from pydantic import BaseModel, Field
 
@@ -19,33 +19,20 @@ class RequireNameMeta(type(ABC)):
 
 class AgentResult(BaseModel):
     input_tokens: int = Field(
-        description="The number of input tokens used by the agent to "
-        "complete the task."
+        description="The number of input tokens used by the agent to " "complete the task."
     )
     output_tokens: int = Field(
-        description="The number of output tokens used by the agent to "
-        "complete the task."
+        description="The number of output tokens used by the agent to " "complete the task."
     )
     cache_tokens: int = Field(
         default=0,
-        description="The number of cache tokens used by the agent to "
-        "complete the task."
+        description="The number of cache tokens used by the agent to " "complete the task.",
     )
-    num_turns: int = Field(
-        default=0,
-        description="The number of turns in the conversation."
-    )
-    runtime_ms: int = Field(
-        default=0,
-        description="The runtime of the agent in milliseconds."
-    )
-    cost_usd: float = Field(
-        default=0.0,
-        description="The cost of the agent execution in USD."
-    )
+    num_turns: int = Field(default=0, description="The number of turns in the conversation.")
+    runtime_ms: int = Field(default=0, description="The runtime of the agent in milliseconds.")
+    cost_usd: float = Field(default=0.0, description="The cost of the agent execution in USD.")
     model_name: str | None = Field(
-        default=None,
-        description="The model name used by the agent, extracted from agent output."
+        default=None, description="The model name used by the agent, extracted from agent output."
     )
     failure_mode: FailureMode = Field(
         default=FailureMode.NONE,

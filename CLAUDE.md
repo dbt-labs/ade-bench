@@ -74,7 +74,7 @@ uv run scripts_python/run_harness.py --agent sage --task-ids task1 task2
 
 3. **Adding Agents**:
    - Extend `BaseAgent` class
-   - Register in `AgentFactory`
+   - Register in `NamedAgentFactory`
    - Implement `run()` method
 
 ## Git Worktrees

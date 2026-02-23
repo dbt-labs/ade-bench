@@ -62,9 +62,7 @@ class AbstractInstalledAgent(BaseAgent, ABC):
         pass
 
     def _create_env_setup_file(self) -> str:
-        return "\n".join(
-            [f"export {key}='{value}'" for key, value in self._env.items()]
-        )
+        return "\n".join([f"export {key}='{value}'" for key, value in self._env.items()])
 
     def _get_dbt_dynamic_env(self, session: TmuxSession, task_name: str | None) -> dict[str, str]:
         """Get dynamic environment variables for dbt MCP server."""
@@ -168,10 +166,7 @@ class AbstractInstalledAgent(BaseAgent, ABC):
                 [
                     "sh",
                     "-c",
-                    (
-                        f"echo {shlex.quote(env_setup_content)} > "
-                        "/installed-agent/setup-env.sh"
-                    ),
+                    (f"echo {shlex.quote(env_setup_content)} > " "/installed-agent/setup-env.sh"),
                 ]
             )
 
@@ -201,7 +196,7 @@ class AbstractInstalledAgent(BaseAgent, ABC):
                 logger,
                 task_name,
                 "agent",
-                f"Agent setup timed out after {config.setup_timeout_sec}s during setup and installation phase"
+                f"Agent setup timed out after {config.setup_timeout_sec}s during setup and installation phase",
             )
             return AgentResult(
                 input_tokens=0,
@@ -218,7 +213,12 @@ class AbstractInstalledAgent(BaseAgent, ABC):
 
         run_agent_commands = self._run_agent_commands(task_prompt)
         for command in run_agent_commands:
-            log_harness_info(logger, task_name, "agent", f"Calling agent: {task_prompt.replace(chr(10), ' ').replace(chr(13), '')[:100]}")
+            log_harness_info(
+                logger,
+                task_name,
+                "agent",
+                f"Calling agent: {task_prompt.replace(chr(10), ' ').replace(chr(13), '')[:100]}",
+            )
 
             # Redirect output to log file
             modified_command = TerminalCommand(
@@ -250,7 +250,7 @@ class AbstractInstalledAgent(BaseAgent, ABC):
                 f"Tokens: in-{parsed_metrics.get('input_tokens', 0)} "
                 f"out-{parsed_metrics.get('output_tokens', 0)} "
                 f"cache-{parsed_metrics.get('cache_tokens', 0)}, "
-                f"SUCCESS: {parsed_metrics.get('success', False)}"
+                f"SUCCESS: {parsed_metrics.get('success', False)}",
             )
 
         # Map error string to FailureMode

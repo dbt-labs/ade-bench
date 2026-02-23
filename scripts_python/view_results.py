@@ -19,17 +19,17 @@ def main():
     if not experiment_dir:
         print("Error: No experiments with results found. Run some tests first.")
         sys.exit(1)
-    
+
     print(f"Using latest experiment: {experiment_dir}")
-    
+
     # Generate HTML dashboard
     generator = ResultsHTMLGenerator(experiment_dir)
     success = generator.generate_all()
-    
+
     if success:
         html_path = generator.html_dir / "index.html"
         print(f"Generated HTML dashboard: {html_path}")
-        
+
         # Open in browser
         webbrowser.open(f"file://{html_path.absolute()}")
         print("Opened in browser")
