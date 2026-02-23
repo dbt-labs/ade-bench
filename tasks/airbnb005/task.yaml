@@ -28,6 +28,9 @@ tags:
   - external-knowledge
   - model-creation
 
+test_setup: |-
+  dbt run --select daily_agg_nps_reviews listing_agg_nps_reviews
+
 # Tables to compare for solution
 solution_seeds:
   - table_name: daily_agg_nps_reviews
