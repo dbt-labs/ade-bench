@@ -273,6 +273,36 @@ ADE-bench can automatically migrate DuckDB databases into Snowflake. For more, s
 
 ---
 
+## Connecting to external projects and data sources
+
+If you want to connect ADE-bench to your own dbt project or database, you can use the `project_dir` and `db_dir` fields in tasks' `task.yaml` files to specify directories containing your projects and databases:
+
+```yaml
+variants:
+- db_type: duckdb
+  db_name: mydb  # Will look for mydb.duckdb in db_dir
+  db_dir: /path/to/my/databases  # Optional, directory containing database files
+  project_type: dbt
+  project_name: myproject  # Will look for 'myproject' folder in project_dir
+  project_dir: /path/to/my/projects  # Optional, directory containing project folders
+```
+
+> [!CAUTION]
+> If you connect ADE-bench to your own projects or databases, it can edit those projects and databases! Though ADE-bench can be useful framework for testing how agents perform real-world tasks on internal projects, we strongly recommend only running it in sandboxed environments. Agents can be unpredictable, and you should assume that it might delete anything that it has access to.
+
+You can also use the `--tasks-dir` flag to point to a tasks directory outside the ADE-bench repository:
+
+```bash
+ade run foo001 --db duckdb --project-type dbt --tasks-dir /path/to/my/tasks
+```
+If you primarily want to use ADE-bench for these sorts of external tasks, you can set environment variables to change the default directories for all tasks, databases, and projects:
+
+- `ADE_TASKS_DIR` - Default tasks directory (default: `tasks`)
+- `ADE_DATABASES_DIR` - Default databases directory (default: `shared/databases`)
+- `ADE_PROJECTS_DIR` - Default projects directory (default: `shared/projects`)
+
+---
+
 ## Development tips
 
 To develop a new task, there are a few things that can be useful:

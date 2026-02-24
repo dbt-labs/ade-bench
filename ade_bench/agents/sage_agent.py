@@ -60,9 +60,7 @@ class SageAgent(BaseAgent):
             else:
                 solution_dict[trial_handler.task_prompt] = {
                     "type": "yaml",
-                    "commands": TerminalCommand.from_yaml_list(
-                        trial_handler.solution_path
-                    ),
+                    "commands": TerminalCommand.from_yaml_list(trial_handler.solution_path),
                 }
 
         self._solution_dict = solution_dict

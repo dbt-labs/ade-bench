@@ -3,7 +3,6 @@
 import sys
 import typer
 from pathlib import Path
-from typing import Optional
 
 # Add project root to path for imports
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))
@@ -24,6 +23,7 @@ def view_callback(ctx: typer.Context):
     # If no subcommand, use the existing view_results logic
     if ctx.invoked_subcommand is None:
         from scripts_python.view_results import main as view_results_main
+
         view_results_main()
 
 

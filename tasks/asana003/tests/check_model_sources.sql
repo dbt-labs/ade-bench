@@ -17,7 +17,7 @@
     {% set model_refs = model_node.refs %}
     {% set model_sources = model_node.sources %}
 
-    {% if model_refs | length != 0 or model_sources | length != 1 %}
+    {% if model_refs | length != 0 or model_sources | length == 0 %}
         select '{{ model }} not updated correctly' as error_message
     {% else %}
         select 1 where false

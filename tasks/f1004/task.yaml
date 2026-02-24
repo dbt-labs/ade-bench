@@ -16,6 +16,9 @@ tags:
   - dbt
   - debugging
 
+test_setup: |-
+  dbt run --select finishes_by_driver
+
 # Tables to compare for solution
 solution_seeds:
   - table_name: finishes_by_driver

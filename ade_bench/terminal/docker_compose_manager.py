@@ -12,6 +12,9 @@ from docker.models.containers import Container
 from ade_bench.utils.env_model import EnvModel
 from ade_bench.utils.logger import logger
 
+# Repo root is always two levels up from this file (ade_bench/terminal/docker_compose_manager.py)
+REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
+
 
 class DockerComposeEnvVars(EnvModel):
     task_docker_client_container_name: str | None = None
@@ -21,6 +24,7 @@ class DockerComposeEnvVars(EnvModel):
     test_dir: str | None = None
     task_build_context_dir: str | None = None
     task_logs_path: str | None = None
+    repo_root: str | None = None
 
 
 class DockerComposeManager:
@@ -65,9 +69,7 @@ class DockerComposeManager:
         self._build_context_dir = build_context_dir
         self._logger = logger.getChild(__name__)
 
-    def _run_docker_compose_command(
-        self, command: list[str]
-    ) -> subprocess.CompletedProcess:
+    def _run_docker_compose_command(self, command: list[str]) -> subprocess.CompletedProcess:
         """Run a docker-compose command with the appropriate environment variables."""
         env = DockerComposeEnvVars(
             task_docker_client_image_name=self._client_image_name,
@@ -76,13 +78,12 @@ class DockerComposeManager:
             container_logs_path=str(self.CONTAINER_LOGS_PATH),
             test_dir=str(self.CONTAINER_TEST_DIR),
             task_build_context_dir=(
-                str(self._build_context_dir.absolute())
-                if self._build_context_dir
-                else None
+                str(self._build_context_dir.absolute()) if self._build_context_dir else None
             ),
             task_logs_path=(
                 str(self._logs_path.absolute()) if self._logs_path is not None else None
             ),
+            repo_root=str(REPO_ROOT),
         ).to_env_dict(include_os_env=True)
 
         full_command = [
@@ -106,9 +107,7 @@ class DockerComposeManager:
             )
             return result
         except subprocess.CalledProcessError as e:
-            self._logger.error(
-                f"Docker compose command failed with exit code {e.returncode}"
-            )
+            self._logger.error(f"Docker compose command failed with exit code {e.returncode}")
 
             self._logger.error(f"Command: {' '.join(full_command)}")
 
@@ -126,9 +125,7 @@ class DockerComposeManager:
 
         self._run_docker_compose_command(["up", "-d"])
 
-        self._client_container = self._client.containers.get(
-            self._client_container_name
-        )
+        self._client_container = self._client.containers.get(self._client_container_name)
 
         return self._client_container
 
@@ -149,17 +146,19 @@ class DockerComposeManager:
             if self._client_container:
                 container_id = self._client_container.id[:12]
                 container_name = self._client_container.name
-                self._logger.info(f"Container kept alive for debugging: {container_name} (ID: {container_id})")
-                self._logger.info(f"To connect to the container: docker exec -it {container_name} bash")
+                self._logger.info(
+                    f"Container kept alive for debugging: {container_name} (ID: {container_id})"
+                )
+                self._logger.info(
+                    f"To connect to the container: docker exec -it {container_name} bash"
+                )
             else:
                 self._logger.info("Containers kept alive for debugging.")
         except Exception as e:
             self._logger.error(f"Error in stop_services_only: {e}")
 
     @staticmethod
-    def _create_tar_archive(
-        paths: list[Path], container_filename: str | None
-    ) -> io.BytesIO:
+    def _create_tar_archive(paths: list[Path], container_filename: str | None) -> io.BytesIO:
         tar_stream = io.BytesIO()
         with tarfile.open(fileobj=tar_stream, mode="w") as tar:
             for path in paths:
@@ -194,6 +193,7 @@ class DockerComposeManager:
         tar_stream = DockerComposeManager._create_tar_archive(paths, container_filename)
         container.put_archive(container_dir, tar_stream.read())
         tar_stream.close()
+
 
 @contextmanager
 def spin_up_container(

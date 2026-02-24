@@ -194,6 +194,22 @@
             font-family: inherit;
         }
 
+        /* Tool tags styling */
+        .tool-tag {
+            display: inline-block;
+            padding: 2px 6px;
+            background-color: #264f78;
+            color: #9cdcfe;
+            border-radius: 3px;
+            font-size: 10px;
+            margin: 1px;
+            white-space: nowrap;
+        }
+
+        .no-tools {
+            color: #6a6a6a;
+        }
+
         /* Modal/Dialog styles */
         .modal-overlay {
             display: none;
@@ -290,7 +306,7 @@
                     <p><strong>Model:</strong> {{ model }}</p>
                     <p><strong>DB Type:</strong> {{ db_type }}</p>
                     <p><strong>Project Type:</strong> {{ project_type }}</p>
-                    <p><strong>MCP Enabled:</strong> {{ used_mcp }}</p>
+                    <p><strong>Plugin Set:</strong> {{ plugin_set }}</p>
                 </div>
                 <div class="info-section">
                     <h3>Results</h3>

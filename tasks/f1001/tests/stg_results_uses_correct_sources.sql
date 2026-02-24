@@ -4,9 +4,9 @@
 {% set node = graph.nodes["model." ~ project_name ~ "." ~ model_name ] %}
 {% set ref_list = node.refs %}
 
--- Model should have one source
+-- Model should have three references
 {% if ref_list | length != 3 %}
-    select '{{ model_name }} does not have two references' as error_message union all
+    select '{{ model_name }} does not have three references' as error_message union all
 {% elif 'src_position_descriptions' not in ref_list | map(attribute='name') | list %}
     select '{{ model_name }} does not use src_position_descriptions as source' as error_message union all
 {% elif 'src_results' not in ref_list | map(attribute='name') | list %}
