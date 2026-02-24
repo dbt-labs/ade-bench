@@ -57,3 +57,19 @@ class LogFormatter(ABC):
             return self.format_readable_log(turns)
         except Exception:
             return None
+
+    def generate_html_transcript(self, log_path: Path, output_path: Path) -> Path | None:
+        """
+        Generate an HTML transcript from the log file.
+
+        Override this method in subclasses to provide HTML transcript generation.
+        The default implementation returns None (no HTML transcript).
+
+        Args:
+            log_path: Path to the log file to parse
+            output_path: Desired output file path (e.g., sessions/transcript.html)
+
+        Returns:
+            Path to the generated HTML file, or None if not supported/failed
+        """
+        return None

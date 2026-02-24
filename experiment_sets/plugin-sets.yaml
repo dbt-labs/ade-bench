@@ -1,0 +1,64 @@
+# Skill set configurations for ADE-Bench
+# Use --plugin-set <name> to select, or run without flag to use all defaults
+
+sets:
+  - name: all-dbt-skills
+    description: All dbt skills
+    default: false
+    skills:
+      - location: dbt-labs/dbt-agent-skills
+    mcp_servers: {}
+    allowed_tools: [Bash, Edit, Write, Read, Glob, Grep, Skill]
+    prompt_suffix: "You can use the dbt skills."
+
+  - name: dbt-for-ae
+    description: Just the Using dbt for analytics engineering skill
+    default: false
+    skills:
+      - location: dbt-labs/dbt-agent-skills
+        skill_names: [using-dbt-for-analytics-engineering]
+    mcp_servers: {}
+    allowed_tools: [Bash, Edit, Write, Read, Glob, Grep, Skill]
+    prompt_suffix: "You can use the dbt skills."
+
+  - name: dbt-mcp
+    description: dbt MCP server
+    default: false
+    skills: []
+    mcp_servers:
+      dbt:
+        command: uvx
+        args: [dbt-mcp@latest]
+        env:
+          DISABLE_SEMANTIC_LAYER: "true"
+          DISABLE_DISCOVERY: "true"
+          DISABLE_ADMIN_API: "true"
+          DISABLE_SQL: "true"
+          DISABLE_DBT_CODEGEN: "true"
+    allowed_tools: [Bash, Edit, Write, Read, Glob, Grep, mcp__dbt__*]
+    prompt_suffix: "You can use the dbt MCP server."
+
+  - name: dbt-skills-mcp
+    description: dbt skills and MCP server
+    default: false
+    skills:
+      - location: dbt-labs/dbt-agent-skills
+    mcp_servers:
+      dbt:
+        command: uvx
+        args: [dbt-mcp@latest]
+        env:
+          DISABLE_SEMANTIC_LAYER: "true"
+          DISABLE_DISCOVERY: "true"
+          DISABLE_ADMIN_API: "true"
+          DISABLE_SQL: "true"
+          DISABLE_DBT_CODEGEN: "true"
+    allowed_tools: [Bash, Edit, Write, Read, Glob, Grep, Skill, mcp__dbt__*]
+    prompt_suffix: "You can use the dbt skills and MCP server."
+
+  - name: none
+    description: Baseline - no skills or MCP
+    default: true
+    skills: []
+    mcp_servers: {}
+    allowed_tools: [Bash, Edit, Write, Read, Glob, Grep]

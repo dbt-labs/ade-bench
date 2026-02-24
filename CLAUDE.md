@@ -50,12 +50,13 @@ uv run scripts_python/run_harness.py --agent sage --task-ids task1 task2
 ```
 
 ### Key Parameters:
-- `--agent`: Agent type (sage, terminus, etc.)
+- `--agent`: Agent type (sage, claude, codex, gemini, etc.)
 - `--model`: LLM model for AI agents
 - `--dataset-config`: YAML file defining task collection
 - `--n-concurrent-trials`: Parallel execution (default: 4)
 - `--no-rebuild`: Skip Docker rebuilds
 - `--cleanup`: Remove Docker resources after run
+- `--plugin-set`: Plugin set names from `experiment_sets/plugin-sets.yaml` (space-separated). Controls skills, MCP servers, and allowed tools. Defaults to `none` (no plugins).
 
 ## Development Workflow
 

@@ -75,6 +75,21 @@ class BaseAgent(ABC, metaclass=RequireNameMeta):
         """
         return None
 
+    def extract_tools_used(self, log_path: Path) -> list[str] | None:
+        """
+        Extract deduplicated list of tool names from the agent's log file.
+
+        This method can be overridden by subclasses to provide agent-specific
+        tool extraction. The default implementation returns None.
+
+        Args:
+            log_path: Path to the raw agent log file
+
+        Returns:
+            Sorted list of unique tool names, or None if not available
+        """
+        return None
+
     @abstractmethod
     def perform_task(
         self,
