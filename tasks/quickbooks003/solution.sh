@@ -1,34 +1,5 @@
 #!/bin/bash
 
-## Fix the data issue
-if [[ "$*" == *"--db-type=duckdb"* ]]; then
-    schema='main'
-else
-    schema='public'
-fi
-
-# Execute SQL using the run_sql utility.
-/scripts/run_sql.sh "$@" << SQL
-create or replace table ${schema}.refund_receipt_data_temp as
-  select * replace (transaction_date::date as transaction_date)
-  from ${schema}.refund_receipt_data;
-
-create or replace table ${schema}.sales_receipt_data_temp as
-  select * replace (transaction_date::date as transaction_date)
-  from ${schema}.sales_receipt_data;
-
-create or replace table ${schema}.estimate_data_temp as
-  select * replace (due_date::date as due_date)
-  from ${schema}.estimate_data;
-
-drop table ${schema}.sales_receipt_data;
-drop table ${schema}.refund_receipt_data;
-drop table ${schema}.estimate_data;
-
-alter table ${schema}.sales_receipt_data_temp rename to sales_receipt_data;
-alter table ${schema}.refund_receipt_data_temp rename to refund_receipt_data;
-alter table ${schema}.estimate_data_temp rename to estimate_data;
-SQL
 
 
 ## Remove the using_department variable
@@ -51,5 +22,20 @@ SOLUTIONS_DIR="$(dirname "$(readlink -f "${BASH_SOURCE}")")/solutions"
 cp $SOLUTIONS_DIR/int_quickbooks__expenses_union.sql models/intermediate/int_quickbooks__expenses_union.sql
 cp $SOLUTIONS_DIR/int_quickbooks__sales_union.sql models/intermediate/int_quickbooks__sales_union.sql
 
+
 ## Not in intermediate directory
 cp $SOLUTIONS_DIR/quickbooks__ap_ar_enhanced.sql models/quickbooks__ap_ar_enhanced.sql
+
+## Fix the data issue from quickbooks001
+# Disable the package models in dbt_project.yml
+yq -i '.models.quickbooks_source.stg_quickbooks__refund_receipt."+enabled" = false' dbt_project.yml
+yq -i '.models.quickbooks_source.stg_quickbooks__sales_receipt."+enabled" = false' dbt_project.yml
+yq -i '.models.quickbooks_source.stg_quickbooks__estimate."+enabled" = false' dbt_project.yml
+
+# Create staging directory if it doesn't exist
+mkdir -p models/staging
+
+# Copy our override models that handle the epoch-to-date conversion
+cp $SOLUTIONS_DIR/stg_quickbooks__refund_receipt.sql models/staging/
+cp $SOLUTIONS_DIR/stg_quickbooks__sales_receipt.sql models/staging/
+cp $SOLUTIONS_DIR/stg_quickbooks__estimate.sql models/staging/
