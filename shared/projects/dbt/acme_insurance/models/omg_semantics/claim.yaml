@@ -1,0 +1,58 @@
+semantic_models:
+  - name: claim
+    model: ref('claim')
+    defaults:
+      agg_time_dimension: claims_made_date
+    entities:
+      - name: catastrophe_identifier
+        type: foreign
+      - name: insurable_object_identifier
+        type: foreign
+      - name: occurrence_identifier
+        type: foreign
+      - name: claim_identifier
+        type: primary
+    dimensions:
+      - name: claim_description
+        type: categorical
+      - name: company_claim_number
+        type: categorical
+      - name: company_subclaim_number
+        type: categorical
+      - name: claims_made_date
+        type: time
+        type_params:
+          time_granularity: day
+      - name: entry_into_claims_made_program_date
+        type: time
+        type_params:
+          time_granularity: day
+      - name: claim_open_date
+        type: time
+        type_params:
+          time_granularity: day
+      - name: claim_close_date
+        type: time
+        type_params:
+          time_granularity: day
+      - name: claim_reopen_date
+        type: time
+        type_params:
+          time_granularity: day
+      - name: claim_status_code
+        type: time
+        type_params:
+          time_granularity: day
+      - name: claim_reported_date
+        type: time
+        type_params:
+          time_granularity: day
+    measures:
+      - name: claims 
+        expr: company_claim_number
+        agg: count
+        create_metric: true
+      - name: avg_time_to_settle_claim
+        expr: DATEDIFF('day', claim_open_date, claim_close_date)
+        agg: average
+        create_metric: true

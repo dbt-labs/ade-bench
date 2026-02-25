@@ -1,0 +1,39 @@
+task_id: free_text_acme_hqhs_010
+status: ready
+description: 'HQHS: What are the total loss by claim number and corresponding policy
+  number, policy holder and premium amount paid?'
+prompts:
+- key: base
+  prompt: 'What are the total loss, which is the sum of loss payment, loss reserve,
+    expense payment, expense reserve amount by claim number and corresponding policy
+    number, policy holder and premium amount paid?
+
+
+    Write a model called result.sql containing your answer.'
+- key: with_sl
+  prompt: 'Using the dbt semantic layer, answer this question:
+
+
+    What are the total loss, which is the sum of loss payment, loss reserve, expense
+    payment, expense reserve amount by claim number and corresponding policy number,
+    policy holder and premium amount paid?
+
+
+    Write a model called result.sql containing your answer.'
+author_name: dbt-labs
+author_email: noreply@getdbt.com
+difficulty: hard
+tags:
+- semantic-layer
+- metricflow
+- free-text
+- acme-insurance
+- hqhs
+test_setup: |-
+  dbt run --select result
+  python /scripts/fuzzy_compare.py result /seeds/solution__result.csv
+variants:
+- db_type: duckdb
+  db_name: acme_insurance
+  project_type: dbt
+  project_name: acme_insurance

@@ -47,6 +47,7 @@ profiling/statistics
 
 # Docker
 .docker/
+docker/base/bin/
 
 # dbt
 target/
@@ -88,3 +89,4 @@ dmypy.json
 
 # misc
 zz-*
+/shared/projects/dbt/airbnb/dbt_internal_packages

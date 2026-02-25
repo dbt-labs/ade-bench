@@ -1,0 +1,36 @@
+semantic_models:
+  - name: policy_coverage_detail
+    model: ref('policy_coverage_detail')
+    description: "This semantic model represents the coverage details of policies including their effective dates, descriptions, and identifiers."
+    defaults:
+      agg_time_dimension: effective_date
+
+    entities:
+      - name: policy_coverage_detail
+        type: primary
+        expr: policy_coverage_detail_identifier
+      - name: coverage
+        type: foreign
+        expr: coverage_identifier
+      - name: insurable_object
+        type: foreign
+        expr: insurable_object_identifier
+      - name: policy
+        type: foreign
+        expr: policy_identifier
+
+    dimensions:
+      - name: effective_date
+        type: time
+        type_params:
+          time_granularity: day
+      - name: expiration_date
+        type: time
+        type_params:
+          time_granularity: day
+      - name: coverage_part_code
+        type: categorical
+      - name: coverage_description
+        type: categorical
+      - name: coverage_inclusion_exclusion_code
+        type: categorical
