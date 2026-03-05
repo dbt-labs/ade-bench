@@ -45,3 +45,7 @@ variants:
   project_type: dbt-fusion
   project_name: f1
   migration_directory: f1__duckdb_to_snowflake
+- db_type: duckdb
+  db_name: f1
+  project_type: dbt-fusion
+  project_name: f1
