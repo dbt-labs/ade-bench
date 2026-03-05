@@ -2,6 +2,7 @@
 Phase 1: Flip first 200 hosts by ID, set UPDATED_AT = '2024-06-01'
 Phase 2: Re-flip first 100 of those + flip next 100 new, set UPDATED_AT = '2025-01-01'
 """
+
 import argparse
 import duckdb
 
@@ -10,9 +11,12 @@ DB_PATH = "/app/airbnb.duckdb"
 
 def get_ordered_host_ids(conn):
     """Get all host IDs ordered by ID where IS_SUPERHOST is not null."""
-    return [r[0] for r in conn.execute(
-        "SELECT ID FROM raw_hosts WHERE IS_SUPERHOST IS NOT NULL ORDER BY ID"
-    ).fetchall()]
+    return [
+        r[0]
+        for r in conn.execute(
+            "SELECT ID FROM raw_hosts WHERE IS_SUPERHOST IS NOT NULL ORDER BY ID"
+        ).fetchall()
+    ]
 
 
 def flip_hosts(conn, host_ids, updated_at):
@@ -20,12 +24,15 @@ def flip_hosts(conn, host_ids, updated_at):
     if not host_ids:
         return
     placeholders = ", ".join(["?"] * len(host_ids))
-    conn.execute(f"""
+    conn.execute(
+        f"""
         UPDATE raw_hosts
         SET IS_SUPERHOST = CASE WHEN IS_SUPERHOST = 't' THEN 'f' ELSE 't' END,
             UPDATED_AT = TIMESTAMP '{updated_at}'
         WHERE ID IN ({placeholders})
-    """, host_ids)
+    """,
+        host_ids,
+    )
     print(f"Flipped {len(host_ids)} hosts, UPDATED_AT = {updated_at}")
 
 
