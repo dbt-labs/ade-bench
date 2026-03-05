@@ -4,7 +4,7 @@ models:
 
   # enriched core object tables
   - name: asana__task
-    description: An enriched task table consisting of base task info + aggregated metrics and lists 
+    description: An enriched task table consisting of base task info + aggregated metrics and lists
     columns:
 
       - name: task_id
@@ -15,7 +15,7 @@ models:
 
       - name: task_name
         description: User-facing name of the task
-      
+
       - name: assignee_user_id
         description: Foreign key referencing the ASANA_USER that is currently assigned the task.
 
@@ -48,7 +48,7 @@ models:
 
       - name: task_description
         description: Free-form text describing the task, as seen in the UI.
-      
+
       - name: task_link
         description: URL formatted to bring you directly to the task in asana.
 
@@ -57,7 +57,7 @@ models:
 
       - name: is_currently_assigned
         description: Boolean, true if the task is *currently* assigned
-      
+
       - name: has_been_assigned
         description: Boolean, true if the task has at one point been assigned, even if currently not.
 
@@ -66,22 +66,22 @@ models:
 
       - name: days_since_first_assignment
         description: The number of days the task has been/was open and assigned at all (first time assigned -> completion)
-      
+
       - name: last_assigned_at
         description: Timestamp of when the task was last assigned (to the current user if still assigned)
-      
+
       - name: first_assigned_At
         description: Timestamp of when the task was first assigned to someone
 
       - name: first_modifier_user_id
         description: Foreign key referencing the ASANA_USER who made the first modification to the task (ie added a description). A proxy for task creator.
-      
+
       - name: first_modifier_name
         description: Name of the user who made the first modification to the task
 
       - name: number_of_comments
         description: Count of comments made on the task
-      
+
       - name: conversation
         description: The task's comments and authors aggregated into an ordered conversation, with authors + time sent
 
@@ -105,11 +105,11 @@ models:
 
       - name: is_subtask
         description: Boolean that's true if the task is a subtask of another.
-      
+
       - name: parent_task_id
         description: Self-referential id of the parent TASK that this is a subtask of.
 
-      - name: parent_task_name 
+      - name: parent_task_name
         description: User-facing name of the task's parent task.
 
       - name: parent_assignee_user_id
@@ -135,14 +135,12 @@ models:
 
       - name: project_ids
         description: >
-          List of all `project_ids` associated with the task. 
-          You can parse or explode the items in the list using a comma + space (`", "`) as a delimiter.
+          List of all `project_ids` associated with the task.  You can parse or explode the items in the list using a comma + space (`", "`) as a delimiter.
           To keep the table grain at the task_id level, this list is not parsed by default.
 
       - name: project_names
         description: >
-          List of all `project_names` associated with the task. 
-          You can parse or explode the items in the list using a comma + space (`", "`) as a delimiter.
+          List of all `project_names` associated with the task.  You can parse or explode the items in the list using a comma + space (`", "`) as a delimiter.
           To keep the table grain at the task_id level, this list is not parsed by default.
 
       - name: number_of_projects
@@ -176,13 +174,15 @@ models:
         description: The count of projects where the user is currently assigned open tasks.
       - name: projects_working_on
         description: A string-aggregated list of projects that the user is currently assigned to or owns.
-    refs:
-      - name: int_asana__user_task_metrics
-        description: Provides user-level task metrics, including open tasks, completed tasks, and average close times.
-      - name: user
-        description: The raw `user` table containing basic user details.
-      - name: int_asana__project_user
-        description: Contains project-level user assignments, tracking the roles of users in projects.
+    config:
+      meta:
+        refs:
+          - name: int_asana__user_task_metrics
+            description: Provides user-level task metrics, including open tasks, completed tasks, and average close times.
+          - name: user
+            description: The raw `user` table containing basic user details.
+          - name: int_asana__project_user
+            description: Contains project-level user assignments, tracking the roles of users in projects.
 
 
   - name: asana__project
@@ -194,7 +194,7 @@ models:
         tests:
           - unique
           - not_null
-      
+
       - name: project_name
         description: UI-facing name of the project
 
@@ -215,7 +215,7 @@ models:
 
       - name: team_id
         description: Foreign key referencing the ASANA_TEAM that the project is associated with
-      
+
       - name: team_name
         description: User-facing name of the project's team
 
@@ -250,17 +250,15 @@ models:
         description: Boolean that's true if public to the whole workspace, false if private.
 
       - name: sections
-        description: Aggregated list of the sections that exist in the project. 
+        description: Aggregated list of the sections that exist in the project.
 
       - name: notes
         description: Free-form textual description associated with project
- 
-      
+
+
   - name: asana__team
     description: >
-      The `asana__team` model enriches basic team information with aggregated task and project completion metrics. 
-      It includes metrics on open tasks, assigned tasks, and completed tasks for each team. Additionally, 
-      it tracks the average time to close tasks and provides details on active and archived projects associated with the team.
+      The `asana__team` model enriches basic team information with aggregated task and project completion metrics.  It includes metrics on open tasks, assigned tasks, and completed tasks for each team. Additionally,  it tracks the average time to close tasks and provides details on active and archived projects associated with the team.
       Teams are responsible for tasks within specific projects, and this model provides an overview of team performance within those projects.
     columns:
       - name: team_id
@@ -286,14 +284,16 @@ models:
         description: The count of active (non-archived) projects associated with the team.
       - name: number_of_archived_projects
         description: The count of archived projects associated with the team.
-    refs:
-      - name: team
-        description: The raw `team` table providing basic team details.
-      - name: asana__project
-        description: The enriched project table containing metrics on tasks and completion associated with teams.
+    config:
+      meta:
+        refs:
+          - name: team
+            description: The raw `team` table providing basic team details.
+          - name: asana__project
+            description: The enriched project table containing metrics on tasks and completion associated with teams.
 
-  
-  - name: asana__tag 
+
+  - name: asana__tag
     description: Table of tag basic info enriched with some task metrics.
     columns:
 
@@ -302,7 +302,7 @@ models:
         tests:
           - unique
           - not_null
-      
+
       - name: tag_name
         description: UI-facing name of the tag
 
@@ -310,7 +310,7 @@ models:
         description: Timestamp of when the tag was created
 
       - name: number_of_open_tasks
-        description: Count of the currently open tasks with this tag. 
+        description: Count of the currently open tasks with this tag.
 
       - name: number_of_assigned_open_tasks
         description: Count of the open and assigned tasks with this tag.
@@ -329,7 +329,7 @@ models:
     description: Table of task metrics per each day
     columns:
       - name: date_day
-        description: Unique day for which metrics are calculated. 
+        description: Unique day for which metrics are calculated.
         tests:
           - unique
           - not_null

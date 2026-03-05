@@ -38,3 +38,5 @@ vars:
 
 seeds:
   +quote_columns: "{{ true if target.type in ('redshift', 'postgres') else false }}"
+flags:
+  require_generic_test_arguments_property: true

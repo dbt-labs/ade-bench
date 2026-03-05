@@ -11,7 +11,6 @@ models:
         +materialized: view # so we can use the dbt_utils.star macro
 
 profile: 'shopify'
-        
 vars:
   shopify_using_fulfillment_event: true # set to true when regenerating docs
   shopify_using_all_metafields: true # set to true when regenerating docs
@@ -89,3 +88,5 @@ vars:
     shopify_abandoned_checkout_shipping_line: "{{ ref('stg_shopify__abandoned_checkout_shipping_line') }}"
     shopify_fulfillment_event: "{{ ref('stg_shopify__fulfillment_event') }}"
 
+flags:
+  require_generic_test_arguments_property: true

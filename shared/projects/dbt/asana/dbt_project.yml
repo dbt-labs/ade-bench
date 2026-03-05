@@ -40,7 +40,6 @@ vars:
 seeds:
   +quote_columns: "{{ true if target.type == 'redshift' else false }}"
   main:
-    +all_varchar: true
     +column_types:
       _fivetran_synced: timestamp
     user_data:
@@ -99,7 +98,10 @@ seeds:
       +column_types:
         section_id: "string"
         task_id: "string"
+    +all_varchar: true
 
 dispatch:
   - macro_namespace: dbt_utils
     search_order: ['spark_utils', 'dbt_utils']
+flags:
+  require_generic_test_arguments_property: true

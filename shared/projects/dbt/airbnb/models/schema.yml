@@ -7,13 +7,16 @@ models:
       - name: REVIEW_SENTIMENT
         tests:
           - accepted_values:
-              values: ['positive','negative','neutral']
+              arguments:
+                values: ['positive', 'negative', 'neutral']
       - name: LISTING_ID
         tests:
           - not_null
           - relationships:
-              to: ref('dim_listings')
-              field: LISTING_ID
+              arguments:
+                to: ref('dim_listings')
+                field: LISTING_ID
           - relationships:
-              to: ref('dim_listings_hosts')
-              field: LISTING_ID
+              arguments:
+                to: ref('dim_listings_hosts')
+                field: LISTING_ID
