@@ -1,0 +1,88 @@
+task_id: airbnb010
+status: ready
+description: Create an SCD2 snapshot for hosts and build a superhost evolution model.
+notes: |-
+  Background watchdog mutates RAW_HOSTS on each dbt invocation to simulate
+  a live source. test_setup rebuilds deterministically with frozen timestamps.
+prompts:
+  - key: base
+    prompt: |-
+      I want you to start snapshotting the hosts table as `snap__hosts` so that we capture changes over time. Then change the staging model to be a view of the latest data so that the rest of the downstream models continue to work as-is. Also make a `dim_superhost_evolution` model which shows each host_id who has ever been a superhost. It should have `is_currently_superhost`, `current_superhost_tenure` (in days), `acct_age_before_achieving_superhost` (for first time), `status_change_count`, `last_status_change_at`.
+author_name: test
+author_email: test
+difficulty: hard
+tags:
+  - dbt
+  - dbt-snapshots
+  - scd2
+  - model-creation
+  - model-refactor
+
+test_setup: |-
+  # Kill the background watchdog
+  kill $(cat /tmp/watchdog.pid) 2>/dev/null || true
+  sleep 1
+
+  # Drop agent's snapshot table and restore original data
+  python3 -c "
+  import duckdb
+  conn = duckdb.connect('/app/airbnb.duckdb')
+  conn.execute('DROP TABLE IF EXISTS main.snap__hosts')
+  conn.execute('DELETE FROM raw_hosts')
+  conn.execute(\"INSERT INTO raw_hosts SELECT * FROM read_csv_auto('/tmp/original_hosts.csv')\")
+  conn.close()
+  "
+
+  # Layer 1: Snapshot original state (frozen at 2024-01-01)
+  python3 -c "
+  import duckdb
+  conn = duckdb.connect('/app/airbnb.duckdb')
+  conn.execute(\"CREATE OR REPLACE MACRO now() AS TIMESTAMP '2024-01-01 00:00:00'\")
+  conn.close()
+  "
+  dbt snapshot
+
+  # Mutation phase 1: Flip first 200 hosts
+  python3 /tmp/deterministic_mutate.py --phase 1
+
+  # Layer 2: Capture phase 1 changes (frozen at 2024-06-01)
+  python3 -c "
+  import duckdb
+  conn = duckdb.connect('/app/airbnb.duckdb')
+  conn.execute(\"CREATE OR REPLACE MACRO now() AS TIMESTAMP '2024-06-01 00:00:00'\")
+  conn.close()
+  "
+  dbt snapshot
+
+  # Mutation phase 2: Re-flip 100 of original 200 + flip 100 new
+  python3 /tmp/deterministic_mutate.py --phase 2
+
+  # Layer 3: Capture phase 2 changes (frozen at 2025-01-01)
+  python3 -c "
+  import duckdb
+  conn = duckdb.connect('/app/airbnb.duckdb')
+  conn.execute(\"CREATE OR REPLACE MACRO now() AS TIMESTAMP '2025-01-01 00:00:00'\")
+  conn.close()
+  "
+  dbt snapshot
+
+  # Freeze "today" for tenure/age calculations, build models
+  python3 -c "
+  import duckdb
+  conn = duckdb.connect('/app/airbnb.duckdb')
+  conn.execute(\"CREATE OR REPLACE MACRO now() AS TIMESTAMP '2025-06-01 00:00:00'\")
+  conn.close()
+  "
+  dbt run --select dim_superhost_evolution
+
+solution_seeds:
+  - table_name: snap__hosts
+    exclude_columns:
+      - dbt_scd_id
+  - table_name: dim_superhost_evolution
+
+variants:
+- db_type: duckdb
+  db_name: airbnb
+  project_type: dbt
+  project_name: airbnb
