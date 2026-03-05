@@ -43,7 +43,8 @@ variants:
 #   project_type: dbt-fusion
 #   project_name: airbnb
 #   migration_directory: airbnb__duckdb_to_snowflake_dbtf
-- db_type: duckdb
-  db_name: airbnb
-  project_type: dbt-fusion
-  project_name: airbnb
+# TODO: Fusion's materialization_incremental_duckdb can't find temp tables during merge
+# - db_type: duckdb
+#   db_name: airbnb
+#   project_type: dbt-fusion
+#   project_name: airbnb
