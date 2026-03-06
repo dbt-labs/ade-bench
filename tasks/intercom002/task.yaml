@@ -77,3 +77,7 @@ variants:
   project_type: dbt-fusion
   project_name: intercom
   migration_directory: intercom__duckdb_to_snowflake
+- db_type: duckdb
+  db_name: intercom
+  project_type: dbt-fusion
+  project_name: intercom

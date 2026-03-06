@@ -70,7 +70,6 @@ models:
         description: Total amount (in shop currency) up until and including this `date_month`.
       - name: source_relation
         description: "{{ doc('source_relation') }}"
-        
   - name: shopify__orders
     description: Each record represents an order in Shopify.
     columns:
@@ -257,7 +256,7 @@ models:
       - name: client_details_user_agent
         description: Details of the browsing client, including software and operating versions.
       - name: customer_locale
-        description: The two or three-letter language code, optionally followed by a region modifier. Example values - en, en-CA.  
+        description: The two or three-letter language code, optionally followed by a region modifier. Example values - en, en-CA.
       - name: order_status_url
         description: The URL pointing to the order status web page, if applicable.
       - name: presentment_currency
@@ -286,21 +285,22 @@ models:
         description: Distinct discount codes applied on the order
       - name: source_relation
         description: The ID of the order placed on the originating platform. This value doesn't correspond to the Shopify ID that's generated from a completed draft.
-  
+
   - name: shopify__customers
     description: Each record represents a customer in Shopify.
     tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - customer_id
-            - source_relation
+          arguments:
+            combination_of_columns:
+              - customer_id
+              - source_relation
     columns:
       - name: _fivetran_synced
         description: "{{ doc('_fivetran_synced') }}"
       - name: created_timestamp
         description: The date and time when the customer was created.
       - name: default_address_id
-        description: The default address for the customer. 
+        description: The default address for the customer.
       - name: email
         description: The unique email address of the customer. Attempting to assign the same email address to multiple customers returns an error.
       - name: first_name
@@ -338,7 +338,7 @@ models:
       - name: lifetime_abandoned_checkouts
         description: Total number of abandoned checkouts abandoned by the customer.
       - name: customer_tags
-        description: A string aggregated list of all tags associated with a customer. 
+        description: A string aggregated list of all tags associated with a customer.
       - name: avg_quantity_per_order
         description: Average quantity of items per order customer orders.
       - name: lifetime_total_tax
@@ -378,14 +378,15 @@ models:
     description: Each record represents a customer email in Shopify.
     tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - email
-            - source_relation
+          arguments:
+            combination_of_columns:
+              - email
+              - source_relation
     columns:
       - name: last_fivetran_synced
         description: "{{ doc('_fivetran_synced') }}"
       - name: default_address_id
-        description: The default address for the customer. 
+        description: The default address for the customer.
       - name: email
         description: The unique email address of the customer.
       - name: first_name
@@ -427,7 +428,7 @@ models:
       - name: lifetime_abandoned_checkouts
         description: Total number of abandoned checkouts abandoned by the customer.
       - name: customer_tags
-        description: A string aggregated list of all tags associated with a customer. 
+        description: A string aggregated list of all tags associated with a customer.
       - name: avg_quantity_per_order
         description: Average quantity of items per order customer orders.
       - name: lifetime_total_tax
@@ -473,9 +474,10 @@ models:
     description: Each record represents a product in Shopify.
     tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - product_id
-            - source_relation
+          arguments:
+            combination_of_columns:
+              - product_id
+              - source_relation
     columns:
       - name: is_deleted
         description: Whether the record has been deleted in the source system.
@@ -744,19 +746,19 @@ models:
         description: Timestamp when the authorization expires.
       - name: authorization_code
         description: The authorization code associated with the transaction.
-        
+
   - name: shopify__inventory_levels
     description: >
-      Model representing the current status of an inventory level in Shopify. Inventory Levels are unique pairings of 
-      inventory items (which have a 1:1 relationship with product variants) and locations. 
-      
+      Model representing the current status of an inventory level in Shopify. Inventory Levels are unique pairings of  inventory items (which have a 1:1 relationship with product variants) and locations. 
+
       Inventory Level = Inventory item @ a Location.
     tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - inventory_item_id
-            - location_id
-            - source_relation
+          arguments:
+            combination_of_columns:
+              - inventory_item_id
+              - location_id
+              - source_relation
     columns:
       - name: _fivetran_synced
         description: "{{ doc('_fivetran_synced') }}"
@@ -809,8 +811,7 @@ models:
         description: The date and time (ISO 8601 format) when the location was created.
       - name: is_legacy_location
         description: >
-          Boolean representing whether this is a fulfillment service location. If true, then the location is a fulfillment service location. 
-          If false, then the location was created by the merchant and isn't tied to a fulfillment service.
+          Boolean representing whether this is a fulfillment service location. If true, then the location is a fulfillment service location.  If false, then the location was created by the merchant and isn't tied to a fulfillment service.
       - name: location_name
         description: The name of the location.
       - name: phone
@@ -868,7 +869,7 @@ models:
       - name: quantity_sold
         description: Total quantity sold from the inventory level. Includes refunds.
       - name: count_distinct_orders
-        description: The number of distinct orders placed from this inventory level. 
+        description: The number of distinct orders placed from this inventory level.
       - name: count_distinct_customers
         description: The number of distinct customers (based on customer_id) that have placed orders against this inventory level.
       - name: count_distinct_customer_emails
@@ -879,7 +880,7 @@ models:
         description: The timestamp of the first order against this inventory level.
       - name: subtotal_sold_refunds
         description: The monetary amount (in shop currency) of inventory level goods that have been refunded.
-      - name: quantity_sold_refunds 
+      - name: quantity_sold_refunds
         description: The quantity of inventory level goods that have been refunded.
       - name: net_subtotal_sold
         description: Net monetary amount sold (in shop currency) from the inventory level. Excludes refunds.
@@ -984,7 +985,7 @@ models:
       - name: quantity_sold
         description: Total quantity sold from the inventory level. Includes refunds.
       - name: quantity_refunded
-        description: The quantity of goods ORDERED on this day that have been refunded. 
+        description: The quantity of goods ORDERED on this day that have been refunded.
       - name: quantity_net
         description: Net quantity sold from this shop on this day. Excludes refunds.
       - name: count_variants_sold

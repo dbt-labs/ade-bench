@@ -36,3 +36,7 @@ variants:
   project_type: dbt-fusion
   project_name: simple
   migration_directory: simple__duckdb_to_snowflake
+- db_type: duckdb
+  db_name: simple
+  project_type: dbt-fusion
+  project_name: simple

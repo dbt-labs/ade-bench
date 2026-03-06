@@ -14,6 +14,9 @@ on:
       - "uv.lock"
       - ".github/workflows/ci.yml"
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -44,14 +47,22 @@ jobs:
         run: uv run black --check .
 
   check-regressions:
-    name: ${{ matrix.agent == 'sage' && 'Sage agent always passes' || 'None agent always fails' }}
+    name: "${{ matrix.project_type }} / ${{ matrix.agent == 'sage' && 'Sage agent always passes' || 'None agent always fails' }}"
     runs-on: ubuntu-latest
     strategy:
       matrix:
         include:
           - agent: sage
+            project_type: dbt
             expect_success: true
           - agent: none
+            project_type: dbt
+            expect_success: false
+          - agent: sage
+            project_type: dbt-fusion
+            expect_success: true
+          - agent: none
+            project_type: dbt-fusion
             expect_success: false
     steps:
       - name: Checkout code
@@ -74,10 +85,15 @@ jobs:
       # Pre-build the Docker image once to avoid race conditions when multiple
       # concurrent trials try to build the same cached image simultaneously
       - name: Pre-build Docker image
-        run: docker build -t ade-bench-base -f docker/base/Dockerfile.duckdb-dbt .
+        run: |
+          if [ "${{ matrix.project_type }}" = "dbt-fusion" ]; then
+            docker build -t ade-bench-base -f docker/base/Dockerfile.duckdb-dbtf .
+          else
+            docker build -t ade-bench-base -f docker/base/Dockerfile.duckdb-dbt .
+          fi
 
       - name: Run benchmark
-        run: uv run ade run all --agent ${{ matrix.agent }} --db duckdb --project-type dbt --no-diffs --n-concurrent-trials 6 --no-rebuild --plugin-set none
+        run: uv run ade run all --agent ${{ matrix.agent }} --db duckdb --project-type ${{ matrix.project_type }} --no-diffs --n-concurrent-trials 6 --no-rebuild --plugin-set none
         env:
           USE_DYNAMIC_LOGGING: "FALSE"
           DEFAULT_TEST_TIMEOUT_SEC: "120"
@@ -101,7 +117,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: benchmark-results-${{ matrix.agent }}
+          name: benchmark-results-${{ matrix.project_type }}-${{ matrix.agent }}
           path: experiments/
 
       - name: Check results match expectations

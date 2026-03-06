@@ -5,10 +5,11 @@ models:
     description: This model constructs a comprehensive, denormalized analytical table that enables reporting on key revenue, customer, and product metrics from your billing platform. It’s designed to align with the schema of the `*__line_item_enhanced` model found in Shopify, Recharge, Stripe, Zuora, and Recurly, offering standardized reporting across various billing platforms. To see the kinds of insights this model can generate, explore example visualizations in the [Fivetran Billing Model Streamlit App](https://fivetran-billing-model.streamlit.app/). Visit the app for more details.
     tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - header_id
-            - line_item_id
-            - source_relation
+          arguments:
+            combination_of_columns:
+              - header_id
+              - line_item_id
+              - source_relation
     columns:
       - name: header_id
         description: Id of corresponding order.

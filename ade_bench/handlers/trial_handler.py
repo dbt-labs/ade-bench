@@ -308,6 +308,8 @@ class TrialHandler:
                 return self._defaults_path / "docker-compose-snowflake-dbtf.yaml"
             elif db_type == "snowflake" and project_type == "dbt":
                 return self._defaults_path / "docker-compose-snowflake-dbt.yaml"
+            elif db_type == "duckdb" and project_type == "dbt-fusion":
+                return self._defaults_path / "docker-compose-duckdb-dbtf.yaml"
             elif db_type == "duckdb":
                 return self._defaults_path / "docker-compose-duckdb-dbt.yaml"
             else:

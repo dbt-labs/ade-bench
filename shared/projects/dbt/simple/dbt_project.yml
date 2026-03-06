@@ -8,3 +8,5 @@ model-paths: ["models"]
 
 models:
   +materialized: table
+flags:
+  require_generic_test_arguments_property: true
