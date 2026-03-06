@@ -98,7 +98,6 @@ seeds:
       +column_types:
         section_id: "string"
         task_id: "string"
-    +all_varchar: true
 
 dispatch:
   - macro_namespace: dbt_utils
