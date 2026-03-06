@@ -28,3 +28,8 @@ variants:
   db_name: analytics_engineering
   project_type: dbt
   project_name: empty
+
+- db_type: duckdb
+  db_name: analytics_engineering
+  project_type: dbt-fusion
+  project_name: empty

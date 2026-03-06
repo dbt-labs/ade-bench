@@ -16,3 +16,7 @@ variants:
   db_name: shopify
   project_type: dbt
   project_name: shopify_analytics
+- db_type: duckdb
+  db_name: shopify
+  project_type: dbt-fusion
+  project_name: shopify_analytics

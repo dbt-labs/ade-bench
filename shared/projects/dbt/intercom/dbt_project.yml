@@ -48,9 +48,9 @@ vars:
     intercom__contact_history_pass_through_columns: []
     intercom__conversation_history_pass_through_columns: []
 clean-targets:
-- target
-- dbt_modules
-- dbt_packages
+  - target
+  - dbt_modules
+  - dbt_packages
 
 
 
@@ -128,3 +128,5 @@ seeds:
 dispatch:
   - macro_namespace: dbt_utils
     search_order: ['spark_utils', 'dbt_utils']
+flags:
+  require_generic_test_arguments_property: true

@@ -114,6 +114,8 @@ vars:
 
 analysis-paths: ["analysis"]
 clean-targets:
-- target
-- dbt_modules
-- dbt_packages
+  - target
+  - dbt_modules
+  - dbt_packages
+flags:
+  require_generic_test_arguments_property: true

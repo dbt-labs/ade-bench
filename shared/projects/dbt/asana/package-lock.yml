@@ -1,11 +1,11 @@
 packages:
-  - name: asana_source
-    package: fivetran/asana_source
-    version: 0.8.2
-  - name: fivetran_utils
-    package: fivetran/fivetran_utils
-    version: 0.4.11
-  - name: dbt_utils
-    package: dbt-labs/dbt_utils
-    version: 1.3.2
-sha1_hash: 3a3e4675efeaa9f4637d28f8e70dcb98e6af9ddf
+- package: fivetran/asana_source
+  name: asana_source
+  version: 0.8.2
+- package: dbt-labs/dbt_utils
+  name: dbt_utils
+  version: 1.3.3
+- package: fivetran/fivetran_utils
+  name: fivetran_utils
+  version: 0.4.11
+sha1_hash: 090d6c9b6ce0e8758a28abf31c3e888826a7317f

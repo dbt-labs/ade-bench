@@ -3,17 +3,15 @@ version: 2
 models:
 
   - name: intercom__admin_metrics
-    description: > 
-      This model aggregates conversation-related metrics at the admin (employee) level, with optional team-level data if teams are enabled. 
-      Each record represents an admin and their associated team (if applicable), enriched with metrics such as total closed conversations, average conversation parts, 
-      average satisfaction rating, and median response times. This provides insights into each admin’s performance, with breakdowns by team if the `intercom__using_team` 
-      variable is set to true.
+    description: >
+      This model aggregates conversation-related metrics at the admin (employee) level, with optional team-level data if teams are enabled.  Each record represents an admin and their associated team (if applicable), enriched with metrics such as total closed conversations, average conversation parts,  average satisfaction rating, and median response times. This provides insights into each admin’s performance, with breakdowns by team if the `intercom__using_team`  variable is set to true.
     tests:
       - dbt_utils.unique_combination_of_columns:
           # team_id is only included as a column in this model if intercom__using_team is true
           # however, because admins can belong to multiple teams, this model must be at the grain of team-admin
           # so we dynamically include team_id as part of the model's primary key. if teams are not enabled, just use admin_id
-          combination_of_columns: "{{ ['admin_id', 'team_id'] if var('intercom__using_team', true) else ['admin_id'] }}"
+          arguments:
+            combination_of_columns: "{{ ['admin_id', 'team_id'] if var('intercom__using_team', true) else ['admin_id'] }}"
     columns:
       - name: admin_id
         description: The unique identifier representing the admin in the system.
@@ -43,15 +41,17 @@ models:
       - name: median_time_to_last_close_minutes
         description: The median time (in minutes) it took for the admin to close a conversation.
 
-    refs:
-      - name: intercom__conversation_metrics
-        description: Contains detailed metrics about conversations, such as conversation state, parts count, and ratings.
-      - name: admin
-        description: The admin table, containing information about each admin, such as admin ID and name.
-      - name: team_admin
-        description: Maps admins to their teams (if teams are enabled in the Intercom setup).
-      - name: team
-        description: Contains information about the teams each admin belongs to, including team ID and team name (if teams are enabled).
+    config:
+      meta:
+        refs:
+          - name: intercom__conversation_metrics
+            description: Contains detailed metrics about conversations, such as conversation state, parts count, and ratings.
+          - name: admin
+            description: The admin table, containing information about each admin, such as admin ID and name.
+          - name: team_admin
+            description: Maps admins to their teams (if teams are enabled in the Intercom setup).
+          - name: team
+            description: Contains information about the teams each admin belongs to, including team ID and team name (if teams are enabled).
 
   - name: intercom__company_enhanced
     description: >
@@ -90,7 +90,7 @@ models:
         description: Timestamp to record the time that a record is ingested by Fivetran. This value may not be identical to the time the record was created in the source system.
       - name: _fivetran_end
         description: Timestamp to record the time when a record became inactive in the source system.
-      
+
 
   - name: intercom__company_metrics
     description: >
@@ -142,28 +142,29 @@ models:
       - name: _fivetran_end
         description: The timestamp when the record became inactive in Fivetran.
 
-    refs:
-      - name: intercom__conversation_metrics
-        description: Contains conversation-level metrics, such as conversation state, parts count, and rating, used to compute company-level aggregates.
-      - name: intercom__company_enhanced
-        description: The enhanced Intercom company dataset, enriched with additional attributes such as company name, industry, and plan details.
-      - name: intercom__contact_enhanced
-        description: Contains contact details linked to the company, providing additional information for aggregation.
-      - name: contact_company_history
-        description: A history table that tracks the relationship between contacts and companies over time, used for joining contact metrics to company-level data.
+    config:
+      meta:
+        refs:
+          - name: intercom__conversation_metrics
+            description: Contains conversation-level metrics, such as conversation state, parts count, and rating, used to compute company-level aggregates.
+          - name: intercom__company_enhanced
+            description: The enhanced Intercom company dataset, enriched with additional attributes such as company name, industry, and plan details.
+          - name: intercom__contact_enhanced
+            description: Contains contact details linked to the company, providing additional information for aggregation.
+          - name: contact_company_history
+            description: A history table that tracks the relationship between contacts and companies over time, used for joining contact metrics to company-level data.
 
 
   - name: intercom__contact_enhanced
     description: >
-      Each record represents a single contact, enriched with data identifying the contacts role, if they have unsubscribed from 
-      the email list, last contacted information, and which company they belong to.
+      Each record represents a single contact, enriched with data identifying the contacts role, if they have unsubscribed from  the email list, last contacted information, and which company they belong to.
     columns:
       - name: contact_id
-        description: The unique identifier for the contact which is given by Intercom. 
+        description: The unique identifier for the contact which is given by Intercom.
         tests:
           - not_null
           - unique
-      - name: contact_name  
+      - name: contact_name
         description: The name of the contact.
       - name: admin_id
         description: The unique identifier representing the admin which has been assigned ownership of the contact.
@@ -174,7 +175,7 @@ models:
       - name: signed_up_at
         description: The time the contact signed up.
       - name: all_contact_tags
-        description: String aggregation of all tags associated with the contact.        
+        description: String aggregation of all tags associated with the contact.
       - name: contact_role
         description: The role of the contact (user or lead).
       - name: contact_email
@@ -200,9 +201,7 @@ models:
 
   - name: intercom__conversation_enhanced
     description: >
-      Each record represents a single conversation, enriched with data from the multiple conversation parts. The conversation 
-      parts provide relevant information such as who was assigned to the conversation, which contact the conversation was with, 
-      the current conversation state, who closed the conversation, and the final conversation ratings from the contact.
+      Each record represents a single conversation, enriched with data from the multiple conversation parts. The conversation  parts provide relevant information such as who was assigned to the conversation, which contact the conversation was with,  the current conversation state, who closed the conversation, and the final conversation ratings from the contact.
     columns:
       - name: conversation_id
         description: The id representing the conversation.
@@ -248,7 +247,7 @@ models:
       - name: sla_name
         description: The name of the SLA as given by the teammate when it was created.
       - name: sla_status
-        description: One of “hit”, ”missed”, or “cancelled”.
+        description: One of "hit", "missed", or "cancelled".
       - name: all_conversation_admins
         description: String aggregate of all admins that contributed to the conversation.
       - name: all_conversation_contacts
@@ -275,11 +274,10 @@ models:
         description: Name of the team that was first assigned to the conversation.
       - name: last_team_name
         description: Name of the team that was last assigned to the conversation.
-        
+
   - name: intercom__conversation_metrics
     description: >
-      Each record represents a single row from intercom__conversation_enhanced, enriched with aggregates which determine 
-      time to first response, time to first close, and time to last close.
+      Each record represents a single row from intercom__conversation_enhanced, enriched with aggregates which determine  time to first response, time to first close, and time to last close.
     columns:
       - name: count_reopens
         description: The count of conversation parts where the part_type value was 'open'. Note, a conversation part_type must be manually opened by an admin.
@@ -369,7 +367,7 @@ models:
       - name: sla_name
         description: The name of the SLA as given by the teammate when it was created.
       - name: sla_status
-        description: One of “hit”, ”missed”, or “cancelled”.
+        description: One of "hit", "missed", or "cancelled".
       - name: all_conversation_admins
         description: String aggregate of all admins that contributed to the conversation.
       - name: all_conversation_contacts

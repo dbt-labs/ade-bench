@@ -23,3 +23,7 @@ variants:
   db_name: f1
   project_type: dbt
   project_name: f1
+- db_type: duckdb
+  db_name: f1
+  project_type: dbt-fusion
+  project_name: f1

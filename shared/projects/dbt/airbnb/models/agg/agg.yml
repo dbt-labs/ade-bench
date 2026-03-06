@@ -50,7 +50,8 @@ models:
       - name: REVIEW_SENTIMENT
         tests:
           - accepted_values:
-              values: ['positive','negative','neutral']
+              arguments:
+                values: ['positive', 'negative', 'neutral']
 
   - name: wow_agg_reviews
     columns:
@@ -61,4 +62,5 @@ models:
       - name: REVIEW_SENTIMENT
         tests:
           - accepted_values:
-              values: ['positive','negative','neutral']
+              arguments:
+                values: ['positive', 'negative', 'neutral']
