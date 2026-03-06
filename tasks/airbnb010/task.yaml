@@ -79,6 +79,8 @@ solution_seeds:
   - table_name: snap__hosts
     exclude_columns:
       - dbt_scd_id
+    alternates:
+      - solution__snap__hosts_alt_1
   - table_name: dim_superhost_evolution
 
 variants:
