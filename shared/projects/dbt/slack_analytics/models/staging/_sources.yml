@@ -6,4 +6,4 @@ sources:
     schema: main
     tables:
       - name: channel_messages
-        identifier: channel_messages
+        identifier: channel_messages_stats_with_reactions
