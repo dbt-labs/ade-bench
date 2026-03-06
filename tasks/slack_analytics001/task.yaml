@@ -1,0 +1,58 @@
+task_id: slack_analytics001
+status: ready
+description: Create a fact table for slack analytics
+notes: |-
+  The existing fact folder gets deleted in the setup script, so the llm needs to create the folder and table from scratch.
+  The equality test expects reaction_name, reaction_name_normalised, and reaction_user to be JSON-typed columns (produced by the project's unnest_array macro using from_json). 
+  Agents that use a different unnesting approach producing VARCHAR will fail the equality test even if the data is correct.
+prompts:
+  - key: base
+    prompt: |-
+      Create a fact folder and table called fct_slack_message_reactions that expands reaction data for messages from dim_slack_messages, as well as the accompanying _models.yml (schema) file. 
+      The table should contain one row per `message_reaction_id`. It should have the following columns:
+      - message_reaction_id: The surrogate key for the message reaction created using the message_id, reaction_name and reaction_user.
+      - message_id: Unique identifier for the message. Foreign key to dim_slack_messages.
+      - message_date: The date the message was sent.
+      - message_datetime: The date and time the message was sent.
+      - channel_name: The name of the channel the message was sent in.
+      - reaction_name: The name of the reaction used on the message.
+      - reaction_name_normalised: The generic reaction name if the `reaction_name` contains skin-tone variations.
+      - reaction_user: The user_id of the user who used the specified reaction to the message.
+      - extracted_datetime: The date and time the message was extracted from the Slack API.
+  - key: hard
+    prompt: |-
+      Create a fact folder and table called fct_slack_message_reactions that expands reaction data for slackmessages.
+author_name: test
+author_email: test
+difficulty: medium
+tags:
+  - dbt
+  - model-creation
+
+test_setup: |-
+  dbt deps
+  dbt run --select fct_slack_message_reactions
+
+# ADE-bench will automatically do several things with the tables listed here:
+#  1. Create solution seeds (called `solution__[table_name]`) after the agent runs.
+#  2. Create a dbt test that checks for the existence of this table
+#  3. Create a test to compare the table to corresponding solution seed.
+#
+# As is shown for with the tables below, you can:
+#  1. Exclude some columns from the equality test
+#  2. Only include certain columns in the equality test
+#  3. Disable the creation of both the existence and equality tests.
+#  4. Specify alternate solution seeds (for tasks with multiple valid answers)
+solution_seeds:
+  - table_name: fct_slack_message_reactions
+
+
+# These are the different database and project variants that the task supports
+# If no migration directory is provided, then no migration script will run.
+# If one is provided, it will be run against the project prior to the the task's
+# setup.sh script.
+variants:
+- db_type: duckdb
+  db_name: slack_analytics
+  project_type: dbt
+  project_name: slack_analytics
