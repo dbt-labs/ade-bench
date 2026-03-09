@@ -1,5 +1,5 @@
 task_id: airbnb011
-status: ready
+status: dev
 description: Create an SCD2 snapshot for hosts with unreliable UPDATED_AT timestamps.
 notes: |-
   UPDATED_AT is stuck at 1980-01-01 for all rows. Agent must discover this

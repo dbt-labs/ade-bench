@@ -4,8 +4,8 @@ seeds:
   airbnb:
     solution__snap__hosts:
       +column_types:
-        HOST_ID: integer
-        HOST_NAME: varchar
+        ID: integer
+        NAME: varchar
         IS_SUPERHOST: varchar
         CREATED_AT: timestamp
         UPDATED_AT: timestamp

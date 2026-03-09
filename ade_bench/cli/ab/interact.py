@@ -88,6 +88,23 @@ def interact(
         typer.echo(f"Task {task_dir.absolute()} does not exist.")
         raise typer.Exit(code=1)
 
+    # Resolve plugin sets (mirrors harness._init_plugin_sets)
+    from ade_bench.plugins.loader import PluginSetLoader
+    from ade_bench.harness_models import PluginSet
+
+    plugin_set_config_path = tasks_dir.parent / "experiment_sets" / "plugin-sets.yaml"
+    if plugin_set_config_path.exists():
+        loader = PluginSetLoader(plugin_set_config_path)
+        plugin_sets = loader.resolve_plugin_sets(
+            plugin_set_names=None, agent_name=agent or "claude"
+        )
+        plugin_set = plugin_sets[0] if plugin_sets else None
+    else:
+        plugin_set = PluginSet(
+            name="no-plugins",
+            allowed_tools=["Bash", "Edit", "Write", "Read", "Glob", "Grep"],
+        )
+
     # Create the output directory
     output_dir = output_path / run_id
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -314,6 +331,28 @@ def interact(
                 container_dir="/tests",
             )
 
+            # Write test_setup script if defined in task.yaml (mirrors harness._copy_tests)
+            if trial_handler.task.test_setup:
+                import tempfile
+
+                with tempfile.NamedTemporaryFile(
+                    mode="w", suffix=".sh", prefix="test-setup-", delete=False
+                ) as f:
+                    f.write("#!/bin/bash\n")
+                    f.write(trial_handler.task.test_setup)
+                    f.write("\n")
+                    test_setup_tmp = Path(f.name)
+
+                terminal.copy_to_container(
+                    paths=[test_setup_tmp],
+                    container_dir=str(DockerComposeManager.CONTAINER_SCRIPTS_DIR),
+                    container_filename="test-setup.sh",
+                )
+                container.exec_run(
+                    f"chmod +x {DockerComposeManager.CONTAINER_SCRIPTS_DIR}/test-setup.sh"
+                )
+                test_setup_tmp.unlink()
+
             # Copy solution.sh if it exists
             solution_script = task_dir / "solution.sh"
             if solution_script.exists():
@@ -378,8 +417,11 @@ def interact(
                 from ade_bench.agents.agent_factory import NamedAgentFactory
                 from ade_bench.harness_models import TerminalCommand
 
-                # Create the agent instance
-                agent_instance = NamedAgentFactory(agent_name=agent_name).get_agent()
+                # Create the agent instance with allowed_tools from plugin set
+                agent_kwargs = {}
+                if plugin_set and plugin_set.allowed_tools:
+                    agent_kwargs["allowed_tools"] = plugin_set.allowed_tools
+                agent_instance = NamedAgentFactory(agent_name=agent_name).get_agent(**agent_kwargs)
 
                 # Ensure log directories exist if needed
                 if hasattr(agent_instance, "LOG_DIR") and agent_instance.LOG_DIR:
@@ -409,19 +451,17 @@ def interact(
                     typer.echo(f"Agent {agent_name.value} does not have _run_agent_commands method")
                     raise typer.Exit(1)
 
-        # For post-eval mode, also run the tests
+        # For post-eval mode, run the test pipeline (mirrors harness test execution)
         if step == "post-eval":
             typer.echo("Running tests...")
-
-            # Run dbt tests
-            result = container.exec_run(["/bin/bash", "-c", "cd /app && dbt test"])
-            typer.echo(result.output.decode("utf-8"))
-
-            # The test status code indicates whether all tests passed
-            if result.exit_code != 0:
-                typer.echo("Some tests failed")
-            else:
-                typer.echo("All tests passed!")
+            test_command = f"bash {DockerComposeManager.CONTAINER_TEST_DIR / trial_handler.run_tests_path.name}"
+            test_command += f" --db-type={db}"
+            test_command += f" --project-type={project_type}"
+            session.send_keys(
+                [test_command, "Enter"],
+                block=True,
+            )
+            typer.echo("Tests completed. Check tmux session output for results.")
 
         # Launch interactive shell
         typer.echo(f"\nInteractive environment ready for task {task_id}")
