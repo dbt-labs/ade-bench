@@ -319,7 +319,7 @@ class ClaudeCodeLogFormatter(LogFormatter):
             output_path.parent.mkdir(parents=True, exist_ok=True)
 
             # Use a temporary directory for claude-code-transcripts output,
-            # then copy the result to the single well-known output path
+            # then preserve all generated files and copy content to the well-known path
             with tempfile.TemporaryDirectory() as tmp_output_dir:
                 tmp_output = Path(tmp_output_dir)
 
@@ -337,21 +337,24 @@ class ClaudeCodeLogFormatter(LogFormatter):
                     ):
                         generate_html(tmp_path, tmp_output)
 
-                    # Find the generated file (index.html or page-001.html)
-                    generated = None
-                    for candidate in ["index.html", "page-001.html"]:
-                        candidate_path = tmp_output / candidate
+                    # Preserve all generated files in a transcript directory
+                    # (index.html + page-001.html, page-002.html, etc.)
+                    transcript_dir = output_path.parent / "transcript"
+                    if transcript_dir.exists():
+                        shutil.rmtree(transcript_dir)
+                    shutil.copytree(tmp_output, transcript_dir)
+
+                    # Copy first content page as the single well-known file.
+                    # Prefer page-001.html (actual content with tool uses/edits)
+                    # over index.html (summary/TOC with broken deep links).
+                    for candidate in ["page-001.html", "index.html"]:
+                        candidate_path = transcript_dir / candidate
                         if candidate_path.exists():
-                            generated = candidate_path
-                            break
+                            shutil.copy2(candidate_path, output_path)
+                            return output_path
 
-                    if generated is None:
-                        logger.warning(f"No HTML output found in {tmp_output}")
-                        return None
-
-                    # Copy to the well-known output path
-                    shutil.copy2(generated, output_path)
-                    return output_path
+                    logger.warning(f"No HTML output found in {tmp_output}")
+                    return None
                 finally:
                     tmp_path.unlink(missing_ok=True)
 
