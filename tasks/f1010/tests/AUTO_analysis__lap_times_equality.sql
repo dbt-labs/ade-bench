@@ -20,15 +20,10 @@
 -- depends_on: {{ ref(answer_key_2) }}
 
 
-{% set submitted_table = adapter.get_relation(database=target.database, schema=target.schema, identifier=table_name) %}
-{% set answer_key_1_table = adapter.get_relation(database=target.database, schema=target.schema, identifier=answer_key_1) %}
-{% set answer_key_2_table = adapter.get_relation(database=target.database, schema=target.schema, identifier=answer_key_2) %}
-
-
 with
 
 answer_key_1_test as (
-    {% if submitted_table is none or answer_key_1_table is none %}
+    {% if load_relation(ref(table_name)) is none or load_relation(ref(answer_key_1)) is none %}
         select 1
     {% else %}
         {{ dbt_utils.test_equality(
@@ -41,7 +36,7 @@ answer_key_1_test as (
 ),
 
 answer_key_2_test as (
-    {% if submitted_table is none or answer_key_2_table is none %}
+    {% if load_relation(ref(table_name)) is none or load_relation(ref(answer_key_2)) is none %}
         select 1
     {% else %}
         {{ dbt_utils.test_equality(
