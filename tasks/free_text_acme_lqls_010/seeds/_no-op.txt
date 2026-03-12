@@ -1,0 +1,9 @@
+
+
+seeds:
+  acme_insurance:
+    solution__result:
+      +column_types:
+        Company_Claim_Number: integer
+        Claim_Open_Date: date
+        Claim_Close_Date: date

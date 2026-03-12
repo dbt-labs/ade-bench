@@ -1,0 +1,37 @@
+semantic_models:
+  - name: occurrence_events
+    model: ref('occurrences')
+    description: "Details of various occurrences including dates, times, and locations."
+    defaults:
+      # Assuming Occurrence_Begin_Date is the most relevant date for aggregation
+      agg_time_dimension: occurrence_begin_date
+    entities:
+      - name: occurrence
+        type: primary
+        expr: Occurrence_Identifier
+      - name: geographic_location_identifier
+        type: foreign
+        expr: Geographic_Location_Identifier
+    dimensions:
+      - name: catastrophic_event_indicator
+        type: categorical
+        expr: Catastrophic_Event_Indicator
+      - name: occurrence_begin_date
+        type: time
+        type_params:
+          time_granularity: day
+      - name: occurrence_end_date
+        type: time
+        type_params:
+          time_granularity: day
+      - name: occurrence_begin_time
+        type: time
+        type_params:
+          time_granularity: day
+      - name: occurrence_end_time
+        type: time
+        type_params:
+          time_granularity: day
+      - name: occurrence_name
+        type: categorical
+        expr: Occurrence_Name

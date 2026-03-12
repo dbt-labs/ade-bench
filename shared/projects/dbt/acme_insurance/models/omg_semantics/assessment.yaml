@@ -1,0 +1,19 @@
+semantic_models:
+  - name: assessment
+    model: ref('assessment')
+    entities:
+      - name: assessment_identifier
+        type: primary
+    dimensions:
+      - name: assessment_description
+        type: categorical
+      - name: begin_date
+        type: time
+        type_params:
+          time_granularity: day
+      - name: end_date
+        type: time
+        type_params:
+          time_granularity: day
+      - name: assessment_reason_description
+        type: categorical

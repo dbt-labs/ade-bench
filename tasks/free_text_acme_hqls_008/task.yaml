@@ -1,0 +1,36 @@
+task_id: free_text_acme_hqls_008
+status: ready
+description: 'HQLS: Claim - Loss Payment&Loss Reserve'
+prompts:
+- key: base
+  prompt: 'What is the total loss amounts, which is the sum of loss payment, loss
+    reserve amount by claim number?
+
+
+    Write a model called result.sql containing your answer.'
+- key: with_sl
+  prompt: 'Using the dbt semantic layer, answer this question:
+
+
+    What is the total loss amounts, which is the sum of loss payment, loss reserve
+    amount by claim number?
+
+
+    Write a model called result.sql containing your answer.'
+author_name: dbt-labs
+author_email: noreply@getdbt.com
+difficulty: hard
+tags:
+- semantic-layer
+- metricflow
+- free-text
+- acme-insurance
+- hqls
+test_setup: |-
+  dbt run --select result
+  python /scripts/fuzzy_compare.py result /seeds/solution__result.csv
+variants:
+- db_type: duckdb
+  db_name: acme_insurance
+  project_type: dbt
+  project_name: acme_insurance

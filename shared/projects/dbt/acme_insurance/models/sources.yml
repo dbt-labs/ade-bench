@@ -1,0 +1,39 @@
+version: 2
+
+sources:
+  - name: acme_raw
+    schema: main
+    tables:
+      - name: Agreement
+      - name: Agreement_Assessment
+      - name: Agreement_Party_Role
+      - name: Assesment_Party_Role
+      - name: Assessment
+      - name: Assessment_Result
+      - name: Catastrophe
+      - name: Claim
+      - name: Claim_Amount
+      - name: Claim_Coverage
+      - name: Expense_Payment
+      - name: Expense_Reserve
+      - name: FireClaim
+        identifier: fire_claim
+      - name: Geographic_Location
+      - name: Insurable_Object
+      - name: Location_Address
+      - name: Loss_Payment
+      - name: Loss_Reserve
+      - name: Occurrence
+        identifier: occurrences
+      - name: Organization
+        identifier: organizations
+      - name: Party
+      - name: Party_Role
+      - name: Person
+      - name: Physical_Location
+        identifier: pysical_location
+      - name: Policy
+      - name: Policy_Amount
+      - name: Policy_Coverage_Detail
+      - name: Premium
+      - name: Underwriting_Assessment

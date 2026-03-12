@@ -1,0 +1,17 @@
+semantic_models:
+  - name: insurable_object # Semantic model name for insurable objects
+    model: ref('insurable_object') # The dbt model reference
+    description: "This table contains information about insurable objects, including their type and geographic location."
+
+    entities:
+      - name: insurable_object_identifier
+        type: primary
+        expr: Insurable_Object_Identifier
+      - name: geographic_location
+        type: foreign
+        expr: Geographic_Location_Identifier
+
+    dimensions:
+      - name: insurable_object_type
+        type: categorical
+        expr: Insurable_Object_Type_Code

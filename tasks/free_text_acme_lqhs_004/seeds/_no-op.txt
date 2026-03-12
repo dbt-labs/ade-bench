@@ -1,0 +1,16 @@
+
+
+seeds:
+  acme_insurance:
+    solution__result:
+      +column_types:
+        AgentID: integer
+        PolicyHolderID: integer
+        Policy_Number: bigint
+        premium: integer
+        Catastrophe_Name: varchar
+        Company_Claim_Number: integer
+        Loss_Payment_Amount: integer
+        Loss_Reserve_Amount: integer
+        Expense_Payment_Amount: integer
+        Expense_Reserve_Amount: integer

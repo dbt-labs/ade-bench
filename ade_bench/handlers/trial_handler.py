@@ -82,7 +82,9 @@ class Task(BaseModel):
             "merge_yaml.py",
             "run_sql.py",
             "run_sql.sh",
+            "fuzzy_compare.py"
         ],
+
         description="List of test scripts to use for the task",
     )
     run_tests_in_same_shell: bool = Field(

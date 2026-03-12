@@ -1,0 +1,39 @@
+task_id: free_text_acme_hqhs_001
+status: ready
+description: 'HQHS: AVG-COUNT-Policy-Coverage-Claim-Loss Payment&Expense Payment&Expense
+  Reserve&Loss Reserve'
+prompts:
+- key: base
+  prompt: 'What is the average loss of each policy by policy number and number of
+    claims where loss is the sum of loss payment, loss reserve, expense payment, expense
+    reserve amounts?
+
+
+    Write a model called result.sql containing your answer.'
+- key: with_sl
+  prompt: 'Using the dbt semantic layer, answer this question:
+
+
+    What is the average loss of each policy by policy number and number of claims
+    where loss is the sum of loss payment, loss reserve, expense payment, expense
+    reserve amounts?
+
+
+    Write a model called result.sql containing your answer.'
+author_name: dbt-labs
+author_email: noreply@getdbt.com
+difficulty: hard
+tags:
+- semantic-layer
+- metricflow
+- free-text
+- acme-insurance
+- hqhs
+test_setup: |-
+  dbt run --select result
+  python /scripts/fuzzy_compare.py result /seeds/solution__result.csv
+variants:
+- db_type: duckdb
+  db_name: acme_insurance
+  project_type: dbt
+  project_name: acme_insurance

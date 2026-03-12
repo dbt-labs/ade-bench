@@ -1,0 +1,34 @@
+task_id: free_text_acme_lqls_001
+status: ready
+description: 'LQLS: Return all the policies and their policy holder by id'
+prompts:
+- key: base
+  prompt: 'Return all the policies and their policy holder by id
+
+
+    Write a model called result.sql containing your answer.'
+- key: with_sl
+  prompt: 'Using the dbt semantic layer, answer this question:
+
+
+    Return all the policies and their policy holder by id
+
+
+    Write a model called result.sql containing your answer.'
+author_name: dbt-labs
+author_email: noreply@getdbt.com
+difficulty: easy
+tags:
+- semantic-layer
+- metricflow
+- free-text
+- acme-insurance
+- lqls
+test_setup: |-
+  dbt run --select result
+  python /scripts/fuzzy_compare.py result /seeds/solution__result.csv
+variants:
+- db_type: duckdb
+  db_name: acme_insurance
+  project_type: dbt
+  project_name: acme_insurance

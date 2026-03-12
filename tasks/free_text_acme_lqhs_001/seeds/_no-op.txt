@@ -1,0 +1,10 @@
+
+
+seeds:
+  acme_insurance:
+    solution__result:
+      +column_types:
+        AgentID: integer
+        Policy_Number: bigint
+        Company_Claim_Number: integer
+        Catastrophe_Name: varchar

@@ -1,0 +1,7 @@
+
+
+seeds:
+  acme_insurance:
+    solution__result:
+      +column_types:
+        avgPolicySize: double

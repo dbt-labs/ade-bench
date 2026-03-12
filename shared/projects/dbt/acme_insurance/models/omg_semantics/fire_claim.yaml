@@ -1,0 +1,35 @@
+semantic_models:
+  - name: fire_claim
+    model: ref('fire_claim')
+    description: "A semantic model for fire insurance claims data."
+    defaults:
+      agg_time_dimension: year_built
+    entities:
+      - name: policy
+        type: primary
+        expr: PolicyNo
+      - name: claim
+        type: foreign
+        expr: ClaimNumber
+    dimensions:
+      - name: insured_location
+        type: categorical
+        expr: InsuredLocation
+      - name: nearest_firestation_miles
+        type: categorical
+        expr: Nearest_Firestation_miles
+      - name: number_of_firefighters
+        type: categorical
+        expr: Number_of_Firefighters
+      - name: fireplace
+        type: categorical
+        expr: Fireplace
+      - name: year_built
+        type: time
+        type_params:
+          time_granularity: year
+    measures:
+      - name: premium
+        description: "The total premium amount for the policy."
+        agg: sum
+        expr: Premium
