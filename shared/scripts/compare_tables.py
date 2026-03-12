@@ -466,3 +466,42 @@ def _wrap_html(model_name: str, body: str) -> str:
 {body}
 </body>
 </html>"""
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Compare two parquet tables")
+    parser.add_argument("--expected", required=True, help="Path to expected parquet file")
+    parser.add_argument("--actual", required=True, help="Path to actual parquet file")
+    parser.add_argument("--expected-name", default="expected")
+    parser.add_argument("--actual-name", default="actual")
+    parser.add_argument("--model-name", required=True, help="Model name for report title")
+    parser.add_argument("--output", required=True, help="Output path for diff.html")
+    args = parser.parse_args()
+
+    expected_path = Path(args.expected)
+    actual_path = Path(args.actual)
+
+    if not expected_path.exists() and not actual_path.exists():
+        print("[ade-bench] Both files missing, cannot compare", flush=True)
+        sys.exit(1)
+
+    if not expected_path.exists() or not actual_path.exists():
+        result = make_missing_relation_result(
+            args.actual_name, args.expected_name,
+            expected_path=str(expected_path) if expected_path.exists() else None,
+            actual_path=str(actual_path) if actual_path.exists() else None,
+        )
+    else:
+        result = compare_tables(
+            str(expected_path), str(actual_path),
+            expected_name=args.expected_name, actual_name=args.actual_name,
+        )
+
+    html = render_diff_html(result, args.model_name)
+    Path(args.output).parent.mkdir(parents=True, exist_ok=True)
+    Path(args.output).write_text(html)
+    print(f"[ade-bench] Diff report written to {args.output}", flush=True)
+
+
+if __name__ == "__main__":
+    main()
