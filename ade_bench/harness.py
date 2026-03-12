@@ -1073,7 +1073,7 @@ class Harness:
         if check.returncode != 0:
             return  # No comparisons generated
 
-        comparisons_dest = trial_handler.output_path / "comparisons"
+        comparisons_dest = trial_handler._task_output_path / "comparisons"
         comparisons_dest.mkdir(parents=True, exist_ok=True)
 
         result = subprocess.run(
