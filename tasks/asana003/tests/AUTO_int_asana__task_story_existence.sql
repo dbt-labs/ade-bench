@@ -6,8 +6,8 @@
 ---- DO NOT EDIT BELOW THIS LINE ----
 {% set answer_key = 'solution__' + table_name %}
 
-{% set table_a = adapter.get_relation(database=target.database, schema=target.schema, identifier=answer_key) %}
-{% set table_b = adapter.get_relation(database=target.database, schema=target.schema, identifier=table_name) %}
+{% set table_a = load_relation(ref(answer_key)) %}
+{% set table_b = load_relation(ref(table_name)) %}
 
 {% if table_a is none or table_b is none %}
     select 1

@@ -23,8 +23,8 @@ def generate_existence_test(table_name: str) -> str:
 ---- DO NOT EDIT BELOW THIS LINE ----
 {{% set answer_key = 'solution__' + table_name %}}
 
-{{% set table_a = adapter.get_relation(database=target.database, schema=target.schema, identifier=answer_key) %}}
-{{% set table_b = adapter.get_relation(database=target.database, schema=target.schema, identifier=table_name) %}}
+{{% set table_a = load_relation(ref(answer_key)) %}}
+{{% set table_b = load_relation(ref(table_name)) %}}
 
 {{% if table_a is none or table_b is none %}}
     select 1
@@ -86,11 +86,8 @@ def generate_equality_test(table_name: str, config: Optional[SolutionSeedConfig]
 ---- DO NOT EDIT BELOW THIS LINE ----
 {{% set answer_key = 'solution__' + table_name %}}
 
--- depends_on: {{{{ ref(answer_key) }}}}
--- depends_on: {{{{ ref(table_name) }}}}
-
-{{% set table_a = adapter.get_relation(database=target.database, schema=target.schema, identifier=answer_key) %}}
-{{% set table_b = adapter.get_relation(database=target.database, schema=target.schema, identifier=table_name) %}}
+{{% set table_a = load_relation(ref(answer_key)) %}}
+{{% set table_b = load_relation(ref(table_name)) %}}
 
 {{% if table_a is none or table_b is none %}}
     select 1
@@ -113,7 +110,6 @@ def generate_equality_test(table_name: str, config: Optional[SolutionSeedConfig]
     # Create text blocks
     jinja_vars_block = ""
     depends_on_block = ""
-    check_relation_block = ""
     test_cte_block = ""
     row_count_block = ""
     union_block = ""
@@ -125,11 +121,9 @@ def generate_equality_test(table_name: str, config: Optional[SolutionSeedConfig]
 
         jinja_vars_block += f"{{% set {numbered_key} = 'solution__{alternate_name}' %}}\n"
         depends_on_block += f"-- depends_on: {{{{ ref({numbered_key}) }}}}\n"
-        check_relation_block += f"{{% set {numbered_key}_table = adapter.get_relation(database=target.database, schema=target.schema, identifier={numbered_key}) %}}\n"
-
         test_cte_block += f"""
 {numbered_key}_test as (
-    {{% if submitted_table is none or {numbered_key}_table is none %}}
+    {{% if load_relation(ref(table_name)) is none or load_relation(ref({numbered_key})) is none %}}
         select 1
     {{% else %}}
         {{{{ dbt_utils.test_equality(
@@ -179,9 +173,6 @@ def generate_equality_test(table_name: str, config: Optional[SolutionSeedConfig]
 ---- DO NOT EDIT BELOW THIS LINE ----
 -- depends_on: {{{{ ref(table_name) }}}}
 {depends_on_block}
-
-{{% set submitted_table = adapter.get_relation(database=target.database, schema=target.schema, identifier=table_name) %}}
-{check_relation_block}
 
 with
 {test_cte_block}
