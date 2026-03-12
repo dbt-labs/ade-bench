@@ -1,5 +1,8 @@
 #! /bin/bash
 
+export DBT_STATIC_ANALYSIS=off
+export DBT_PARTIAL_PARSE=False
+
 # STEP 1: Run the test setup script if it exists
 if [ -f "/scripts/test-setup.sh" ]; then
     bash /scripts/test-setup.sh

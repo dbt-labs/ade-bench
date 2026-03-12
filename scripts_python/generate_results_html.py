@@ -343,6 +343,7 @@ class ResultsHTMLGenerator:
 
         panes_dir = task_dir / "panes"
         transcript_path = task_dir / "sessions" / "transcript.html"
+        transcript_dir = task_dir / "sessions" / "transcript"
 
         # Check for HTML transcript (single well-known file)
         transcript_html = None
@@ -350,6 +351,13 @@ class ResultsHTMLGenerator:
             # Copy transcript file to HTML output
             shutil.copy2(transcript_path, task_html_dir / "transcript.html")
             transcript_html = "transcript.html"
+
+        # Also copy the full transcript directory if it exists (for deep links)
+        if transcript_dir.exists():
+            dest_transcript_dir = task_html_dir / "transcript"
+            if dest_transcript_dir.exists():
+                shutil.rmtree(dest_transcript_dir)
+            shutil.copytree(transcript_dir, dest_transcript_dir)
 
         # Build content sections in chronological order
         sections = []
