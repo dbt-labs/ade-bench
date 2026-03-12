@@ -115,10 +115,12 @@ class TestFuzzyRowMatching:
                 "SELECT 1 as id, 4.80 as score")
             result = mod.compare_tables(str(expected), str(actual))
             # Should fuzzy-pair the rows (score is within 1% tolerance for pairing)
-            # but score shows as a diff annotated with within_tolerance=True
+            # With 1 row, score is a systematic diff (1/1 = 100%)
             assert result["summary"]["matched_with_diffs"] == 1
             assert result["summary"]["missing_rows"] == 0
-            assert result["row_diffs"][0]["diffs"]["score"]["within_tolerance"] is True
+            assert "score" in result["systematic_diffs"]
+            # within_tolerance is captured in sample_values context
+            assert result["row_diffs"][0]["diffs"] == {}  # stripped from per-row
 
     def test_no_match_beyond_tolerance(self):
         mod = load_module()
@@ -129,8 +131,10 @@ class TestFuzzyRowMatching:
                 "SELECT 1 as id, 50.0 as score")
             result = mod.compare_tables(str(expected), str(actual))
             # id matches so they still pair, but score is a diff
+            # With 1 row, score becomes systematic (1/1 = 100%)
             assert result["summary"]["matched_with_diffs"] == 1
-            assert len(result["row_diffs"][0]["diffs"]) == 1
+            assert "score" in result["systematic_diffs"]
+            assert result["row_diffs"][0]["diffs"] == {}  # stripped
 
     def test_fuzzy_cap_exceeded(self):
         """When unmatched rows > fuzzy_row_limit, skip fuzzy matching."""
@@ -144,6 +148,67 @@ class TestFuzzyRowMatching:
             result = mod.compare_tables(str(expected), str(actual), fuzzy_row_limit=500)
             assert result["summary"]["matched_with_diffs"] == 0
             assert result["summary"]["missing_rows"] == 600
+
+
+class TestSystematicDiffs:
+    def test_all_rows_differ_in_one_column(self):
+        """When every paired row differs in the same column, it's systematic."""
+        mod = load_module()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            expected = write_parquet(tmpdir, "expected",
+                "SELECT * FROM (VALUES (1, 'true', 10), (2, 'false', 20), (3, 'true', 30)) AS t(id, flag, val)")
+            actual = write_parquet(tmpdir, "actual",
+                "SELECT * FROM (VALUES (1, 't', 10), (2, 'f', 20), (3, 't', 30)) AS t(id, flag, val)")
+            result = mod.compare_tables(str(expected), str(actual))
+            assert result["summary"]["matched_with_diffs"] == 3
+            # flag should be systematic (3/3 = 100%)
+            assert "flag" in result["systematic_diffs"]
+            sys = result["systematic_diffs"]["flag"]
+            assert sys["diff_count"] == 3
+            assert sys["total_paired"] == 3
+            # Sample values should contain the distinct mappings
+            samples = {(s["expected"], s["actual"]) for s in sys["sample_values"]}
+            assert ("true", "t") in samples
+            assert ("false", "f") in samples
+            # Per-row diffs should have flag stripped
+            for diff in result["row_diffs"]:
+                assert "flag" not in diff["diffs"]
+
+    def test_mixed_columns_only_systematic_detected(self):
+        """Only columns above threshold are systematic; sporadic ones stay per-row."""
+        mod = load_module()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # 3 rows: flag differs in all 3, val differs in only 1
+            expected = write_parquet(tmpdir, "expected",
+                "SELECT * FROM (VALUES (1, 'true', 10), (2, 'false', 20), (3, 'true', 30)) AS t(id, flag, val)")
+            actual = write_parquet(tmpdir, "actual",
+                "SELECT * FROM (VALUES (1, 't', 10), (2, 'f', 20), (3, 't', 99)) AS t(id, flag, val)")
+            result = mod.compare_tables(str(expected), str(actual))
+            # flag is systematic, val is not (1/3 = 33%)
+            assert "flag" in result["systematic_diffs"]
+            assert "val" not in result["systematic_diffs"]
+            # The row with val diff should still show val in per-row diffs
+            rows_with_val = [d for d in result["row_diffs"] if "val" in d["diffs"]]
+            assert len(rows_with_val) == 1
+
+    def test_no_systematic_when_below_threshold(self):
+        """Columns differing in <90% of rows are not systematic."""
+        mod = load_module()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # 10 rows, flag differs in 8 (80% < 90% threshold)
+            rows_expected = ", ".join(
+                f"({i}, '{'true' if i < 8 else 'same'}', {i * 10})" for i in range(10))
+            rows_actual = ", ".join(
+                f"({i}, '{'t' if i < 8 else 'same'}', {i * 10})" for i in range(10))
+            expected = write_parquet(tmpdir, "expected",
+                f"SELECT * FROM (VALUES {rows_expected}) AS t(id, flag, val)")
+            actual = write_parquet(tmpdir, "actual",
+                f"SELECT * FROM (VALUES {rows_actual}) AS t(id, flag, val)")
+            result = mod.compare_tables(str(expected), str(actual))
+            # 8/10 rows differ => 2 match exactly, 8 matched with diffs
+            # flag appears in 8/8 paired rows = 100% => IS systematic
+            # (because the 2 matching rows are exact matches, not paired)
+            assert "flag" in result["systematic_diffs"]
 
 
 class TestNullHandling:

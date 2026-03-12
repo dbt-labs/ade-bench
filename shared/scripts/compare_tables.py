@@ -120,6 +120,24 @@ def compare_tables(
     result["summary"]["missing_rows"] = missing_count
     result["summary"]["extra_rows"] = extra_count
 
+    # Detect systematic diffs: columns that differ in >=90% of paired rows
+    result["systematic_diffs"] = {}
+    if result["row_diffs"]:
+        result["systematic_diffs"] = _detect_systematic_diffs(result["row_diffs"])
+        # Strip systematic columns from individual row diffs
+        if result["systematic_diffs"]:
+            sys_cols = set(result["systematic_diffs"].keys())
+            cleaned = []
+            for diff in result["row_diffs"]:
+                remaining_diffs = {
+                    k: v for k, v in diff["diffs"].items() if k not in sys_cols
+                }
+                cleaned.append({
+                    "identifying": diff["identifying"],
+                    "diffs": remaining_diffs,
+                })
+            result["row_diffs"] = cleaned
+
     # Collect remaining unpaired rows
     result["missing_rows"] = _fetch_rows(con, "missing_from_actual", shared, 100)
     result["extra_rows"] = _fetch_rows(con, "extra_in_actual", shared, 100)
@@ -227,6 +245,42 @@ def _fuzzy_match_rows(
         con.execute(f"DELETE FROM extra_in_actual WHERE __ade_rn IN ({paired_extra_ids})")
 
     return {"paired": paired}
+
+
+def _detect_systematic_diffs(
+    row_diffs: list[dict], threshold: float = 0.9
+) -> dict:
+    """Detect columns that differ in >= threshold fraction of paired rows.
+
+    Returns a dict of column_name -> {diff_count, total_paired, sample_values}.
+    sample_values is a list of up to 5 distinct (expected, actual) pairs.
+    """
+    total = len(row_diffs)
+    if total == 0:
+        return {}
+
+    # Count how often each column appears in diffs
+    col_counts: dict[str, int] = {}
+    col_samples: dict[str, set] = {}
+    for diff in row_diffs:
+        for col, vals in diff["diffs"].items():
+            col_counts[col] = col_counts.get(col, 0) + 1
+            if col not in col_samples:
+                col_samples[col] = set()
+            if len(col_samples[col]) < 5:
+                col_samples[col].add((vals["expected"], vals["actual"]))
+
+    systematic = {}
+    for col, count in col_counts.items():
+        if count / total >= threshold:
+            systematic[col] = {
+                "diff_count": count,
+                "total_paired": total,
+                "sample_values": [
+                    {"expected": e, "actual": a} for e, a in sorted(col_samples[col])
+                ],
+            }
+    return systematic
 
 
 def _fetch_rows(con, table: str, columns: list[str], limit: int = 100) -> list[dict]:
@@ -353,27 +407,73 @@ def render_diff_html(result: dict, model_name: str) -> str:
         </table>
     </div>"""
 
-    # Row diffs section
+    # Systematic diffs banner
+    systematic_html = ""
+    systematic = result.get("systematic_diffs", {})
+    if systematic:
+        n_paired = next(iter(systematic.values()))["total_paired"]
+        systematic_html = f'<div class="section"><h3>Systematic Diffs (across {n_paired} paired rows)</h3><table class="diff-table">'
+        systematic_html += "<tr><th>Column</th><th>Rows affected</th><th>Sample values</th></tr>"
+        for col, info in systematic.items():
+            samples = ", ".join(
+                f'{esc(s["expected"])} &rarr; {esc(s["actual"])}' for s in info["sample_values"]
+            )
+            systematic_html += (
+                f'<tr class="diff-row">'
+                f"<td>{esc(col)}</td>"
+                f'<td class="num">{info["diff_count"]}/{info["total_paired"]}</td>'
+                f"<td>{samples}</td>"
+                f"</tr>"
+            )
+        systematic_html += "</table></div>"
+
+    # Row diffs section — compact table
     diffs_html = ""
-    if result["row_diffs"]:
-        diffs_html = f'<div class="section"><h3>Row Diffs ({len(result["row_diffs"])} paired rows with differences)</h3>'
-        for i, diff in enumerate(result["row_diffs"]):
-            # Show identifying columns
-            id_parts = [f"{esc(k)} = {esc(v)}" for k, v in list(diff["identifying"].items())[:3]]
-            id_str = ", ".join(id_parts) if id_parts else f"Row {i + 1}"
-            diffs_html += f'<details open><summary>Row {i + 1} | {id_str}</summary><table class="diff-table">'
-            diffs_html += "<tr><th>Column</th><th>Expected</th><th>Actual</th></tr>"
-            for col, vals in diff["diffs"].items():
-                tol_class = " within-tolerance" if vals.get("within_tolerance") else ""
-                diffs_html += (
-                    f'<tr class="diff-row{tol_class}">'
-                    f"<td>{esc(col)}</td>"
-                    f'<td class="expected">{esc(vals["expected"])}</td>'
-                    f'<td class="actual">{esc(vals["actual"])}</td>'
-                    f"</tr>"
-                )
-            diffs_html += "</table></details>"
-        diffs_html += "</div>"
+    # Filter to rows that still have non-systematic diffs
+    remaining_diffs = [d for d in result["row_diffs"] if d["diffs"]]
+    if remaining_diffs:
+        # Collect all columns that appear in the table
+        all_id_cols = []
+        all_diff_cols = []
+        seen_id = set()
+        seen_diff = set()
+        for diff in remaining_diffs:
+            for c in diff["identifying"]:
+                if c not in seen_id:
+                    all_id_cols.append(c)
+                    seen_id.add(c)
+            for c in diff["diffs"]:
+                if c not in seen_diff:
+                    all_diff_cols.append(c)
+                    seen_diff.add(c)
+
+        diffs_html = f'<div class="section"><h3>Row Diffs ({len(remaining_diffs)} paired rows with differences)</h3>'
+        diffs_html += '<table class="compact-diff-table"><tr>'
+        for c in all_id_cols:
+            diffs_html += f"<th>{esc(c)}</th>"
+        for c in all_diff_cols:
+            diffs_html += f'<th class="diff-col">{esc(c)}</th>'
+        diffs_html += "</tr>"
+        for diff in remaining_diffs:
+            diffs_html += "<tr>"
+            for c in all_id_cols:
+                val = diff["identifying"].get(c, "")
+                diffs_html += f"<td>{esc(val)}</td>"
+            for c in all_diff_cols:
+                if c in diff["diffs"]:
+                    vals = diff["diffs"][c]
+                    tol_class = " within-tolerance" if vals.get("within_tolerance") else ""
+                    diffs_html += (
+                        f'<td class="diff-cell{tol_class}">'
+                        f'{esc(vals["expected"])} &rarr; {esc(vals["actual"])}'
+                        f"</td>"
+                    )
+                else:
+                    # This column matched for this row
+                    val = diff["identifying"].get(c, "")
+                    diffs_html += f"<td>{esc(val)}</td>"
+            diffs_html += "</tr>"
+        diffs_html += "</table></div>"
 
     # Missing rows section
     missing_html = ""
@@ -394,7 +494,7 @@ def render_diff_html(result: dict, model_name: str) -> str:
         <h2>Table Comparison: {esc(model_name)}</h2>
     </div>"""
 
-    return _wrap_html(model_name, header_html + col_html + summary_html + diffs_html + missing_html + extra_html)
+    return _wrap_html(model_name, header_html + col_html + summary_html + systematic_html + diffs_html + missing_html + extra_html)
 
 
 def _render_row_table(rows: list[dict], css_class: str) -> str:
@@ -453,7 +553,11 @@ def _wrap_html(model_name: str, body: str) -> str:
         .summary-table tr.extra td {{ color: #6a9955; }}
         .diff-table td.expected {{ color: #f44747; }}
         .diff-table td.actual {{ color: #6a9955; }}
+        .diff-table td.num {{ text-align: right; color: #b5cea8; }}
         .diff-row.within-tolerance td {{ color: #dcdcaa; }}
+        .compact-diff-table th.diff-col {{ color: #f44747; }}
+        .compact-diff-table .diff-cell {{ color: #ce9178; }}
+        .compact-diff-table .diff-cell.within-tolerance {{ color: #dcdcaa; }}
         .data-table.missing td {{ color: #f44747; }}
         .data-table.extra td {{ color: #6a9955; }}
         details {{ margin: 8px 0; }}

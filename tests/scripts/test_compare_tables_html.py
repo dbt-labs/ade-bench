@@ -48,6 +48,39 @@ class TestHTMLGeneration:
         html = mod.render_diff_html(result, "snap__hosts")
         assert "not found" in html.lower()
 
+    def test_systematic_diffs_banner(self):
+        """Systematic diffs render as a banner, not per-row."""
+        mod = load_module()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            expected = write_parquet(tmpdir, "expected",
+                "SELECT * FROM (VALUES (1, 'true', 10), (2, 'false', 20), (3, 'true', 30)) AS t(id, flag, val)")
+            actual = write_parquet(tmpdir, "actual",
+                "SELECT * FROM (VALUES (1, 't', 10), (2, 'f', 20), (3, 't', 30)) AS t(id, flag, val)")
+            result = mod.compare_tables(str(expected), str(actual))
+            html = mod.render_diff_html(result, "test_model")
+            assert "Systematic Diffs" in html
+            assert "flag" in html
+            # Should show the arrow mapping
+            assert "&rarr;" in html
+            # Should NOT have a per-row diffs section (all diffs were systematic)
+            assert "Row Diffs" not in html
+
+    def test_compact_table_with_mixed_diffs(self):
+        """Rows with non-systematic diffs show in a compact table."""
+        mod = load_module()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            expected = write_parquet(tmpdir, "expected",
+                "SELECT * FROM (VALUES (1, 'true', 10), (2, 'false', 20), (3, 'true', 30)) AS t(id, flag, val)")
+            actual = write_parquet(tmpdir, "actual",
+                "SELECT * FROM (VALUES (1, 't', 10), (2, 'f', 20), (3, 't', 99)) AS t(id, flag, val)")
+            result = mod.compare_tables(str(expected), str(actual))
+            html = mod.render_diff_html(result, "test_model")
+            # Should have both systematic banner and compact table
+            assert "Systematic Diffs" in html
+            assert "Row Diffs" in html
+            # Compact table should show val diff with arrow
+            assert "99" in html
+
     def test_column_diff_section(self):
         mod = load_module()
         with tempfile.TemporaryDirectory() as tmpdir:
