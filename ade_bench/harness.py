@@ -934,6 +934,9 @@ class Harness:
             if self._create_seed:
                 self._extract_csv_files(terminal, trial_handler)
 
+            # Extract comparison artifacts (always, if they exist)
+            self._extract_comparison_artifacts(terminal, trial_handler)
+
             # If the test failed, but the agent didn't, use the test failure mode
             if test_failure_mode != FailureMode.NONE and results.failure_mode == FailureMode.UNSET:
                 results.failure_mode = test_failure_mode
@@ -1052,6 +1055,39 @@ class Harness:
                 "seed",
                 f"CSV extraction not supported for db_type: {variant_db_type}",
             )
+
+    def _extract_comparison_artifacts(
+        self, terminal: Terminal, trial_handler: TrialHandler
+    ) -> None:
+        """Extract comparison artifacts from the container after test execution."""
+        import subprocess
+
+        container_name = terminal.container.name
+        comparisons_src = "/app/comparisons"
+
+        # Check if comparisons directory exists in container
+        check = subprocess.run(
+            ["docker", "exec", container_name, "test", "-d", comparisons_src],
+            capture_output=True,
+        )
+        if check.returncode != 0:
+            return  # No comparisons generated
+
+        comparisons_dest = trial_handler.output_path / "comparisons"
+        comparisons_dest.mkdir(parents=True, exist_ok=True)
+
+        result = subprocess.run(
+            ["docker", "cp", f"{container_name}:{comparisons_src}/.", str(comparisons_dest)],
+            capture_output=True, text=True,
+        )
+
+        if result.returncode == 0:
+            log_harness_info(
+                self._logger, trial_handler.task_id, "comparison",
+                f"Extracted comparison artifacts to {comparisons_dest}",
+            )
+        else:
+            self._logger.error(f"Failed to extract comparisons: {result.stderr}")
 
     def _extract_duckdb_csv(
         self,
