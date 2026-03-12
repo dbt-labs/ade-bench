@@ -13,6 +13,7 @@ sys.path.append(str(Path(__file__).parent.parent.parent.parent))
 
 from ade_bench import Harness
 from ade_bench.agents import AgentName, NamedAgentFactory
+from ade_bench.utils.notify import send_terminal_notification
 from scripts_python.summarize_results import display_detailed_results
 
 from ade_bench.cli.ab import migrate, check, view, save, interact as interact_module
@@ -218,6 +219,11 @@ def run(
 
     results = harness.run()
     display_detailed_results(results)
+
+    # Send terminal notification on completion
+    total = len(results.results)
+    passed = sum(1 for r in results.results if r.is_resolved)
+    send_terminal_notification(f"ADE run complete: {passed}/{total} tasks passed")
 
 
 @app.command()
