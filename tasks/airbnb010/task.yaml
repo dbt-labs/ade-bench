@@ -86,3 +86,7 @@ variants:
   db_name: airbnb
   project_type: dbt
   project_name: airbnb
+- db_type: duckdb
+  db_name: airbnb
+  project_type: dbt-fusion
+  project_name: airbnb
