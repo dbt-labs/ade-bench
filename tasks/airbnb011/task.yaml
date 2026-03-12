@@ -8,10 +8,10 @@ notes: |-
 prompts:
   - key: base
     prompt: |-
-      I want you to start snapshotting the hosts table as `snap__hosts` so that we capture changes over time. Then change the staging model to be a view of the latest data so that the rest of the downstream models continue to work as-is. Also make a `dim_superhost_evolution` model which shows each host_id who has ever been a superhost. It should have `is_currently_superhost`, `current_superhost_tenure` (in days), `acct_age_before_achieving_superhost` (for first time), `status_change_count`, `last_status_change_at`.
+      I want you to start snapshotting the hosts table as `snap__hosts` so that we capture changes over time. Then change the staging model to be a view of the latest data so that the rest of the downstream models continue to work as-is. Also make a `dim_superhost_evolution` model which shows each host_id who has ever been a superhost. It should have `is_currently_superhost`, `acct_age_before_achieving_superhost` (for first time), `status_change_count`, `last_status_change_at`.
   - key: hint
     prompt: |-
-      I want you to start snapshotting the hosts table as `snap__hosts` so that we capture changes over time. Note: we've had issues with our upstream ETL pipeline — some timestamp columns may not be updating correctly, so make sure your snapshot strategy will actually detect changes. Then change the staging model to be a view of the latest data so that the rest of the downstream models continue to work as-is. Also make a `dim_superhost_evolution` model which shows each host_id who has ever been a superhost. It should have `is_currently_superhost`, `current_superhost_tenure` (in days), `acct_age_before_achieving_superhost` (for first time), `status_change_count`, `last_status_change_at`.
+      I want you to start snapshotting the hosts table as `snap__hosts` so that we capture changes over time. Note: we've had issues with our upstream ETL pipeline — some timestamp columns may not be updating correctly, so make sure your snapshot strategy will actually detect changes. Then change the staging model to be a view of the latest data so that the rest of the downstream models continue to work as-is. Also make a `dim_superhost_evolution` model which shows each host_id who has ever been a superhost. It should have `is_currently_superhost`, `acct_age_before_achieving_superhost` (for first time), `status_change_count`, `last_status_change_at`.
 author_name: test
 author_email: test
 difficulty: hard
@@ -84,7 +84,7 @@ test_setup: |-
   "
   dbt snapshot
 
-  # Freeze "today" for tenure/age calculations, build models
+  # Freeze now() for deterministic snapshot timestamps, then build models
   python3 -c "
   import duckdb
   conn = duckdb.connect('/app/airbnb.duckdb')

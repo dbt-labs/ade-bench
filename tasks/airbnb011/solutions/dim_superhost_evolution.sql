@@ -70,23 +70,9 @@ current_state AS (
     WHERE dbt_valid_to IS NULL
 ),
 
-current_superhost_start AS (
-    SELECT
-        sh.HOST_ID,
-        sh.dbt_valid_from AS current_stint_start
-    FROM snapshot_history sh
-    WHERE sh.IS_SUPERHOST = 't'
-      AND sh.dbt_valid_to IS NULL
-)
-
 SELECT
     es.HOST_ID,
     (cs.IS_SUPERHOST = 't') AS is_currently_superhost,
-    CASE
-        WHEN cs.IS_SUPERHOST = 't'
-        THEN CAST(DATE_DIFF('day', css.current_stint_start, NOW()) AS INTEGER)
-        ELSE NULL
-    END AS current_superhost_tenure,
     CAST(DATE_DIFF('day', cs.CREATED_AT, fs.first_superhost_at) AS INTEGER)
         AS acct_age_before_achieving_superhost,
     COALESCE(hm.status_change_count, 0) AS status_change_count,
@@ -95,5 +81,4 @@ FROM ever_superhost es
 JOIN current_state cs ON es.HOST_ID = cs.HOST_ID
 JOIN first_superhost fs ON es.HOST_ID = fs.HOST_ID
 LEFT JOIN host_metrics hm ON es.HOST_ID = hm.HOST_ID
-LEFT JOIN current_superhost_start css ON es.HOST_ID = css.HOST_ID
 ORDER BY es.HOST_ID
