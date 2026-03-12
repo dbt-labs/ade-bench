@@ -2,6 +2,7 @@ import io
 import subprocess
 import tarfile
 from contextlib import contextmanager
+from datetime import date
 from pathlib import Path
 from typing import Generator
 
@@ -25,6 +26,7 @@ class DockerComposeEnvVars(EnvModel):
     task_build_context_dir: str | None = None
     task_logs_path: str | None = None
     repo_root: str | None = None
+    cachebust: str | None = None
 
 
 class DockerComposeManager:
@@ -84,6 +86,7 @@ class DockerComposeManager:
                 str(self._logs_path.absolute()) if self._logs_path is not None else None
             ),
             repo_root=str(REPO_ROOT),
+            cachebust=str(date.today()),
         ).to_env_dict(include_os_env=True)
 
         full_command = [

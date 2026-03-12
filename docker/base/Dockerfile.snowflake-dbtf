@@ -11,7 +11,8 @@ RUN apt-get update && apt-get install -y \
     && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
-# Install dbt Fusion
+# Install dbt Fusion (CACHEBUST forces re-download when build-arg changes)
+ARG CACHEBUST=0
 RUN export SHELL=/bin/bash && \
     curl -fsSL https://public.cdn.getdbt.com/fs/install/install.sh | sh -s -- --update
 
