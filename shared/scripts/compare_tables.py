@@ -315,24 +315,20 @@ def _detect_systematic_columns(
         """).fetchone()[0]
         recovered = total_rows - miss
         if recovered / total_rows >= threshold:
-            # This column is a systematic diff — collect sample value pairs
-            # Join on remaining columns to get (expected_val, actual_val) pairs
-            join_cond = " AND ".join(
-                f'(e."{c}" IS NOT DISTINCT FROM a."{c}")' for c in remaining
-            )
-            sample_rows = con.execute(f"""
-                SELECT DISTINCT e."{col}" AS expected_val, a."{col}" AS actual_val
-                FROM expected e
-                JOIN actual a ON {join_cond}
-                WHERE e."{col}" IS DISTINCT FROM a."{col}"
-                LIMIT 5
-            """).fetchall()
+            # This column is a systematic diff — collect distinct values from each side
+            expected_vals = [
+                str(r[0]) if r[0] is not None else "NULL"
+                for r in con.execute(f'SELECT DISTINCT "{col}" FROM expected ORDER BY 1 LIMIT 5').fetchall()
+            ]
+            actual_vals = [
+                str(r[0]) if r[0] is not None else "NULL"
+                for r in con.execute(f'SELECT DISTINCT "{col}" FROM actual ORDER BY 1 LIMIT 5').fetchall()
+            ]
+            # Pair them up positionally for display (best-effort mapping)
             sample_values = [
-                {
-                    "expected": str(r[0]) if r[0] is not None else "NULL",
-                    "actual": str(r[1]) if r[1] is not None else "NULL",
-                }
-                for r in sample_rows
+                {"expected": e, "actual": a}
+                for e, a in zip(expected_vals, actual_vals)
+                if e != a
             ]
             systematic[col] = {
                 "diff_count": total_rows - miss,
