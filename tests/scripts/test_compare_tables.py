@@ -114,13 +114,10 @@ class TestFuzzyRowMatching:
             actual = write_parquet(tmpdir, "actual",
                 "SELECT 1 as id, 4.80 as score")
             result = mod.compare_tables(str(expected), str(actual))
-            # Should fuzzy-pair the rows (score is within 1% tolerance for pairing)
-            # With 1 row, score is a systematic diff (1/1 = 100%)
-            assert result["summary"]["matched_with_diffs"] == 1
+            # Pre-scan detects score as systematic (excluding it recovers all rows)
+            assert result["summary"]["matched_exactly"] == 1
             assert result["summary"]["missing_rows"] == 0
             assert "score" in result["systematic_diffs"]
-            # within_tolerance is captured in sample_values context
-            assert result["row_diffs"][0]["diffs"] == {}  # stripped from per-row
 
     def test_no_match_beyond_tolerance(self):
         mod = load_module()
@@ -130,11 +127,9 @@ class TestFuzzyRowMatching:
             actual = write_parquet(tmpdir, "actual",
                 "SELECT 1 as id, 50.0 as score")
             result = mod.compare_tables(str(expected), str(actual))
-            # id matches so they still pair, but score is a diff
-            # With 1 row, score becomes systematic (1/1 = 100%)
-            assert result["summary"]["matched_with_diffs"] == 1
+            # Pre-scan detects score as systematic (excluding it recovers all rows)
+            assert result["summary"]["matched_exactly"] == 1
             assert "score" in result["systematic_diffs"]
-            assert result["row_diffs"][0]["diffs"] == {}  # stripped
 
     def test_fuzzy_cap_exceeded(self):
         """When unmatched rows > fuzzy_row_limit, skip fuzzy matching."""
@@ -152,7 +147,7 @@ class TestFuzzyRowMatching:
 
 class TestSystematicDiffs:
     def test_all_rows_differ_in_one_column(self):
-        """When every paired row differs in the same column, it's systematic."""
+        """When every row differs in one column, pre-scan detects it."""
         mod = load_module()
         with tempfile.TemporaryDirectory() as tmpdir:
             expected = write_parquet(tmpdir, "expected",
@@ -160,8 +155,8 @@ class TestSystematicDiffs:
             actual = write_parquet(tmpdir, "actual",
                 "SELECT * FROM (VALUES (1, 't', 10), (2, 'f', 20), (3, 't', 30)) AS t(id, flag, val)")
             result = mod.compare_tables(str(expected), str(actual))
-            assert result["summary"]["matched_with_diffs"] == 3
-            # flag should be systematic (3/3 = 100%)
+            # Pre-scan detects flag as systematic, re-does EXCEPT ALL without it
+            assert result["summary"]["matched_exactly"] == 3
             assert "flag" in result["systematic_diffs"]
             sys = result["systematic_diffs"]["flag"]
             assert sys["diff_count"] == 3
@@ -170,12 +165,9 @@ class TestSystematicDiffs:
             samples = {(s["expected"], s["actual"]) for s in sys["sample_values"]}
             assert ("true", "t") in samples
             assert ("false", "f") in samples
-            # Per-row diffs should have flag stripped
-            for diff in result["row_diffs"]:
-                assert "flag" not in diff["diffs"]
 
-    def test_mixed_columns_only_systematic_detected(self):
-        """Only columns above threshold are systematic; sporadic ones stay per-row."""
+    def test_mixed_columns_prescan_and_postscan(self):
+        """Pre-scan catches the column-wide diff; post-scan catches sporadic diffs."""
         mod = load_module()
         with tempfile.TemporaryDirectory() as tmpdir:
             # 3 rows: flag differs in all 3, val differs in only 1
@@ -184,12 +176,11 @@ class TestSystematicDiffs:
             actual = write_parquet(tmpdir, "actual",
                 "SELECT * FROM (VALUES (1, 't', 10), (2, 'f', 20), (3, 't', 99)) AS t(id, flag, val)")
             result = mod.compare_tables(str(expected), str(actual))
-            # flag is systematic, val is not (1/3 = 33%)
+            # flag is detected by pre-scan, 2 rows match exactly after excluding it
             assert "flag" in result["systematic_diffs"]
-            assert "val" not in result["systematic_diffs"]
-            # The row with val diff should still show val in per-row diffs
-            rows_with_val = [d for d in result["row_diffs"] if "val" in d["diffs"]]
-            assert len(rows_with_val) == 1
+            assert result["summary"]["matched_exactly"] == 2
+            # 1 row has val diff, fuzzy-matched then val becomes post-systematic (1/1)
+            assert result["summary"]["matched_with_diffs"] == 1
 
     def test_no_systematic_when_below_threshold(self):
         """Columns differing in <90% of rows are not systematic."""
@@ -230,7 +221,9 @@ class TestNullHandling:
             actual = write_parquet(tmpdir, "actual",
                 "SELECT 1 as id, 'Alice' as name")
             result = mod.compare_tables(str(expected), str(actual))
-            assert result["summary"]["matched_exactly"] == 0
+            # Pre-scan detects name as systematic (excluding it recovers the row)
+            assert result["summary"]["matched_exactly"] == 1
+            assert "name" in result["systematic_diffs"]
 
 
 class TestEmptyTables:

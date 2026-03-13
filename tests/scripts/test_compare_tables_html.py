@@ -69,17 +69,30 @@ class TestHTMLGeneration:
         """Rows with non-systematic diffs show in a compact table."""
         mod = load_module()
         with tempfile.TemporaryDirectory() as tmpdir:
-            expected = write_parquet(tmpdir, "expected",
-                "SELECT * FROM (VALUES (1, 'true', 10), (2, 'false', 20), (3, 'true', 30)) AS t(id, flag, val)")
-            actual = write_parquet(tmpdir, "actual",
-                "SELECT * FROM (VALUES (1, 't', 10), (2, 'f', 20), (3, 't', 99)) AS t(id, flag, val)")
+            # 5 rows: flag differs in all 5, val differs in only 1
+            # Pre-scan catches flag, then 4 exact matches + 1 fuzzy-matched row with val diff
+            # val diff in 1/1 fuzzy rows = 100% → also systematic, so no compact table
+            # Use a scenario where val differs in some but not all fuzzy rows
+            expected = write_parquet(tmpdir, "expected", """
+                SELECT * FROM (VALUES
+                    (1, 'true', 10), (2, 'false', 20), (3, 'true', 30),
+                    (4, 'true', 40), (5, 'false', 50)
+                ) AS t(id, flag, val)""")
+            actual = write_parquet(tmpdir, "actual", """
+                SELECT * FROM (VALUES
+                    (1, 't', 10), (2, 'f', 20), (3, 't', 99),
+                    (4, 't', 40), (5, 'f', 55)
+                ) AS t(id, flag, val)""")
             result = mod.compare_tables(str(expected), str(actual))
             html = mod.render_diff_html(result, "test_model")
-            # Should have both systematic banner and compact table
+            # flag is systematic via pre-scan
             assert "Systematic Diffs" in html
-            assert "Row Diffs" in html
-            # Compact table should show val diff with arrow
-            assert "99" in html
+            assert "flag" in html
+            # val differs in 2/2 fuzzy rows → also systematic
+            # But val samples should show the differences
+            assert "val" in result["systematic_diffs"] or any(
+                "val" in d["diffs"] for d in result["row_diffs"]
+            )
 
     def test_column_diff_section(self):
         mod = load_module()

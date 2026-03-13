@@ -103,13 +103,53 @@ def compare_tables(
     extra_count = con.execute("SELECT count(*) FROM extra_in_actual").fetchone()[0]
     matched = expected_count - missing_count
 
+    # Pre-scan for systematic columns: when most rows fail EXCEPT ALL,
+    # check if excluding individual columns recovers matches.
+    pre_systematic = {}
+    if matched == 0 and expected_count > 0 and expected_count == actual_count and len(shared) >= 2:
+        pre_systematic = _detect_systematic_columns(
+            con, shared, expected_count
+        )
+
+    # If systematic columns found, redo EXCEPT ALL without them
+    if pre_systematic:
+        non_sys_cols = [c for c in shared if c not in pre_systematic]
+        non_sys_quoted = ", ".join(f'"{c}"' for c in non_sys_cols)
+
+        con.execute("DROP TABLE IF EXISTS missing_from_actual")
+        con.execute("DROP TABLE IF EXISTS extra_in_actual")
+        con.execute(f"""
+            CREATE TABLE missing_from_actual AS
+            SELECT ROW_NUMBER() OVER () AS __ade_rn, *
+            FROM (
+                SELECT {non_sys_quoted} FROM expected
+                EXCEPT ALL
+                SELECT {non_sys_quoted} FROM actual
+            )
+        """)
+        con.execute(f"""
+            CREATE TABLE extra_in_actual AS
+            SELECT ROW_NUMBER() OVER () AS __ade_rn, *
+            FROM (
+                SELECT {non_sys_quoted} FROM actual
+                EXCEPT ALL
+                SELECT {non_sys_quoted} FROM expected
+            )
+        """)
+        missing_count = con.execute("SELECT count(*) FROM missing_from_actual").fetchone()[0]
+        extra_count = con.execute("SELECT count(*) FROM extra_in_actual").fetchone()[0]
+        matched = expected_count - missing_count
+
     result["summary"]["matched_exactly"] = matched
+
+    # Columns available in the unmatched tables (excludes pre-systematic cols)
+    active_cols = [c for c in shared if c not in pre_systematic] if pre_systematic else shared
 
     # Fuzzy matching for unmatched rows
     if missing_count > 0 and extra_count > 0:
         if missing_count <= fuzzy_row_limit and extra_count <= fuzzy_row_limit:
             fuzzy_result = _fuzzy_match_rows(
-                con, shared, numeric_tolerance_pct, numeric_tolerance_abs
+                con, active_cols, numeric_tolerance_pct, numeric_tolerance_abs
             )
             result["summary"]["matched_with_diffs"] = len(fuzzy_result["paired"])
             result["row_diffs"] = fuzzy_result["paired"]
@@ -120,10 +160,13 @@ def compare_tables(
     result["summary"]["missing_rows"] = missing_count
     result["summary"]["extra_rows"] = extra_count
 
-    # Detect systematic diffs: columns that differ in >=90% of paired rows
-    result["systematic_diffs"] = {}
+    # Detect systematic diffs from two sources:
+    # 1. Pre-scan column exclusion (works even when fuzzy matching is skipped)
+    # 2. Post-fuzzy per-row analysis (catches diffs in remaining paired rows)
+    result["systematic_diffs"] = dict(pre_systematic)
     if result["row_diffs"]:
-        result["systematic_diffs"] = _detect_systematic_diffs(result["row_diffs"])
+        post_systematic = _detect_systematic_diffs(result["row_diffs"])
+        result["systematic_diffs"].update(post_systematic)
         # Strip systematic columns from individual row diffs
         if result["systematic_diffs"]:
             sys_cols = set(result["systematic_diffs"].keys())
@@ -139,8 +182,8 @@ def compare_tables(
             result["row_diffs"] = cleaned
 
     # Collect remaining unpaired rows
-    result["missing_rows"] = _fetch_rows(con, "missing_from_actual", shared, 100)
-    result["extra_rows"] = _fetch_rows(con, "extra_in_actual", shared, 100)
+    result["missing_rows"] = _fetch_rows(con, "missing_from_actual", active_cols, 100)
+    result["extra_rows"] = _fetch_rows(con, "extra_in_actual", active_cols, 100)
 
     con.close()
     return result
@@ -245,6 +288,58 @@ def _fuzzy_match_rows(
         con.execute(f"DELETE FROM extra_in_actual WHERE __ade_rn IN ({paired_extra_ids})")
 
     return {"paired": paired}
+
+
+def _detect_systematic_columns(
+    con, shared_cols: list[str], total_rows: int, threshold: float = 0.5
+) -> dict:
+    """Pre-scan: try excluding each column from EXCEPT ALL to find systematic diffs.
+
+    If excluding a single column recovers >threshold of rows as exact matches,
+    that column is flagged as systematic. Collects sample value mappings by
+    joining expected and actual on the remaining columns.
+
+    Returns dict of column_name -> {diff_count, total_paired, sample_values}.
+    """
+    systematic = {}
+    for col in shared_cols:
+        remaining = [c for c in shared_cols if c != col]
+        remaining_quoted = ", ".join(f'"{c}"' for c in remaining)
+        # Count mismatches when this column is excluded
+        miss = con.execute(f"""
+            SELECT count(*) FROM (
+                SELECT {remaining_quoted} FROM expected
+                EXCEPT ALL
+                SELECT {remaining_quoted} FROM actual
+            )
+        """).fetchone()[0]
+        recovered = total_rows - miss
+        if recovered / total_rows >= threshold:
+            # This column is a systematic diff — collect sample value pairs
+            # Join on remaining columns to get (expected_val, actual_val) pairs
+            join_cond = " AND ".join(
+                f'(e."{c}" IS NOT DISTINCT FROM a."{c}")' for c in remaining
+            )
+            sample_rows = con.execute(f"""
+                SELECT DISTINCT e."{col}" AS expected_val, a."{col}" AS actual_val
+                FROM expected e
+                JOIN actual a ON {join_cond}
+                WHERE e."{col}" IS DISTINCT FROM a."{col}"
+                LIMIT 5
+            """).fetchall()
+            sample_values = [
+                {
+                    "expected": str(r[0]) if r[0] is not None else "NULL",
+                    "actual": str(r[1]) if r[1] is not None else "NULL",
+                }
+                for r in sample_rows
+            ]
+            systematic[col] = {
+                "diff_count": total_rows - miss,
+                "total_paired": total_rows,
+                "sample_values": sample_values,
+            }
+    return systematic
 
 
 def _detect_systematic_diffs(
