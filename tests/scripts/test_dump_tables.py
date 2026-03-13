@@ -3,7 +3,6 @@ import tempfile
 from pathlib import Path
 
 import duckdb
-import pytest
 
 
 def load_module():
@@ -71,7 +70,7 @@ class TestDumpTablesDuckDB:
         mod = load_module()
         output_dir = Path(self.tmpdir) / "output"
         output_dir.mkdir()
-        results = mod.dump_tables_duckdb(
+        mod.dump_tables_duckdb(
             db_path=str(self.db_path),
             relations=["hosts"],
             output_dir=str(output_dir),

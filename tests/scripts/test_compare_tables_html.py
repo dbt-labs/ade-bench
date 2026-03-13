@@ -4,7 +4,6 @@ import tempfile
 from pathlib import Path
 
 import duckdb
-import pytest
 
 
 def load_module():
@@ -29,10 +28,12 @@ class TestHTMLGeneration:
     def test_generates_valid_html(self):
         mod = load_module()
         with tempfile.TemporaryDirectory() as tmpdir:
-            expected = write_parquet(tmpdir, "expected",
-                "SELECT 1 as id, 'Alice' as name, 4.5 as score")
-            actual = write_parquet(tmpdir, "actual",
-                "SELECT 1 as id, 'Alice' as name, 3.0 as score")
+            expected = write_parquet(
+                tmpdir, "expected", "SELECT 1 as id, 'Alice' as name, 4.5 as score"
+            )
+            actual = write_parquet(
+                tmpdir, "actual", "SELECT 1 as id, 'Alice' as name, 3.0 as score"
+            )
             result = mod.compare_tables(str(expected), str(actual))
             html = mod.render_diff_html(result, "snap__hosts")
             assert "<html" in html or "<div" in html
@@ -42,8 +43,9 @@ class TestHTMLGeneration:
     def test_missing_relation_html(self):
         mod = load_module()
         result = mod.make_missing_relation_result(
-            "snap__hosts", "solution__snap__hosts",
-            expected_path="/app/comparisons/solution__snap__hosts.parquet"
+            "snap__hosts",
+            "solution__snap__hosts",
+            expected_path="/app/comparisons/solution__snap__hosts.parquet",
         )
         html = mod.render_diff_html(result, "snap__hosts")
         assert "not found" in html.lower()
@@ -52,10 +54,16 @@ class TestHTMLGeneration:
         """Systematic diffs render as a banner, not per-row."""
         mod = load_module()
         with tempfile.TemporaryDirectory() as tmpdir:
-            expected = write_parquet(tmpdir, "expected",
-                "SELECT * FROM (VALUES (1, 'true', 10), (2, 'false', 20), (3, 'true', 30)) AS t(id, flag, val)")
-            actual = write_parquet(tmpdir, "actual",
-                "SELECT * FROM (VALUES (1, 't', 10), (2, 'f', 20), (3, 't', 30)) AS t(id, flag, val)")
+            expected = write_parquet(
+                tmpdir,
+                "expected",
+                "SELECT * FROM (VALUES (1, 'true', 10), (2, 'false', 20), (3, 'true', 30)) AS t(id, flag, val)",
+            )
+            actual = write_parquet(
+                tmpdir,
+                "actual",
+                "SELECT * FROM (VALUES (1, 't', 10), (2, 'f', 20), (3, 't', 30)) AS t(id, flag, val)",
+            )
             result = mod.compare_tables(str(expected), str(actual))
             html = mod.render_diff_html(result, "test_model")
             assert "Systematic Diffs" in html
@@ -73,16 +81,24 @@ class TestHTMLGeneration:
             # Pre-scan catches flag, then 4 exact matches + 1 fuzzy-matched row with val diff
             # val diff in 1/1 fuzzy rows = 100% → also systematic, so no compact table
             # Use a scenario where val differs in some but not all fuzzy rows
-            expected = write_parquet(tmpdir, "expected", """
+            expected = write_parquet(
+                tmpdir,
+                "expected",
+                """
                 SELECT * FROM (VALUES
                     (1, 'true', 10), (2, 'false', 20), (3, 'true', 30),
                     (4, 'true', 40), (5, 'false', 50)
-                ) AS t(id, flag, val)""")
-            actual = write_parquet(tmpdir, "actual", """
+                ) AS t(id, flag, val)""",
+            )
+            actual = write_parquet(
+                tmpdir,
+                "actual",
+                """
                 SELECT * FROM (VALUES
                     (1, 't', 10), (2, 'f', 20), (3, 't', 99),
                     (4, 't', 40), (5, 'f', 55)
-                ) AS t(id, flag, val)""")
+                ) AS t(id, flag, val)""",
+            )
             result = mod.compare_tables(str(expected), str(actual))
             html = mod.render_diff_html(result, "test_model")
             # flag is systematic via pre-scan
@@ -97,10 +113,10 @@ class TestHTMLGeneration:
     def test_column_diff_section(self):
         mod = load_module()
         with tempfile.TemporaryDirectory() as tmpdir:
-            expected = write_parquet(tmpdir, "expected",
-                "SELECT 1 as id, 'Alice' as name, 4.5 as score")
-            actual = write_parquet(tmpdir, "actual",
-                "SELECT 1 as id, 'Alice' as name")
+            expected = write_parquet(
+                tmpdir, "expected", "SELECT 1 as id, 'Alice' as name, 4.5 as score"
+            )
+            actual = write_parquet(tmpdir, "actual", "SELECT 1 as id, 'Alice' as name")
             result = mod.compare_tables(str(expected), str(actual))
             html = mod.render_diff_html(result, "snap__hosts")
             assert "Missing" in html or "missing" in html

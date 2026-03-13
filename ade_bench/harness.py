@@ -1078,12 +1078,15 @@ class Harness:
 
         result = subprocess.run(
             ["docker", "cp", f"{container_name}:{comparisons_src}/.", str(comparisons_dest)],
-            capture_output=True, text=True,
+            capture_output=True,
+            text=True,
         )
 
         if result.returncode == 0:
             log_harness_info(
-                self._logger, trial_handler.task_id, "comparison",
+                self._logger,
+                trial_handler.task_id,
+                "comparison",
                 f"Extracted comparison artifacts to {comparisons_dest}",
             )
         else:

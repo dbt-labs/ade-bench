@@ -2,7 +2,6 @@
 """Detect failing equality tests from dbt run_results.json and resolve relation pairs."""
 
 import json
-import sys
 from pathlib import Path
 
 

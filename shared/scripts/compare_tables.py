@@ -2,7 +2,6 @@
 """Compare two parquet tables and produce a structured diff report."""
 
 import argparse
-import json
 import sys
 from pathlib import Path
 
@@ -107,9 +106,7 @@ def compare_tables(
     # check if excluding individual columns recovers matches.
     pre_systematic = {}
     if matched == 0 and expected_count > 0 and expected_count == actual_count and len(shared) >= 2:
-        pre_systematic = _detect_systematic_columns(
-            con, shared, expected_count
-        )
+        pre_systematic = _detect_systematic_columns(con, shared, expected_count)
 
     # If systematic columns found, redo EXCEPT ALL without them
     if pre_systematic:
@@ -172,13 +169,13 @@ def compare_tables(
             sys_cols = set(result["systematic_diffs"].keys())
             cleaned = []
             for diff in result["row_diffs"]:
-                remaining_diffs = {
-                    k: v for k, v in diff["diffs"].items() if k not in sys_cols
-                }
-                cleaned.append({
-                    "identifying": diff["identifying"],
-                    "diffs": remaining_diffs,
-                })
+                remaining_diffs = {k: v for k, v in diff["diffs"].items() if k not in sys_cols}
+                cleaned.append(
+                    {
+                        "identifying": diff["identifying"],
+                        "diffs": remaining_diffs,
+                    }
+                )
             result["row_diffs"] = cleaned
 
     # Collect remaining unpaired rows
@@ -195,7 +192,9 @@ def _values_match(val_a, val_b, col_type: str, tol_pct: float, tol_abs: float) -
         return True
     if val_a is None or val_b is None:
         return False
-    if col_type in ("FLOAT", "DOUBLE", "DECIMAL", "NUMERIC", "REAL") or col_type.startswith("DECIMAL"):
+    if col_type in ("FLOAT", "DOUBLE", "DECIMAL", "NUMERIC", "REAL") or col_type.startswith(
+        "DECIMAL"
+    ):
         try:
             a, b = float(val_a), float(val_b)
             threshold = max(abs(a) * tol_pct, tol_abs)
@@ -205,9 +204,7 @@ def _values_match(val_a, val_b, col_type: str, tol_pct: float, tol_abs: float) -
     return str(val_a) == str(val_b)
 
 
-def _fuzzy_match_rows(
-    con, shared_cols: list[str], tol_pct: float, tol_abs: float
-) -> dict:
+def _fuzzy_match_rows(con, shared_cols: list[str], tol_pct: float, tol_abs: float) -> dict:
     """Fuzzy-match unmatched rows by similarity score."""
     # Get column types
     col_types = {}
@@ -217,8 +214,12 @@ def _fuzzy_match_rows(
         col_types[row[0].lower()] = row[1].upper()
 
     shared_cols_quoted = ", ".join(f'"{c}"' for c in shared_cols)
-    missing_rows = con.execute(f"SELECT __ade_rn, {shared_cols_quoted} FROM missing_from_actual").fetchall()
-    extra_rows = con.execute(f"SELECT __ade_rn, {shared_cols_quoted} FROM extra_in_actual").fetchall()
+    missing_rows = con.execute(
+        f"SELECT __ade_rn, {shared_cols_quoted} FROM missing_from_actual"
+    ).fetchall()
+    extra_rows = con.execute(
+        f"SELECT __ade_rn, {shared_cols_quoted} FROM extra_in_actual"
+    ).fetchall()
 
     # Score each pair
     scores = []
@@ -227,9 +228,11 @@ def _fuzzy_match_rows(
             matching_cols = 0
             for ci, col in enumerate(shared_cols):
                 if _values_match(
-                    m_row[ci + 1], e_row[ci + 1],
+                    m_row[ci + 1],
+                    e_row[ci + 1],
                     col_types.get(col.lower(), "VARCHAR"),
-                    tol_pct, tol_abs,
+                    tol_pct,
+                    tol_abs,
                 ):
                     matching_cols += 1
             if matching_cols > 0:
@@ -264,7 +267,13 @@ def _fuzzy_match_rows(
                 identifying[col] = str(val_a) if val_a is not None else "NULL"
             else:
                 within_tol = False
-                if col_type in ("FLOAT", "DOUBLE", "DECIMAL", "NUMERIC", "REAL") or col_type.startswith("DECIMAL"):
+                if col_type in (
+                    "FLOAT",
+                    "DOUBLE",
+                    "DECIMAL",
+                    "NUMERIC",
+                    "REAL",
+                ) or col_type.startswith("DECIMAL"):
                     try:
                         a, b = float(val_a), float(val_b)
                         threshold = max(abs(a) * tol_pct, tol_abs)
@@ -318,17 +327,19 @@ def _detect_systematic_columns(
             # This column is a systematic diff — collect distinct values from each side
             expected_vals = [
                 str(r[0]) if r[0] is not None else "NULL"
-                for r in con.execute(f'SELECT DISTINCT "{col}" FROM expected ORDER BY 1 LIMIT 5').fetchall()
+                for r in con.execute(
+                    f'SELECT DISTINCT "{col}" FROM expected ORDER BY 1 LIMIT 5'
+                ).fetchall()
             ]
             actual_vals = [
                 str(r[0]) if r[0] is not None else "NULL"
-                for r in con.execute(f'SELECT DISTINCT "{col}" FROM actual ORDER BY 1 LIMIT 5').fetchall()
+                for r in con.execute(
+                    f'SELECT DISTINCT "{col}" FROM actual ORDER BY 1 LIMIT 5'
+                ).fetchall()
             ]
             # Pair them up positionally for display (best-effort mapping)
             sample_values = [
-                {"expected": e, "actual": a}
-                for e, a in zip(expected_vals, actual_vals)
-                if e != a
+                {"expected": e, "actual": a} for e, a in zip(expected_vals, actual_vals) if e != a
             ]
             systematic[col] = {
                 "diff_count": total_rows - miss,
@@ -338,9 +349,7 @@ def _detect_systematic_columns(
     return systematic
 
 
-def _detect_systematic_diffs(
-    row_diffs: list[dict], threshold: float = 0.9
-) -> dict:
+def _detect_systematic_diffs(row_diffs: list[dict], threshold: float = 0.9) -> dict:
     """Detect columns that differ in >= threshold fraction of paired rows.
 
     Returns a dict of column_name -> {diff_count, total_paired, sample_values}.
@@ -394,18 +403,17 @@ def make_missing_relation_result(
     import duckdb
 
     found_name = None
-    found_path = None
     row_count = 0
     columns = []
 
     for name, path in [(expected_name, expected_path), (actual_name, actual_path)]:
         if path and Path(path).exists():
             found_name = name
-            found_path = path
             con = duckdb.connect()
             row_count = con.execute(f"SELECT count(*) FROM read_parquet('{path}')").fetchone()[0]
             columns = [
-                row[0] for row in con.execute(
+                row[0]
+                for row in con.execute(
                     f"SELECT column_name FROM (DESCRIBE SELECT * FROM read_parquet('{path}'))"
                 ).fetchall()
             ]
@@ -454,13 +462,16 @@ def render_diff_html(result: dict, model_name: str) -> str:
                 <p class="col-list">{cols_list}</p>
                 <p>{result['found_row_count']} rows</p>
             </div>"""
-        return _wrap_html(model_name, f"""
+        return _wrap_html(
+            model_name,
+            f"""
         <div class="header error">
             <h2>Table Comparison: {esc(model_name)}</h2>
             <p class="error-msg">Relation <code>{esc(result['missing_relation'])}</code> not found &mdash; could not compare</p>
         </div>
         {cols_info}
-        """)
+        """,
+        )
 
     cols = result["columns"]
     summary = result["summary"]
@@ -473,7 +484,9 @@ def render_diff_html(result: dict, model_name: str) -> str:
             col_html += f"<li>{esc(c)}</li>"
         col_html += "</ul></div>"
     if cols["extra"]:
-        col_html += '<div class="extra"><strong>Extra columns</strong> (in actual, not in expected):<ul>'
+        col_html += (
+            '<div class="extra"><strong>Extra columns</strong> (in actual, not in expected):<ul>'
+        )
         for c in cols["extra"]:
             col_html += f"<li>{esc(c)}</li>"
         col_html += "</ul></div>"
@@ -585,7 +598,16 @@ def render_diff_html(result: dict, model_name: str) -> str:
         <h2>Table Comparison: {esc(model_name)}</h2>
     </div>"""
 
-    return _wrap_html(model_name, header_html + col_html + summary_html + systematic_html + diffs_html + missing_html + extra_html)
+    return _wrap_html(
+        model_name,
+        header_html
+        + col_html
+        + summary_html
+        + systematic_html
+        + diffs_html
+        + missing_html
+        + extra_html,
+    )
 
 
 def _render_row_table(rows: list[dict], css_class: str) -> str:
@@ -682,14 +704,17 @@ def main():
 
     if not expected_path.exists() or not actual_path.exists():
         result = make_missing_relation_result(
-            args.actual_name, args.expected_name,
+            args.actual_name,
+            args.expected_name,
             expected_path=str(expected_path) if expected_path.exists() else None,
             actual_path=str(actual_path) if actual_path.exists() else None,
         )
     else:
         result = compare_tables(
-            str(expected_path), str(actual_path),
-            expected_name=args.expected_name, actual_name=args.actual_name,
+            str(expected_path),
+            str(actual_path),
+            expected_name=args.expected_name,
+            actual_name=args.actual_name,
         )
 
     html = render_diff_html(result, args.model_name)

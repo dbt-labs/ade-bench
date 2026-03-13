@@ -1,13 +1,14 @@
-import json
 import importlib.util
-import pytest
 from pathlib import Path
 
 
 def load_module():
     spec = importlib.util.spec_from_file_location(
         "detect_failing",
-        Path(__file__).parent.parent.parent / "shared" / "scripts" / "detect_failing_equality_tests.py",
+        Path(__file__).parent.parent.parent
+        / "shared"
+        / "scripts"
+        / "detect_failing_equality_tests.py",
     )
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)

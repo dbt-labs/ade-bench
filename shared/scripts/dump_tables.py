@@ -44,7 +44,9 @@ def dump_tables_duckdb(
             ).fetchone()[0]
 
             if not exists:
-                print(f"[ade-bench] Warning: relation '{relation}' not found in database", flush=True)
+                print(
+                    f"[ade-bench] Warning: relation '{relation}' not found in database", flush=True
+                )
                 results[relation] = {"status": "not_found"}
                 continue
 
@@ -60,7 +62,10 @@ def dump_tables_duckdb(
             row_count = con.execute(f'SELECT count(*) FROM "{schema}"."{relation}"').fetchone()[0]
             dumped_count = min(row_count, limit) if limit >= 0 else row_count
 
-            print(f"[ade-bench] Dumped '{relation}': {dumped_count} rows to {parquet_path}", flush=True)
+            print(
+                f"[ade-bench] Dumped '{relation}': {dumped_count} rows to {parquet_path}",
+                flush=True,
+            )
             results[relation] = {"status": "ok", "row_count": dumped_count}
 
         except Exception as e:
@@ -143,7 +148,9 @@ def dump_tables_snowflake(
             df.to_csv(str(csv_path), index=False)
 
             row_count = len(df)
-            print(f"[ade-bench] Dumped '{relation}': {row_count} rows to {parquet_path}", flush=True)
+            print(
+                f"[ade-bench] Dumped '{relation}': {row_count} rows to {parquet_path}", flush=True
+            )
             results[relation] = {"status": "ok", "row_count": row_count}
 
         except Exception as e:
