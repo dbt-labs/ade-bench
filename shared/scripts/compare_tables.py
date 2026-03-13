@@ -12,7 +12,7 @@ def compare_tables(
     actual_path: str,
     expected_name: str = "expected",
     actual_name: str = "actual",
-    fuzzy_row_limit: int = 500,
+    fuzzy_row_limit: int = 10000,
     numeric_tolerance_pct: float = 0.01,
     numeric_tolerance_abs: float = 1e-6,
 ) -> dict:
