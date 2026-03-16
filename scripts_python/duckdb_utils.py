@@ -57,14 +57,12 @@ class DuckDBExtractor:
         try:
             with duckdb.connect(str(db_path), read_only=True) as conn:
                 # Get all schemas
-                schemas = conn.execute(
-                    """
+                schemas = conn.execute("""
                     SELECT schema_name
                     FROM information_schema.schemata
                     WHERE schema_name NOT IN ('information_schema', 'pg_catalog', 'pg_toast')
                     ORDER BY schema_name
-                """
-                ).fetchall()
+                """).fetchall()
 
                 schema_info = {}
                 for (schema_name,) in schemas:

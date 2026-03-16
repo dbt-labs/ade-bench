@@ -404,20 +404,16 @@ class ResultsHTMLGenerator:
         content_parts = []
         for title, content, content_type in sections:
             if content_type == "iframe":
-                content_parts.append(
-                    f"""<div style="margin-bottom: 24px;">
+                content_parts.append(f"""<div style="margin-bottom: 24px;">
     <h2 style="color: #4ec9b0; margin-bottom: 10px;">{html.escape(title)}</h2>
     <iframe src="{html.escape(content)}" style="width: 100%; height: 700px; border: 1px solid #3c3c3c; border-radius: 4px; background: #fff;"></iframe>
     <p style="margin-top: 8px; font-size: 11px; color: #808080;"><a href="{html.escape(content)}" target="_blank" style="color: #9cdcfe;">Open transcript in new tab</a></p>
-</div>"""
-                )
+</div>""")
             else:
-                content_parts.append(
-                    f"""<div style="margin-bottom: 24px;">
+                content_parts.append(f"""<div style="margin-bottom: 24px;">
     <h2 style="color: #4ec9b0; margin-bottom: 10px;">{html.escape(title)}</h2>
     <pre style="white-space: pre-wrap; word-wrap: break-word; background: #1e1e1e; padding: 16px; border-radius: 4px; overflow-x: auto;">{html.escape(content)}</pre>
-</div>"""
-                )
+</div>""")
 
         if not content_parts:
             content_parts.append("<p>No panes data found.</p>")

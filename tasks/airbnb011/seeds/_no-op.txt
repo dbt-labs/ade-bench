@@ -1,0 +1,23 @@
+
+
+seeds:
+  airbnb:
+    solution__snap__hosts:
+      +column_types:
+        HOST_ID: integer
+        HOST_NAME: varchar
+        IS_SUPERHOST: varchar
+        CREATED_AT: timestamp
+        UPDATED_AT: timestamp
+        dbt_scd_id: varchar
+        dbt_updated_at: timestamp
+        dbt_valid_from: timestamp
+        dbt_valid_to: timestamp
+    solution__dim_superhost_evolution:
+      +column_types:
+        HOST_ID: integer
+        is_currently_superhost: boolean
+        current_superhost_tenure: integer
+        acct_age_before_achieving_superhost: integer
+        status_change_count: bigint
+        last_status_change_at: timestamp

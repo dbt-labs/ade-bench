@@ -42,7 +42,8 @@ variants:
   project_type: dbt-fusion
   project_name: airbnb
   migration_directory: airbnb__duckdb_to_snowflake_dbtf
-- db_type: duckdb
-  db_name: airbnb
-  project_type: dbt-fusion
-  project_name: airbnb
+# Disabled until https://github.com/dbt-labs/dbt-fusion/issues/1447 is resolved
+# - db_type: duckdb
+#   db_name: airbnb
+#   project_type: dbt-fusion
+#   project_name: airbnb
