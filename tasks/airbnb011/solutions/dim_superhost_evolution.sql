@@ -68,7 +68,7 @@ current_state AS (
         dbt_valid_from AS current_valid_from
     FROM snapshot_history
     WHERE dbt_valid_to IS NULL
-),
+)
 
 SELECT
     es.HOST_ID,
