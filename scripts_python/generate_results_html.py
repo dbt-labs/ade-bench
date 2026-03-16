@@ -313,8 +313,8 @@ class ResultsHTMLGenerator:
         # Generate diffs page
         self._generate_diffs_page(task_data, task_dir, task_html_dir)
 
-        # Generate comparisons page (only if comparison artifacts exist)
-        self._generate_comparisons_page(task_data, task_dir, task_html_dir)
+        # Generate data comparisons page (only if comparison artifacts exist)
+        self._generate_data_comparisons_page(task_data, task_dir, task_html_dir)
 
     def _generate_results_page(
         self, task_data: Dict[str, Any], task_dir: Path, task_html_dir: Path
@@ -454,13 +454,13 @@ class ResultsHTMLGenerator:
             task_html_dir / "diffs.html", "File Diffs", task_data["task_id"], content, "diffs"
         )
 
-    def _generate_comparisons_page(
+    def _generate_data_comparisons_page(
         self, task_data: Dict[str, Any], task_dir: Path, task_html_dir: Path
     ):
-        """Generate comparisons detail page from diff.html artifacts."""
-        comparisons_dir = task_dir / "comparisons"
+        """Generate data comparisons detail page from diff.html artifacts."""
+        comparisons_dir = task_dir / "data_comparisons"
         if not comparisons_dir.exists():
-            return  # No comparisons for this task
+            return  # No data comparisons for this task
 
         # Collect all diff.html files
         diff_files = sorted(comparisons_dir.glob("*/diff.html"))
@@ -487,7 +487,7 @@ class ResultsHTMLGenerator:
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Comparisons - {html.escape(task_data['task_id'])}</title>
+    <title>Data Comparisons - {html.escape(task_data['task_id'])}</title>
     <style>
         body {{
             background: #1e1e1e;
@@ -532,7 +532,7 @@ class ResultsHTMLGenerator:
 </body>
 </html>"""
 
-        with open(task_html_dir / "comparisons.html", "w") as f:
+        with open(task_html_dir / "data_comparisons.html", "w") as f:
             f.write(page_html)
 
     def _write_detail_page(

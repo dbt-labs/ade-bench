@@ -25,7 +25,7 @@ if [ "$db_type" = "duckdb" ]; then
 fi
 
 FAILING_JSON="/tmp/failing_pairs.json"
-COMPARISONS_DIR="/app/comparisons"
+DATA_COMPARISONS_DIR="/app/data_comparisons"
 
 # Step 1: Detect failing equality tests from run_results.json + manifest.json
 echo "[ade-bench] Checking for failing equality tests..."
@@ -40,7 +40,7 @@ if [ "$PAIR_COUNT" = "0" ]; then
 fi
 
 # Step 2: Dump all referenced tables
-mkdir -p "$COMPARISONS_DIR"
+mkdir -p "$DATA_COMPARISONS_DIR"
 
 # Write relation names to a temp file (one per line) to avoid shell quoting issues
 RELATIONS_FILE="/tmp/comparison_relations.txt"
@@ -58,7 +58,7 @@ for r in sorted(relations):
 ALL_RELATIONS=$(tr '\n' ' ' < "$RELATIONS_FILE")
 echo "[ade-bench] Dumping tables: $ALL_RELATIONS"
 
-DUMP_ARGS="--relations $ALL_RELATIONS --output $COMPARISONS_DIR/tables"
+DUMP_ARGS="--relations $ALL_RELATIONS --output $DATA_COMPARISONS_DIR/tables"
 if [ "$db_type" = "duckdb" ]; then
     DUMP_ARGS="$DUMP_ARGS --db-type duckdb --db-path $db_path"
 elif [ "$db_type" = "snowflake" ]; then
@@ -74,16 +74,16 @@ import json, subprocess, os, shutil
 pairs = json.loads(open('$FAILING_JSON').read())
 for p in pairs:
     model = p['model_name']
-    actual_path = '$COMPARISONS_DIR/tables/' + p['actual'] + '.parquet'
-    expected_path = '$COMPARISONS_DIR/tables/' + p['expected'] + '.parquet'
-    output_dir = '$COMPARISONS_DIR/' + model
+    actual_path = '$DATA_COMPARISONS_DIR/tables/' + p['actual'] + '.parquet'
+    expected_path = '$DATA_COMPARISONS_DIR/tables/' + p['expected'] + '.parquet'
+    output_dir = '$DATA_COMPARISONS_DIR/' + model
 
     os.makedirs(output_dir, exist_ok=True)
 
     # Copy parquet and csv files into per-model directory
     for ext in ['parquet', 'csv']:
         for src_name, dst_name in [(p['actual'], 'actual'), (p['expected'], 'expected')]:
-            src = '$COMPARISONS_DIR/tables/' + src_name + '.' + ext
+            src = '$DATA_COMPARISONS_DIR/tables/' + src_name + '.' + ext
             dst = output_dir + '/' + dst_name + '.' + ext
             if os.path.exists(src):
                 shutil.copy2(src, dst)
@@ -100,4 +100,4 @@ for p in pairs:
     ])
 "
 
-echo "[ade-bench] Comparison artifacts written to $COMPARISONS_DIR"
+echo "[ade-bench] Comparison artifacts written to $DATA_COMPARISONS_DIR"

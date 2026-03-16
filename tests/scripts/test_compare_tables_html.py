@@ -45,7 +45,7 @@ class TestHTMLGeneration:
         result = mod.make_missing_relation_result(
             "snap__hosts",
             "solution__snap__hosts",
-            expected_path="/app/comparisons/solution__snap__hosts.parquet",
+            expected_path="/app/data_comparisons/solution__snap__hosts.parquet",
         )
         html = mod.render_diff_html(result, "snap__hosts")
         assert "not found" in html.lower()

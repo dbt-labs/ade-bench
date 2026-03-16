@@ -265,20 +265,20 @@ def generate_html_table(results: BenchmarkResults, experiment_dir: Optional[Path
 
     # Now replace the placeholders with actual action links, task buttons, and tools
     for i, task in enumerate(summary["tasks"]):
-        # Check if comparison artifacts exist in the trial directory
+        # Check if data comparison artifacts exist in the trial directory
         task_base_dir = experiment_dir / task["task_id"] if experiment_dir else None
-        has_comparisons = False
+        has_data_comparisons = False
         if task_base_dir and task_base_dir.exists():
             for subdir in task_base_dir.iterdir():
-                if subdir.is_dir() and (subdir / "comparisons").exists():
-                    has_comparisons = True
+                if subdir.is_dir() and (subdir / "data_comparisons").exists():
+                    has_data_comparisons = True
                     break
 
-        comparisons_link = ""
-        if has_comparisons:
-            comparisons_link = f' <a href="{task["task_id"]}/comparisons.html" class="link comparisons">Comparisons</a>'
+        data_comparisons_link = ""
+        if has_data_comparisons:
+            data_comparisons_link = f' <a href="{task["task_id"]}/data_comparisons.html" class="link data-comparisons">Data Comparisons</a>'
 
-        action_links = f'<div class="links"><a href="{task["task_id"]}/results.html" class="link results">Results</a> <a href="{task["task_id"]}/panes.html" class="link panes">Panes</a> <a href="{task["task_id"]}/diffs.html" class="link diffs">Diffs</a>{comparisons_link}</div>'
+        action_links = f'<div class="links"><a href="{task["task_id"]}/results.html" class="link results">Results</a> <a href="{task["task_id"]}/panes.html" class="link panes">Panes</a> <a href="{task["task_id"]}/diffs.html" class="link diffs">File Diffs</a>{data_comparisons_link}</div>'
         html_table = html_table.replace(f"__ACTION_LINKS_{i}__", action_links)
 
         task_button = f'<button class="link task-btn" onclick="showTaskYaml(\'{task["task_id"]}\')">View</button>'

@@ -1063,7 +1063,7 @@ class Harness:
         import subprocess
 
         container_name = terminal.container.name
-        comparisons_src = "/app/comparisons"
+        comparisons_src = "/app/data_comparisons"
 
         # Check if comparisons directory exists in container
         try:
@@ -1078,7 +1078,7 @@ class Harness:
         if check.returncode != 0:
             return  # No comparisons generated
 
-        comparisons_dest = trial_handler._task_output_path / "comparisons"
+        comparisons_dest = trial_handler._task_output_path / "data_comparisons"
         comparisons_dest.mkdir(parents=True, exist_ok=True)
 
         try:

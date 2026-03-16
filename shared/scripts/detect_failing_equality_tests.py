@@ -42,7 +42,9 @@ def resolve_relations(failing_test_names: list[str], manifest: dict) -> list[dic
         for dep in depends_on:
             dep_name = dep.split(".")[-1]
             if "solution__" in dep_name:
-                expected = dep_name
+                # Use the first solution seed (primary answer key) for comparison
+                if expected is None:
+                    expected = dep_name
             else:
                 actual = dep_name
 
