@@ -17,16 +17,14 @@ def test_get_repo_root_from_main_directory(tmp_path):
     # Create a trial handler (we'll need a minimal task.yaml)
     task_dir = repo / "tasks" / "test_task"
     task_dir.mkdir(parents=True)
-    (task_dir / "task.yaml").write_text(
-        """
+    (task_dir / "task.yaml").write_text("""
 prompts:
   - key: base
     prompt: "test"
 author_name: test
 author_email: test@test.com
 difficulty: easy
-"""
-    )
+""")
 
     handler = TrialHandler(trial_name="test", input_path=task_dir, task_key="base")
 
@@ -70,16 +68,14 @@ def test_get_repo_root_from_worktree(tmp_path):
     # Create task in worktree
     task_dir = worktree / "tasks" / "test_task"
     task_dir.mkdir(parents=True)
-    (task_dir / "task.yaml").write_text(
-        """
+    (task_dir / "task.yaml").write_text("""
 prompts:
   - key: base
     prompt: "test"
 author_name: test
 author_email: test@test.com
 difficulty: easy
-"""
-    )
+""")
 
     handler = TrialHandler(trial_name="test", input_path=task_dir, task_key="base")
 
@@ -109,16 +105,14 @@ def test_shared_databases_root_path_in_main_repo(tmp_path):
     # Create a task
     task_dir = repo / "tasks" / "test_task"
     task_dir.mkdir(parents=True)
-    (task_dir / "task.yaml").write_text(
-        """
+    (task_dir / "task.yaml").write_text("""
 prompts:
   - key: base
     prompt: "test"
 author_name: test
 author_email: test@test.com
 difficulty: easy
-"""
-    )
+""")
 
     handler = TrialHandler(trial_name="test", input_path=task_dir, task_key="base")
 
@@ -164,16 +158,14 @@ def test_shared_databases_root_path_in_worktree(tmp_path):
     # Create task in worktree
     task_dir = worktree / "tasks" / "test_task"
     task_dir.mkdir(parents=True)
-    (task_dir / "task.yaml").write_text(
-        """
+    (task_dir / "task.yaml").write_text("""
 prompts:
   - key: base
     prompt: "test"
 author_name: test
 author_email: test@test.com
 difficulty: easy
-"""
-    )
+""")
 
     handler = TrialHandler(trial_name="test", input_path=task_dir, task_key="base")
 
@@ -197,16 +189,14 @@ def test_shared_duckdb_path_in_worktree_finds_main_repo_file(tmp_path):
     # Create a task in a temporary directory
     task_dir = tmp_path / "tasks" / "test_task"
     task_dir.mkdir(parents=True)
-    (task_dir / "task.yaml").write_text(
-        """
+    (task_dir / "task.yaml").write_text("""
 prompts:
   - key: base
     prompt: "test"
 author_name: test
 author_email: test@test.com
 difficulty: easy
-"""
-    )
+""")
 
     handler = TrialHandler(trial_name="test", input_path=task_dir, task_key="base")
 
@@ -247,16 +237,14 @@ def test_shared_snowflake_path_uses_root_path(tmp_path):
     # Create a task in a temporary directory
     task_dir = tmp_path / "tasks" / "test_task"
     task_dir.mkdir(parents=True)
-    (task_dir / "task.yaml").write_text(
-        """
+    (task_dir / "task.yaml").write_text("""
 prompts:
   - key: base
     prompt: "test"
 author_name: test
 author_email: test@test.com
 difficulty: easy
-"""
-    )
+""")
 
     handler = TrialHandler(trial_name="test", input_path=task_dir, task_key="base")
 
@@ -313,16 +301,14 @@ def test_shared_databases_path_is_worktree_aware(tmp_path):
     # Create task in worktree
     task_dir = worktree / "tasks" / "test_task"
     task_dir.mkdir(parents=True)
-    (task_dir / "task.yaml").write_text(
-        """
+    (task_dir / "task.yaml").write_text("""
 prompts:
   - key: base
     prompt: "test"
 author_name: test
 author_email: test@test.com
 difficulty: easy
-"""
-    )
+""")
 
     handler = TrialHandler(trial_name="test", input_path=task_dir, task_key="base")
 

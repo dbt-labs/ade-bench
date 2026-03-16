@@ -6,15 +6,13 @@ from ade_bench.harness_models import PluginSetsConfig
 
 def test_loader_loads_yaml(tmp_path):
     yaml_file = tmp_path / "plugin-sets.yaml"
-    yaml_file.write_text(
-        """
+    yaml_file.write_text("""
 sets:
   - name: test
     default: true
     skills: []
     allowed_tools: [Bash]
-"""
-    )
+""")
     loader = PluginSetLoader(yaml_file)
     config = loader.load()
     assert isinstance(config, PluginSetsConfig)

@@ -21,8 +21,7 @@ def create_database(db_path: str) -> sqlite3.Connection:
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
-    cursor.execute(
-        """
+    cursor.execute("""
         CREATE TABLE IF NOT EXISTS profiling_runs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             folder_name TEXT UNIQUE NOT NULL,
@@ -39,14 +38,12 @@ def create_database(db_path: str) -> sqlite3.Connection:
             total_time_seconds REAL,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
-    """
-    )
+    """)
 
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_runs_timestamp ON profiling_runs(timestamp)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_runs_agent_name ON profiling_runs(agent_name)")
 
-    cursor.execute(
-        """
+    cursor.execute("""
         CREATE TABLE IF NOT EXISTS functions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             filename TEXT NOT NULL,
@@ -56,15 +53,13 @@ def create_database(db_path: str) -> sqlite3.Connection:
             is_builtin BOOLEAN,
             UNIQUE(filename, line_number, function_name)
         )
-    """
-    )
+    """)
 
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_functions_name ON functions(function_name)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_functions_filename ON functions(filename)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_functions_module ON functions(module_name)")
 
-    cursor.execute(
-        """
+    cursor.execute("""
         CREATE TABLE IF NOT EXISTS function_stats (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             run_id INTEGER NOT NULL,
@@ -80,8 +75,7 @@ def create_database(db_path: str) -> sqlite3.Connection:
             FOREIGN KEY (function_id) REFERENCES functions(id) ON DELETE CASCADE,
             UNIQUE(run_id, function_id)
         )
-    """
-    )
+    """)
 
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_stats_run_id ON function_stats(run_id)")
     cursor.execute(
@@ -97,8 +91,7 @@ def create_database(db_path: str) -> sqlite3.Connection:
         "CREATE INDEX IF NOT EXISTS idx_stats_call_count ON function_stats(call_count DESC)"
     )
 
-    cursor.execute(
-        """
+    cursor.execute("""
         CREATE TABLE IF NOT EXISTS call_relationships (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             run_id INTEGER NOT NULL,
@@ -112,8 +105,7 @@ def create_database(db_path: str) -> sqlite3.Connection:
             FOREIGN KEY (callee_function_id) REFERENCES functions(id) ON DELETE CASCADE,
             UNIQUE(run_id, caller_function_id, callee_function_id)
         )
-    """
-    )
+    """)
 
     cursor.execute(
         "CREATE INDEX IF NOT EXISTS idx_calls_run_caller ON call_relationships(run_id, caller_function_id)"
@@ -128,8 +120,7 @@ def create_database(db_path: str) -> sqlite3.Connection:
         "CREATE INDEX IF NOT EXISTS idx_calls_callee ON call_relationships(callee_function_id)"
     )
 
-    cursor.execute(
-        """
+    cursor.execute("""
         CREATE TABLE IF NOT EXISTS top_level_functions (
             run_id INTEGER NOT NULL,
             function_id INTEGER NOT NULL,
@@ -137,8 +128,7 @@ def create_database(db_path: str) -> sqlite3.Connection:
             FOREIGN KEY (run_id) REFERENCES profiling_runs(id) ON DELETE CASCADE,
             FOREIGN KEY (function_id) REFERENCES functions(id) ON DELETE CASCADE
         )
-    """
-    )
+    """)
 
     conn.commit()
     return conn
