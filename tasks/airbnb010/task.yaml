@@ -1,5 +1,5 @@
 task_id: airbnb010
-status: dev
+status: ready
 description: Create an SCD2 snapshot for hosts and build a superhost evolution model.
 notes: |-
   Background watchdog mutates RAW_HOSTS on each dbt invocation to simulate

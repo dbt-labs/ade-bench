@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Merge YAML files by deep-merging nested dictionaries."""
+
 import sys
 import yaml
 from pathlib import Path

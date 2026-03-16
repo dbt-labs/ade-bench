@@ -144,13 +144,11 @@ def generate_base_charts(conn: sqlite3.Connection, output_dir: Path, pbar: tqdm)
 
     for y_col, x_col, title, xlabel, ylabel, filename in scatterplots:
         pbar.set_postfix_str(f"Base scatter: {y_col} by {x_col}")
-        cursor.execute(
-            f"""
+        cursor.execute(f"""
             SELECT {y_col}, {x_col}
             FROM profiling_runs 
             WHERE {y_col} IS NOT NULL AND {x_col} IS NOT NULL
-        """
-        )
+        """)
         data = cursor.fetchall()
         if len(data) > 0:
             y_data = np.array([row[0] for row in data])
@@ -162,14 +160,12 @@ def generate_base_charts(conn: sqlite3.Connection, output_dir: Path, pbar: tqdm)
 def generate_function_charts(conn: sqlite3.Connection, output_dir: Path, pbar: tqdm):
     cursor = conn.cursor()
 
-    cursor.execute(
-        """
+    cursor.execute("""
         SELECT DISTINCT f.function_name, f.module_name, f.id, f.is_builtin, f.filename
         FROM functions f
         JOIN function_stats fs ON f.id = fs.function_id
         WHERE f.is_builtin = 0
-    """
-    )
+    """)
 
     functions = cursor.fetchall()
 
@@ -286,8 +282,7 @@ def generate_charts_from_database(db_path: str):
     output_dir = db_file.parent
 
     cursor = conn.cursor()
-    cursor.execute(
-        """
+    cursor.execute("""
         SELECT COUNT(DISTINCT f.id)
         FROM functions f
         JOIN function_stats fs ON f.id = fs.function_id
@@ -297,8 +292,7 @@ def generate_charts_from_database(db_path: str):
         AND f.filename NOT LIKE '%site-packages%'
         AND f.filename NOT LIKE '%/lib/%'
         AND f.filename NOT LIKE '%/lib64/%'
-    """
-    )
+    """)
     num_functions = cursor.fetchone()[0]
 
     total_charts = 8 + num_functions

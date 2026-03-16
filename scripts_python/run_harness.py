@@ -9,8 +9,7 @@ import sys
 
 
 def main():
-    print(
-        """
+    print("""
 This script is deprecated and no longer supported.
 
 Please use the CLI instead. See the Installation section of the README for setup instructions:
@@ -20,8 +19,7 @@ Please use the CLI instead. See the Installation section of the README for setup
 
 For example:
     ade run simple001 --db duckdb --project-type dbt --agent sage
-"""
-    )
+""")
     sys.exit(1)
 
 
