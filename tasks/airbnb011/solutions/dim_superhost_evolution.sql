@@ -8,14 +8,14 @@
 
 WITH snapshot_history AS (
     SELECT
-        HOST_ID,
-        HOST_NAME,
+        ID AS HOST_ID,
+        NAME AS HOST_NAME,
         IS_SUPERHOST,
         CREATED_AT,
         dbt_valid_from,
         dbt_valid_to,
         LAG(IS_SUPERHOST) OVER (
-            PARTITION BY HOST_ID ORDER BY dbt_valid_from
+            PARTITION BY ID ORDER BY dbt_valid_from
         ) AS prev_superhost_status
     FROM {{ ref('snap__hosts') }}
 ),
