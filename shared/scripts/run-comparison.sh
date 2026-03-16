@@ -34,7 +34,7 @@ python3 /scripts/detect_failing_equality_tests.py \
     --manifest target/manifest.json \
     --output "$FAILING_JSON"
 
-PAIR_COUNT=$(python3 -c "import json; print(len(json.loads(open('$FAILING_JSON').read())))" 2>/dev/null || echo "0")
+PAIR_COUNT=$(python3 -c "import json, sys; print(len(json.load(open(sys.argv[1]))))" "$FAILING_JSON" 2>/dev/null || echo "0")
 if [ "$PAIR_COUNT" = "0" ]; then
     exit 0
 fi
@@ -42,16 +42,20 @@ fi
 # Step 2: Dump all referenced tables
 mkdir -p "$COMPARISONS_DIR"
 
-ALL_RELATIONS=$(python3 -c "
-import json
-pairs = json.loads(open('$FAILING_JSON').read())
+# Write relation names to a temp file (one per line) to avoid shell quoting issues
+RELATIONS_FILE="/tmp/comparison_relations.txt"
+python3 -c "
+import json, sys
+pairs = json.load(open(sys.argv[1]))
 relations = set()
 for p in pairs:
     relations.add(p['actual'])
     relations.add(p['expected'])
-print(' '.join(relations))
-")
+for r in sorted(relations):
+    print(r)
+" "$FAILING_JSON" > "$RELATIONS_FILE"
 
+ALL_RELATIONS=$(tr '\n' ' ' < "$RELATIONS_FILE")
 echo "[ade-bench] Dumping tables: $ALL_RELATIONS"
 
 DUMP_ARGS="--relations $ALL_RELATIONS --output $COMPARISONS_DIR/tables"

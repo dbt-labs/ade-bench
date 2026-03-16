@@ -1066,21 +1066,31 @@ class Harness:
         comparisons_src = "/app/comparisons"
 
         # Check if comparisons directory exists in container
-        check = subprocess.run(
-            ["docker", "exec", container_name, "test", "-d", comparisons_src],
-            capture_output=True,
-        )
+        try:
+            check = subprocess.run(
+                ["docker", "exec", container_name, "test", "-d", comparisons_src],
+                capture_output=True,
+                timeout=30,
+            )
+        except subprocess.TimeoutExpired:
+            self._logger.warning("Timed out checking for comparison artifacts")
+            return
         if check.returncode != 0:
             return  # No comparisons generated
 
         comparisons_dest = trial_handler._task_output_path / "comparisons"
         comparisons_dest.mkdir(parents=True, exist_ok=True)
 
-        result = subprocess.run(
-            ["docker", "cp", f"{container_name}:{comparisons_src}/.", str(comparisons_dest)],
-            capture_output=True,
-            text=True,
-        )
+        try:
+            result = subprocess.run(
+                ["docker", "cp", f"{container_name}:{comparisons_src}/.", str(comparisons_dest)],
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+        except subprocess.TimeoutExpired:
+            self._logger.warning("Timed out extracting comparison artifacts")
+            return
 
         if result.returncode == 0:
             log_harness_info(

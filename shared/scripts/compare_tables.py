@@ -19,10 +19,35 @@ def compare_tables(
     import duckdb
 
     con = duckdb.connect()
+    try:
+        return _compare_tables_inner(
+            con,
+            expected_path,
+            actual_path,
+            expected_name,
+            actual_name,
+            fuzzy_row_limit,
+            numeric_tolerance_pct,
+            numeric_tolerance_abs,
+        )
+    finally:
+        con.close()
 
-    # Load tables
-    con.execute(f"CREATE TABLE expected AS SELECT * FROM read_parquet('{expected_path}')")
-    con.execute(f"CREATE TABLE actual AS SELECT * FROM read_parquet('{actual_path}')")
+
+def _compare_tables_inner(
+    con,
+    expected_path: str,
+    actual_path: str,
+    expected_name: str,
+    actual_name: str,
+    fuzzy_row_limit: int,
+    numeric_tolerance_pct: float,
+    numeric_tolerance_abs: float,
+) -> dict:
+    """Inner comparison logic operating on an open DuckDB connection."""
+    # Load tables — use parameterized read_parquet to avoid path injection
+    con.execute("CREATE TABLE expected AS SELECT * FROM read_parquet(?)", [expected_path])
+    con.execute("CREATE TABLE actual AS SELECT * FROM read_parquet(?)", [actual_path])
 
     # Get column info
     expected_cols = {
@@ -70,7 +95,6 @@ def compare_tables(
     if not shared:
         result["summary"]["missing_rows"] = expected_count
         result["summary"]["extra_rows"] = actual_count
-        con.close()
         return result
 
     # Exact row matching via EXCEPT
@@ -182,7 +206,6 @@ def compare_tables(
     result["missing_rows"] = _fetch_rows(con, "missing_from_actual", active_cols, 100)
     result["extra_rows"] = _fetch_rows(con, "extra_in_actual", active_cols, 100)
 
-    con.close()
     return result
 
 
@@ -410,14 +433,16 @@ def make_missing_relation_result(
         if path and Path(path).exists():
             found_name = name
             con = duckdb.connect()
-            row_count = con.execute(f"SELECT count(*) FROM read_parquet('{path}')").fetchone()[0]
-            columns = [
-                row[0]
-                for row in con.execute(
-                    f"SELECT column_name FROM (DESCRIBE SELECT * FROM read_parquet('{path}'))"
-                ).fetchall()
-            ]
-            con.close()
+            try:
+                row_count = con.execute("SELECT count(*) FROM read_parquet(?)", [path]).fetchone()[0]
+                columns = [
+                    row[0]
+                    for row in con.execute(
+                        "SELECT column_name FROM (DESCRIBE SELECT * FROM read_parquet(?))", [path]
+                    ).fetchall()
+                ]
+            finally:
+                con.close()
             break
 
     missing_name = actual_name if found_name == expected_name else expected_name
@@ -444,7 +469,7 @@ def make_missing_relation_result(
     }
 
 
-def render_diff_html(result: dict, model_name: str) -> str:
+def render_diff_html(result: dict, model_name: str, max_rows: int = 250) -> str:
     """Render a comparison result as a self-contained HTML page."""
     import html as html_module
 
@@ -551,14 +576,17 @@ def render_diff_html(result: dict, model_name: str) -> str:
                     all_diff_cols.append(c)
                     seen_diff.add(c)
 
-        diffs_html = f'<div class="section"><h3>Row Diffs ({len(remaining_diffs)} paired rows with differences)</h3>'
+        total_remaining = len(remaining_diffs)
+        truncated_diffs = remaining_diffs[:max_rows]
+        shown_label = f" (showing first {max_rows})" if total_remaining > max_rows else ""
+        diffs_html = f'<div class="section"><h3>Row Diffs ({total_remaining} paired rows with differences{shown_label})</h3>'
         diffs_html += '<table class="compact-diff-table"><tr>'
         for c in all_id_cols:
             diffs_html += f"<th>{esc(c)}</th>"
         for c in all_diff_cols:
             diffs_html += f'<th class="diff-col">{esc(c)}</th>'
         diffs_html += "</tr>"
-        for diff in remaining_diffs:
+        for diff in truncated_diffs:
             diffs_html += "<tr>"
             for c in all_id_cols:
                 val = diff["identifying"].get(c, "")
@@ -577,20 +605,33 @@ def render_diff_html(result: dict, model_name: str) -> str:
                     val = diff["identifying"].get(c, "")
                     diffs_html += f"<td>{esc(val)}</td>"
             diffs_html += "</tr>"
-        diffs_html += "</table></div>"
+        diffs_html += "</table>"
+        if total_remaining > max_rows:
+            diffs_html += f'<p style="color: #808080;">... and {total_remaining - max_rows} more rows not shown</p>'
+        diffs_html += "</div>"
 
     # Missing rows section
     missing_html = ""
     if result["missing_rows"]:
-        missing_html = f'<div class="section"><h3>Missing Rows ({summary["missing_rows"]} in expected, not found in actual)</h3>'
-        missing_html += _render_row_table(result["missing_rows"], "missing")
+        total_missing = summary["missing_rows"]
+        shown_missing = result["missing_rows"][:max_rows]
+        shown_label = f" (showing first {max_rows})" if total_missing > max_rows else ""
+        missing_html = f'<div class="section"><h3>Missing Rows ({total_missing} in expected, not found in actual{shown_label})</h3>'
+        missing_html += _render_row_table(shown_missing, "missing")
+        if total_missing > max_rows:
+            missing_html += f'<p style="color: #808080;">... and {total_missing - max_rows} more rows not shown</p>'
         missing_html += "</div>"
 
     # Extra rows section
     extra_html = ""
     if result["extra_rows"]:
-        extra_html = f'<div class="section"><h3>Extra Rows ({summary["extra_rows"]} in actual, not found in expected)</h3>'
-        extra_html += _render_row_table(result["extra_rows"], "extra")
+        total_extra = summary["extra_rows"]
+        shown_extra = result["extra_rows"][:max_rows]
+        shown_label = f" (showing first {max_rows})" if total_extra > max_rows else ""
+        extra_html = f'<div class="section"><h3>Extra Rows ({total_extra} in actual, not found in expected{shown_label})</h3>'
+        extra_html += _render_row_table(shown_extra, "extra")
+        if total_extra > max_rows:
+            extra_html += f'<p style="color: #808080;">... and {total_extra - max_rows} more rows not shown</p>'
         extra_html += "</div>"
 
     header_html = f"""
