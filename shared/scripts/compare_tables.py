@@ -434,7 +434,9 @@ def make_missing_relation_result(
             found_name = name
             con = duckdb.connect()
             try:
-                row_count = con.execute("SELECT count(*) FROM read_parquet(?)", [path]).fetchone()[0]
+                row_count = con.execute("SELECT count(*) FROM read_parquet(?)", [path]).fetchone()[
+                    0
+                ]
                 columns = [
                     row[0]
                     for row in con.execute(
