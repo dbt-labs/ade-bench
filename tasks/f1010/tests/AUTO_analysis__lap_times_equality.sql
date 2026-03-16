@@ -1,8 +1,6 @@
 -- Define columns to compare
 {% set table_name = 'analysis__lap_times' %}
-{% set answer_key_1 = 'solution__analysis__lap_times' %}
-{% set answer_key_2 = 'solution__analysis__lap_times_exclude_pit_stops' %}
-
+{% set answer_keys = ['solution__analysis__lap_times', 'solution__analysis__lap_times_exclude_pit_stops'] %}
 
 {% set cols_to_include = [
     
@@ -16,80 +14,82 @@
 -------------------------------------
 ---- DO NOT EDIT BELOW THIS LINE ----
 -- depends_on: {{ ref(table_name) }}
--- depends_on: {{ ref(answer_key_1) }}
--- depends_on: {{ ref(answer_key_2) }}
+-- depends_on: {{ ref('solution__analysis__lap_times') }}
+-- depends_on: {{ ref('solution__analysis__lap_times_exclude_pit_stops') }}
 
+{% if not execute %}
+    select 1 where 1=0
+{% else %}
+    {% set ns = namespace(matched=false) %}
+    {% set actual_rel = load_relation(ref(table_name)) %}
 
-with
+    {% if actual_rel is not none %}
+        {% set actual_columns = adapter.get_columns_in_relation(actual_rel) %}
+        {% set exclude_lower = cols_to_exclude | map('lower') | list %}
 
-answer_key_1_test as (
-    {% if load_relation(ref(table_name)) is none or load_relation(ref(answer_key_1)) is none %}
-        select 1
-    {% else %}
-        {{ dbt_utils.test_equality(
-            model=ref(answer_key_1),
-            compare_model=ref(table_name),
-            compare_columns=cols_to_include,
-            exclude_columns=cols_to_exclude
-        ) }}
+        {%- set actual_col_names = [] -%}
+        {%- for col in actual_columns -%}
+            {%- if col.name | lower not in exclude_lower -%}
+                {%- do actual_col_names.append(col.name | lower) -%}
+            {%- endif -%}
+        {%- endfor -%}
+        {% set actual_set = actual_col_names | sort %}
+
+        {% for answer_key in answer_keys %}
+            {% if not ns.matched %}
+                {% set seed_rel = load_relation(ref(answer_key)) %}
+                {% if seed_rel is not none %}
+                    {% set seed_columns = adapter.get_columns_in_relation(seed_rel) %}
+
+                    {%- set seed_col_names = [] -%}
+                    {%- for col in seed_columns -%}
+                        {%- if col.name | lower not in exclude_lower -%}
+                            {%- do seed_col_names.append(col.name | lower) -%}
+                        {%- endif -%}
+                    {%- endfor -%}
+                    {% set seed_set = seed_col_names | sort %}
+
+                    {% if actual_set == seed_set %}
+                        {%- set compare_cols = [] -%}
+                        {%- for col in actual_columns -%}
+                            {%- if col.name | lower not in exclude_lower -%}
+                                {%- do compare_cols.append(col.quoted) -%}
+                            {%- endif -%}
+                        {%- endfor -%}
+                        {% set compare_cols_csv = compare_cols | join(', ') %}
+
+                        {% set query %}
+                            with a_minus_b as (
+                                select {{ compare_cols_csv }} from {{ ref(answer_key) }}
+                                except
+                                select {{ compare_cols_csv }} from {{ ref(table_name) }}
+                            ),
+                            b_minus_a as (
+                                select {{ compare_cols_csv }} from {{ ref(table_name) }}
+                                except
+                                select {{ compare_cols_csv }} from {{ ref(answer_key) }}
+                            ),
+                            unioned as (
+                                select * from a_minus_b
+                                union all
+                                select * from b_minus_a
+                            )
+                            select count(*) as diff_count from unioned
+                        {% endset %}
+
+                        {% set result = run_query(query) %}
+                        {% if result.rows[0][0] == 0 %}
+                            {% set ns.matched = true %}
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
+            {% endif %}
+        {% endfor %}
     {% endif %}
-),
 
-answer_key_2_test as (
-    {% if load_relation(ref(table_name)) is none or load_relation(ref(answer_key_2)) is none %}
-        select 1
+    {% if ns.matched %}
+        select 1 where 1=0
     {% else %}
-        {{ dbt_utils.test_equality(
-            model=ref(answer_key_2),
-            compare_model=ref(table_name),
-            compare_columns=cols_to_include,
-            exclude_columns=cols_to_exclude
-        ) }}
+        select 1
     {% endif %}
-),
-
-
-
-answer_key_1_row_count as (
-    select
-        'analysis__lap_times' as seed_table,
-        count(*) as row_count
-    from answer_key_1_test
-),
-
-answer_key_2_row_count as (
-    select
-        'analysis__lap_times_exclude_pit_stops' as seed_table,
-        count(*) as row_count
-    from answer_key_2_test
-),
-
-
-combined as (
-    
-    select
-        c.seed_table,
-        c.row_count,
-        t.*
-    from answer_key_1_row_count c
-    left join answer_key_1_test t
-        on 1=1
-    
-	union all
-
-    select
-        c.seed_table,
-        c.row_count,
-        t.*
-    from answer_key_2_row_count c
-    left join answer_key_2_test t
-        on 1=1
-    
-
-),
-
-final as (
-    select *, min(row_count) over () min_row_count from combined
-)
-
-select * from final where min_row_count != 0 and row_count != 0
+{% endif %}

@@ -57,7 +57,14 @@ def generate_equality_test(table_name: str, config: Optional[SolutionSeedConfig]
         if config.alternates:
             alternates = config.alternates
 
-    # Format columns as lists
+    # Build the list of answer key seed names
+    answer_keys = [f"solution__{table_name}"]
+    for alt in alternates:
+        answer_keys.append(f"solution__{alt}")
+
+    # Format for Jinja list literal
+    answer_keys_jinja = ", ".join(f"'{k}'" for k in answer_keys)
+
     include_list = (
         ",\n    ".join([f"'{col}'" for col in cols_to_include]) if cols_to_include else ""
     )
@@ -65,100 +72,12 @@ def generate_equality_test(table_name: str, config: Optional[SolutionSeedConfig]
         ",\n    ".join([f"'{col}'" for col in cols_to_exclude]) if cols_to_exclude else ""
     )
 
-    #######################################################
-    # Standard test with no alternates
-    #######################################################
-    if not alternates:
-        return f"""-- Define columns to compare
+    # Build depends_on comments (needed so dbt builds seeds before this test)
+    depends_on_lines = "\n".join(f"-- depends_on: {{{{ ref('{k}') }}}}" for k in answer_keys)
+
+    return f"""-- Define columns to compare
 {{% set table_name = '{table_name}' %}}
-
-{{% set cols_to_include = [
-    {include_list}
-] %}}
-
-{{% set cols_to_exclude = [
-    {exclude_list}
-] %}}
-
-
-
--------------------------------------
----- DO NOT EDIT BELOW THIS LINE ----
-{{% set answer_key = 'solution__' + table_name %}}
-
-{{% set table_a = load_relation(ref(answer_key)) %}}
-{{% set table_b = load_relation(ref(table_name)) %}}
-
-{{% if table_a is none or table_b is none %}}
-    select 1
-{{% else %}}
-    {{{{ dbt_utils.test_equality(
-        model=ref(answer_key),
-        compare_model=ref(table_name),
-        compare_columns=cols_to_include,
-        exclude_columns=cols_to_exclude
-    ) }}}}
-{{% endif %}}
-"""
-
-    #######################################################
-    # Test with alternates
-    #######################################################
-    # Build answer key variables
-    answer_keys = [table_name] + alternates
-
-    # Create text blocks
-    jinja_vars_block = ""
-    depends_on_block = ""
-    test_cte_block = ""
-    row_count_block = ""
-    union_block = ""
-
-    for i, alternate_name in enumerate(answer_keys):
-        numbered_key = f"answer_key_{i+1}"
-
-        union_statement = "\n\tunion all" if i < len(answer_keys) - 1 else ""
-
-        jinja_vars_block += f"{{% set {numbered_key} = 'solution__{alternate_name}' %}}\n"
-        depends_on_block += f"-- depends_on: {{{{ ref({numbered_key}) }}}}\n"
-        test_cte_block += f"""
-{numbered_key}_test as (
-    {{% if load_relation(ref(table_name)) is none or load_relation(ref({numbered_key})) is none %}}
-        select 1
-    {{% else %}}
-        {{{{ dbt_utils.test_equality(
-            model=ref({numbered_key}),
-            compare_model=ref(table_name),
-            compare_columns=cols_to_include,
-            exclude_columns=cols_to_exclude
-        ) }}}}
-    {{% endif %}}
-),
-"""
-
-        row_count_block += f"""
-{numbered_key}_row_count as (
-    select
-        '{alternate_name}' as seed_table,
-        count(*) as row_count
-    from {numbered_key}_test
-),
-"""
-
-        union_block += f"""
-    select
-        c.seed_table,
-        c.row_count,
-        t.*
-    from {numbered_key}_row_count c
-    left join {numbered_key}_test t
-        on 1=1
-    {union_statement}
-"""
-
-    FINAL_QUERY = f"""-- Define columns to compare
-{{% set table_name = '{table_name}' %}}
-{jinja_vars_block}
+{{% set answer_keys = [{answer_keys_jinja}] %}}
 
 {{% set cols_to_include = [
     {include_list}
@@ -172,25 +91,85 @@ def generate_equality_test(table_name: str, config: Optional[SolutionSeedConfig]
 -------------------------------------
 ---- DO NOT EDIT BELOW THIS LINE ----
 -- depends_on: {{{{ ref(table_name) }}}}
-{depends_on_block}
+{depends_on_lines}
 
-with
-{test_cte_block}
+{{% if not execute %}}
+    select 1 where 1=0
+{{% else %}}
+    {{% set ns = namespace(matched=false) %}}
+    {{% set actual_rel = load_relation(ref(table_name)) %}}
 
-{row_count_block}
+    {{% if actual_rel is not none %}}
+        {{% set actual_columns = adapter.get_columns_in_relation(actual_rel) %}}
+        {{% set exclude_lower = cols_to_exclude | map('lower') | list %}}
 
-combined as (
-    {union_block}
-),
+        {{%- set actual_col_names = [] -%}}
+        {{%- for col in actual_columns -%}}
+            {{%- if col.name | lower not in exclude_lower -%}}
+                {{%- do actual_col_names.append(col.name | lower) -%}}
+            {{%- endif -%}}
+        {{%- endfor -%}}
+        {{% set actual_set = actual_col_names | sort %}}
 
-final as (
-    select *, min(row_count) over () min_row_count from combined
-)
+        {{% for answer_key in answer_keys %}}
+            {{% if not ns.matched %}}
+                {{% set seed_rel = load_relation(ref(answer_key)) %}}
+                {{% if seed_rel is not none %}}
+                    {{% set seed_columns = adapter.get_columns_in_relation(seed_rel) %}}
 
-select * from final where min_row_count != 0 and row_count != 0
+                    {{%- set seed_col_names = [] -%}}
+                    {{%- for col in seed_columns -%}}
+                        {{%- if col.name | lower not in exclude_lower -%}}
+                            {{%- do seed_col_names.append(col.name | lower) -%}}
+                        {{%- endif -%}}
+                    {{%- endfor -%}}
+                    {{% set seed_set = seed_col_names | sort %}}
+
+                    {{% if actual_set == seed_set %}}
+                        {{%- set compare_cols = [] -%}}
+                        {{%- for col in actual_columns -%}}
+                            {{%- if col.name | lower not in exclude_lower -%}}
+                                {{%- do compare_cols.append(col.quoted) -%}}
+                            {{%- endif -%}}
+                        {{%- endfor -%}}
+                        {{% set compare_cols_csv = compare_cols | join(', ') %}}
+
+                        {{% set query %}}
+                            with a_minus_b as (
+                                select {{{{ compare_cols_csv }}}} from {{{{ ref(answer_key) }}}}
+                                except
+                                select {{{{ compare_cols_csv }}}} from {{{{ ref(table_name) }}}}
+                            ),
+                            b_minus_a as (
+                                select {{{{ compare_cols_csv }}}} from {{{{ ref(table_name) }}}}
+                                except
+                                select {{{{ compare_cols_csv }}}} from {{{{ ref(answer_key) }}}}
+                            ),
+                            unioned as (
+                                select * from a_minus_b
+                                union all
+                                select * from b_minus_a
+                            )
+                            select count(*) as diff_count from unioned
+                        {{% endset %}}
+
+                        {{% set result = run_query(query) %}}
+                        {{% if result.rows[0][0] == 0 %}}
+                            {{% set ns.matched = true %}}
+                        {{% endif %}}
+                    {{% endif %}}
+                {{% endif %}}
+            {{% endif %}}
+        {{% endfor %}}
+    {{% endif %}}
+
+    {{% if ns.matched %}}
+        select 1 where 1=0
+    {{% else %}}
+        select 1
+    {{% endif %}}
+{{% endif %}}
 """
-
-    return FINAL_QUERY
 
 
 def generate_solution_tests(
