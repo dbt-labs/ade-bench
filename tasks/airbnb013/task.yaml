@@ -1,0 +1,41 @@
+task_id: airbnb013
+status: draft
+description: Fix an incremental model that silently drops reviews with the same date as the current high-water mark.
+prompts:
+  - key: base
+    prompt: |-
+      The `fct_reviews` model is missing some reviews compared to its source. Figure out why the model isn't picking them up and fix it.
+author_name: test
+author_email: test
+difficulty: hard
+tags:
+  - dbt
+  - dbt-incremental
+  - data-inspection
+  - debugging
+  - model-refactor
+
+test_setup: |-
+  # Reset fct_reviews to clean full-refresh state
+  dbt run --full-refresh --select fct_reviews
+
+  # Re-inject the same-date reviews (idempotent)
+  python3 /tmp/inject_reviews.py
+
+  # Run incrementally with the agent's fix applied
+  dbt run --select fct_reviews
+
+solution_seeds:
+  - table_name: fct_reviews
+    exclude_columns:
+      - review_id
+
+variants:
+- db_type: duckdb
+  db_name: airbnb
+  project_type: dbt
+  project_name: airbnb
+- db_type: duckdb
+  db_name: airbnb
+  project_type: dbt-fusion
+  project_name: airbnb
