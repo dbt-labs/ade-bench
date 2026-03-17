@@ -112,8 +112,10 @@ unit_tests:
           - {review_date: '2024-01-01', review_sentiment: positive}
           - {review_date: '2024-01-01', review_sentiment: positive}
           - {review_date: '2024-01-01', review_sentiment: positive}
+          - {review_date: '2024-01-29', review_sentiment: positive}
           - {review_date: '2024-01-30', review_sentiment: negative}
     expect:
       rows:
         - {review_date: '2024-01-01', nps_daily: 100, reviews_daily: 3, nps_28d: 100, reviews_28d: 3}
-        - {review_date: '2024-01-30', nps_daily: -100, reviews_daily: 1, nps_28d: -100, reviews_28d: 1}
+        - {review_date: '2024-01-29', nps_daily: 100, reviews_daily: 1, nps_28d: 100, reviews_28d: 1}
+        - {review_date: '2024-01-30', nps_daily: -100, reviews_daily: 1, nps_28d: 0, reviews_28d: 2}

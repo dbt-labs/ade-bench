@@ -1,9 +1,9 @@
 {{
-	config(
-		materialized="table" ,
-		alias="daily_agg_nps_reviews" ,
-		schema="main"
-	)
+    config(
+        materialized="table",
+        alias="daily_agg_nps_reviews",
+        schema="main"
+    )
 }}
 
 with with_nps_scores as (
