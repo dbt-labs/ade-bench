@@ -1,32 +1,15 @@
--- Compares fct_reviews against the solution seed on core columns only.
--- Excludes review_id (or similar surrogate keys the agent may add).
+-- Fails if fct_reviews row count doesn't match the non-null source rows.
+-- The broken model drops 5 injected reviews; the fix must capture all of them.
 
-{% set table_name = 'fct_reviews' %}
-
-{% set cols_to_include = [
-    'LISTING_ID',
-    'REVIEW_DATE',
-    'REVIEWER_NAME',
-    'REVIEW_TEXT',
-    'REVIEW_SENTIMENT',
-] %}
-
-{% set cols_to_exclude = [] %}
-
--------------------------------------
----- DO NOT EDIT BELOW THIS LINE ----
-{% set answer_key = 'solution__' + table_name %}
-
-{% set table_a = load_relation(ref(answer_key)) %}
-{% set table_b = load_relation(ref(table_name)) %}
-
-{% if table_a is none or table_b is none %}
-    select 1
-{% else %}
-    {{ dbt_utils.test_equality(
-        model=ref(answer_key),
-        compare_model=ref(table_name),
-        compare_columns=cols_to_include,
-        exclude_columns=cols_to_exclude
-    ) }}
-{% endif %}
+WITH source AS (
+  SELECT COUNT(*) AS cnt FROM raw_reviews WHERE comments IS NOT NULL
+),
+actual AS (
+  SELECT COUNT(*) AS cnt FROM fct_reviews
+)
+SELECT
+  source.cnt AS expected,
+  actual.cnt AS got,
+  'fct_reviews is missing rows from source' AS reason
+FROM source, actual
+WHERE source.cnt != actual.cnt

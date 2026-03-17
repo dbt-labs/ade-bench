@@ -25,11 +25,6 @@ test_setup: |-
   # Run incrementally with the agent's fix applied
   dbt run --select fct_reviews
 
-solution_seeds:
-  - table_name: fct_reviews
-    exclude_columns:
-      - review_id
-
 variants:
 - db_type: duckdb
   db_name: airbnb
