@@ -5,9 +5,8 @@ SETUP_DIR="$(dirname "$(readlink -f "${BASH_SOURCE}")")/setup"
 # Copy inject script to /tmp (setup/ is removed after setup.sh runs)
 cp "$SETUP_DIR/inject_reviews.py" /tmp/inject_reviews.py
 
-# Build full project
 dbt deps
-dbt run --full-refresh --select fct_reviews
+dbt run
 
 # Inject 5 reviews on the current max date
 python3 /tmp/inject_reviews.py
