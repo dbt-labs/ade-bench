@@ -34,18 +34,13 @@ if os.path.exists(MANIFEST_PATH):
     with open(MANIFEST_PATH) as f:
         manifest = json.load(f)
 
-    nodes = manifest.get("nodes", {})
-    for node_key, node in nodes.items():
-        if node.get("resource_type") == "unit_test":
-            # dbt stores the tested model under "attached_node" (e.g. "model.airbnb.listing_agg_nps_reviews")
-            model_name = node.get("attached_node", "")
-            # Strip project prefix (e.g. "model.airbnb.listing_agg_nps_reviews" → "listing_agg_nps_reviews")
-            model_short = model_name.split(".")[-1] if model_name else ""
-            if model_short in TARGET_MODELS:
-                unit_tests.append({
-                    "model_name": model_short,
-                    "test_name": node.get("name", ""),
-                })
+    for node_key, node in manifest.get("unit_tests", {}).items():
+        model_short = node.get("model", "")
+        if model_short in TARGET_MODELS:
+            unit_tests.append({
+                "model_name": model_short,
+                "test_name": node.get("name", ""),
+            })
 
 # Write seed CSV (used as backup; primary storage is DuckDB)
 os.makedirs(os.path.dirname(SEED_PATH), exist_ok=True)
