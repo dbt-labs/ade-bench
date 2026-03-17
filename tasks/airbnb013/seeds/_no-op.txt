@@ -1,0 +1,11 @@
+
+
+seeds:
+  airbnb:
+    solution__fct_reviews:
+      +column_types:
+        LISTING_ID: integer
+        REVIEW_DATE: timestamp
+        REVIEWER_NAME: varchar
+        REVIEW_TEXT: varchar
+        REVIEW_SENTIMENT: varchar

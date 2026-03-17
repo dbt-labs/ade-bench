@@ -1,47 +1,31 @@
 #!/usr/bin/env python3
 """
-Injects 5 extra reviews on the current max review date into raw_reviews.
-Idempotent: removes previously injected rows before inserting.
-Uses real data for realism and a fixed seed for determinism.
+Appends 5 fixed new reviews (from new_reviews.csv) to raw_reviews.
+Idempotent: deletes matching (listing_id, date, reviewer_name) rows before inserting.
 """
+import csv
+import os
 import duckdb
-import random
 
 DB_PATH = "/app/airbnb.duckdb"
-INJECT_MARKER = "[ade_bench_injected]"
-INJECT_COUNT = 5
+CSV_PATH = os.path.join(os.path.dirname(__file__), "new_reviews.csv")
 
 conn = duckdb.connect(DB_PATH)
 
-# Idempotent: remove any previously injected rows
-conn.execute(f"DELETE FROM raw_reviews WHERE comments LIKE '%{INJECT_MARKER}%'")
+with open(CSV_PATH) as f:
+    rows = list(csv.DictReader(f))
 
-# Find the current max review date
-max_date = conn.execute("SELECT MAX(date) FROM raw_reviews").fetchone()[0]
-print(f"Max review date: {max_date}")
+for row in rows:
+    conn.execute(
+        "DELETE FROM raw_reviews WHERE listing_id=? AND date=? AND reviewer_name=?",
+        [int(row["listing_id"]), row["date"], row["reviewer_name"]],
+    )
 
-# Sample real reviewer names, listing IDs, and sentiments
-real_reviewers = conn.execute("SELECT reviewer_name FROM raw_reviews ORDER BY reviewer_name").fetchall()
-real_listings = conn.execute("SELECT DISTINCT listing_id FROM raw_reviews WHERE date = ? ORDER BY listing_id", [max_date]).fetchall()
-real_sentiments = conn.execute("SELECT sentiment FROM raw_reviews ORDER BY sentiment").fetchall()
+for row in rows:
+    conn.execute(
+        "INSERT INTO raw_reviews (listing_id, date, reviewer_name, comments, sentiment) VALUES (?, ?, ?, ?, ?)",
+        [int(row["listing_id"]), row["date"], row["reviewer_name"], row["comments"], row["sentiment"]],
+    )
 
-random.seed(42)
-selected_reviewers = [r[0] for r in random.sample(real_reviewers, INJECT_COUNT)]
-selected_listings = [r[0] for r in random.choices(real_listings, k=INJECT_COUNT)]
-selected_sentiments = [r[0] for r in random.choices(real_sentiments, k=INJECT_COUNT)]
-
-for i in range(INJECT_COUNT):
-    conn.execute("""
-        INSERT INTO raw_reviews (listing_id, date, reviewer_name, comments, sentiment)
-        VALUES (?, ?, ?, ?, ?)
-    """, [
-        selected_listings[i],
-        max_date,
-        selected_reviewers[i],
-        f"Great stay overall. {INJECT_MARKER}_{i}",
-        selected_sentiments[i],
-    ])
-
-injected = conn.execute(f"SELECT COUNT(*) FROM raw_reviews WHERE comments LIKE '%{INJECT_MARKER}%'").fetchone()[0]
-print(f"Injection complete. {injected} injected reviews in raw_reviews.")
+print(f"Injected {len(rows)} reviews on {rows[0]['date']}.")
 conn.close()

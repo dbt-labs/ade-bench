@@ -4,6 +4,7 @@ SETUP_DIR="$(dirname "$(readlink -f "${BASH_SOURCE}")")/setup"
 
 # Copy inject script to /tmp (setup/ is removed after setup.sh runs)
 cp "$SETUP_DIR/inject_reviews.py" /tmp/inject_reviews.py
+cp "$SETUP_DIR/new_reviews.csv" /tmp/new_reviews.csv
 
 dbt deps
 dbt run

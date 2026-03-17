@@ -16,13 +16,9 @@ tags:
   - model-refactor
 
 test_setup: |-
-  # Reset fct_reviews to clean full-refresh state
+  python3 -c "import duckdb,csv; c=duckdb.connect('/app/airbnb.duckdb'); rows=list(csv.DictReader(open('/tmp/new_reviews.csv'))); [c.execute('DELETE FROM raw_reviews WHERE listing_id=? AND date=? AND reviewer_name=?',[int(r['listing_id']),r['date'],r['reviewer_name']]) for r in rows]; c.close()"
   dbt run --full-refresh --select fct_reviews
-
-  # Re-inject the same-date reviews (idempotent)
   python3 /tmp/inject_reviews.py
-
-  # Run incrementally with the agent's fix applied
   dbt run --select fct_reviews
 
 variants:
