@@ -1,5 +1,5 @@
 task_id: airbnb012
-status: ready
+status: draft
 description: Add unit tests to verify the NPS calculation logic in the review aggregation models.
 prompts:
   - key: base

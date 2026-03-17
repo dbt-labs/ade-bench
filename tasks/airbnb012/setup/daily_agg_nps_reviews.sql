@@ -22,6 +22,7 @@ daily as (
     count(case when nps_score = 1 then 1 else null end) as positive,
     count(case when nps_score = -1 then 1 else null end) as negative,
     count(*) as reviews_daily,
+    -- NOTE: intentional integer division
     (positive - negative) / reviews_daily as nps_daily
   from with_nps_scores
   group by 1

@@ -21,8 +21,9 @@ final as (
     l.listing_id,
     l.listing_name,
     l.room_type,
+    -- NOTE: intentional integer division (count(*) / count(*) truncates in DuckDB)
     round(((s.positive-s.negative) / s.reviews_total) * 100, 0) as nps_total,
-    s.reviews_total,
+    s.reviews_total
   from {{ ref('dim_listings') }} l
   join with_nps_scores s
     on s.listing_id = l.listing_id
