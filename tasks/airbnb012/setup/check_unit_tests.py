@@ -37,7 +37,8 @@ if os.path.exists(MANIFEST_PATH):
     nodes = manifest.get("nodes", {})
     for node_key, node in nodes.items():
         if node.get("resource_type") == "unit_test":
-            model_name = node.get("model", "")
+            # dbt stores the tested model under "attached_node" (e.g. "model.airbnb.listing_agg_nps_reviews")
+            model_name = node.get("attached_node", "")
             # Strip project prefix (e.g. "model.airbnb.listing_agg_nps_reviews" → "listing_agg_nps_reviews")
             model_short = model_name.split(".")[-1] if model_name else ""
             if model_short in TARGET_MODELS:
