@@ -334,8 +334,12 @@ class Harness:
                 container_dir=str(DockerComposeManager.CONTAINER_TEST_DIR),
             )
 
-            # Copy generated macros into the dbt project's macros directory
+            # Copy generated macros into the dbt project's macros directory.
+            # mkdir -p first because not all dbt project images ship a macros/ dir.
             if temp_macro_path.exists():
+                terminal.container.exec_run(
+                    f"mkdir -p {DockerComposeManager.CONTAINER_APP_DIR}/macros"
+                )
                 terminal.copy_to_container(
                     paths=[temp_macro_path],
                     container_dir=str(DockerComposeManager.CONTAINER_APP_DIR / "macros"),
