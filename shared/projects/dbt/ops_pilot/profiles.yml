@@ -1,0 +1,7 @@
+ops_pilot-duckdb:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "./ops_pilot.duckdb"
+      schema: main

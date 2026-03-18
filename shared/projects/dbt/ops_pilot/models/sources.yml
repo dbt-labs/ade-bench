@@ -1,0 +1,17 @@
+version: 2
+
+sources:
+  - name: ops_pilot
+    schema: main
+    tables:
+      - name: raw_accounts
+      - name: raw_workspaces
+      - name: raw_users
+      - name: raw_workspace_memberships
+      - name: raw_plans
+      - name: raw_subscriptions
+      - name: raw_invoices
+      - name: raw_invoice_line_items
+      - name: raw_payments
+      - name: raw_workspace_usage_daily
+      - name: raw_support_tickets
