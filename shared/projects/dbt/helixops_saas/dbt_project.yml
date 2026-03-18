@@ -1,8 +1,8 @@
-name: 'ops_pilot'
+name: 'helixops_saas'
 version: '1.0.0'
 config-version: 2
 
-profile: 'ops_pilot-duckdb'
+profile: 'helixops_saas-duckdb'
 
 model-paths: ['models']
 macro-paths: ['macros']
@@ -13,7 +13,7 @@ clean-targets:
   - dbt_packages
 
 models:
-  ops_pilot:
+  helixops_saas:
     staging:
       +materialized: view
     intermediate:

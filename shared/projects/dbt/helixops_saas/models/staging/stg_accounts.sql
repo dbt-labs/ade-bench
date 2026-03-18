@@ -1,5 +1,5 @@
 with src as (
-    select * from {{ source('ops_pilot', 'raw_accounts') }}
+    select * from {{ source('helixops_saas', 'raw_accounts') }}
 )
 select
     trim(acct_id) as account_id,

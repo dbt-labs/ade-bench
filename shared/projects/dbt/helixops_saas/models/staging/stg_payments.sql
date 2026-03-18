@@ -1,5 +1,5 @@
 with src as (
-    select * from {{ source('ops_pilot', 'raw_payments') }}
+    select * from {{ source('helixops_saas', 'raw_payments') }}
 )
 select
     trim(pmt_id) as payment_id,

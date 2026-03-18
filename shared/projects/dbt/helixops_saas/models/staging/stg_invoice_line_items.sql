@@ -1,5 +1,5 @@
 with src as (
-    select * from {{ source('ops_pilot', 'raw_invoice_line_items') }}
+    select * from {{ source('helixops_saas', 'raw_invoice_line_items') }}
 )
 select
     trim(line_id) as line_item_id,

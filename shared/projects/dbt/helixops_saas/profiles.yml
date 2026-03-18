@@ -1,7 +1,7 @@
-ops_pilot-duckdb:
+helixops_saas-duckdb:
   target: dev
   outputs:
     dev:
       type: duckdb
-      path: "./ops_pilot.duckdb"
+      path: "./helixops_saas.duckdb"
       schema: main

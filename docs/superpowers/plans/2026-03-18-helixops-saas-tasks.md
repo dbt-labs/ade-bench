@@ -1,10 +1,10 @@
-# ops_pilot Benchmark Tasks Implementation Plan
+# helixops_saas Benchmark Tasks Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Create 25 ADE-bench benchmark tasks that test an AI agent's ability to make targeted dbt model changes against the ops_pilot shared project.
+**Goal:** Create 25 ADE-bench benchmark tasks that test an AI agent's ability to make targeted dbt model changes against the helixops_saas shared project.
 
-**Architecture:** Each task lives in `tasks/ops_pilot0NN/`, contains a `task.yaml`, `setup.sh`, `solution.sh`, a `solutions/` directory with correct SQL, and a `tests/` directory with SQL validation queries. The shared project (`shared/projects/dbt/ops_pilot`) and database (`shared/databases/duckdb/ops_pilot.duckdb`) are referenced but not modified by individual tasks. setup.sh puts the project into a broken/incomplete state; the agent's job is to fix it; solution.sh is the answer key.
+**Architecture:** Each task lives in `tasks/helixops_saas0NN/`, contains a `task.yaml`, `setup.sh`, `solution.sh`, a `solutions/` directory with correct SQL, and a `tests/` directory with SQL validation queries. The shared project (`shared/projects/dbt/helixops_saas`) and database (`shared/databases/duckdb/helixops_saas.duckdb`) are referenced but not modified by individual tasks. setup.sh puts the project into a broken/incomplete state; the agent's job is to fix it; solution.sh is the answer key.
 
 **Tech Stack:** bash, dbt-core 1.10.11, dbt-duckdb 1.9.3, DuckDB 1.3.0. DuckDB-only for now (Snowflake deferred). No external dbt packages.
 
@@ -27,24 +27,24 @@ Tasks fall into three categories based on the model changes required:
 ### task.yaml template (DuckDB only)
 
 ```yaml
-task_id: ops_pilotNNN
+task_id: helixops_saasNNN
 status: ready
 description: One-line description
 prompts:
   - key: base
     prompt: |-
-      You are working in a dbt project called ops_pilot. <task description>.
+      You are working in a dbt project called helixops_saas. <task description>.
       When you are done, run `dbt run --select <model>` to rebuild the affected model(s).
 author_name: joel
 difficulty: easy
 tags:
   - dbt
-  - ops_pilot
+  - helixops_saas
 variants:
 - db_type: duckdb
-  db_name: ops_pilot
+  db_name: helixops_saas
   project_type: dbt
-  project_name: ops_pilot
+  project_name: helixops_saas
 solution_seeds:
   - table_name: <affected_mart_or_fact_table>
 ```
@@ -94,7 +94,7 @@ where column_name is not null
 limit 0
 ```
 
-For data-correctness tests using solution seeds, see `CONTRIBUTING.md` — run `ade run ops_pilotNNN --agent sage --db duckdb --seed` to auto-generate.
+For data-correctness tests using solution seeds, see `CONTRIBUTING.md` — run `ade run helixops_saasNNN --agent sage --db duckdb --seed` to auto-generate.
 
 ---
 
@@ -102,54 +102,54 @@ For data-correctness tests using solution seeds, see `CONTRIBUTING.md` — run `
 
 ```
 tasks/
-  ops_pilot001/  task.yaml, setup.sh, solution.sh, solutions/dim_accounts.sql, tests/billing_country_in_dim_accounts.sql
-  ops_pilot002/  task.yaml, setup.sh, solution.sh, solutions/mart_account_360.sql, tests/owner_team_in_mart_account_360.sql
-  ops_pilot003/  task.yaml, setup.sh, solution.sh, solutions/int_workspace_daily_metrics.sql, tests/environment_tier_in_metrics.sql
-  ops_pilot004/  task.yaml, setup.sh, solution.sh, solutions/fct_daily_account_usage.sql, tests/workspace_days_reporting_exists.sql
-  ops_pilot005/  task.yaml, setup.sh, solution.sh, solutions/int_workspace_roster.sql, tests/department_in_int_workspace_roster.sql
-  ops_pilot006/  task.yaml, setup.sh, solution.sh, solutions/int_account_users.sql, tests/user_status_in_int_account_users.sql
-  ops_pilot007/  task.yaml, setup.sh, solution.sh, solutions/int_subscription_history.sql, tests/support_tier_in_int_subscription_history.sql
-  ops_pilot008/  task.yaml, setup.sh, solution.sh, solutions/int_account_billing_snapshot.sql, tests/billing_cycle_in_snapshot.sql
-  ops_pilot009/  task.yaml, setup.sh, solution.sh, solutions/mart_account_360.sql, tests/discount_pct_in_mart_account_360.sql
-  ops_pilot010/  task.yaml, setup.sh, solution.sh, solutions/dim_accounts.sql, tests/customer_status_in_dim_accounts.sql
-  ops_pilot011/  task.yaml, setup.sh, solution.sh, solutions/int_account_workspaces.sql, tests/archived_workspaces_excluded.sql
-  ops_pilot012/  task.yaml, setup.sh, solution.sh, solutions/mart_account_health.sql, tests/active_workspace_count_in_health.sql
-  ops_pilot013/  task.yaml, setup.sh, solution.sh, solutions/dim_accounts.sql, tests/sandbox_workspace_count_in_dim_accounts.sql
-  ops_pilot014/  task.yaml, setup.sh, solution.sh, solutions/mart_account_360.sql, tests/latest_invoice_status_in_360.sql
-  ops_pilot015/  task.yaml, setup.sh, solution.sh, solutions/int_account_billing_snapshot.sql, tests/latest_payment_status_in_snapshot.sql
-  ops_pilot016/  task.yaml, setup.sh, solution.sh, solutions/int_monthly_revenue_prep.sql, tests/gross_revenue_usd_in_revenue_prep.sql
-  ops_pilot017/  task.yaml, setup.sh, solution.sh, solutions/int_invoice_finance.sql, tests/onboarding_excluded_from_recurring.sql
-  ops_pilot018/  task.yaml, setup.sh, solution.sh, solutions/fct_monthly_revenue.sql, tests/one_time_revenue_in_fct_monthly_revenue.sql
-  ops_pilot019/  task.yaml, setup.sh, solution.sh, solutions/mart_account_health.sql, tests/has_past_due_invoice_in_health.sql
-  ops_pilot020/  task.yaml, setup.sh, solution.sh, solutions/mart_account_360.sql, tests/avg_active_users_7d_in_360.sql
-  ops_pilot021/  task.yaml, setup.sh, solution.sh, solutions/mart_account_360.sql, tests/total_api_calls_30d_in_360.sql
-  ops_pilot022/  task.yaml, setup.sh, solution.sh, solutions/mart_account_360.sql, tests/open_ticket_count_in_360.sql
-  ops_pilot023/  task.yaml, setup.sh, solution.sh, solutions/fct_support_tickets.sql, tests/first_response_minutes_in_fct_support_tickets.sql
-  ops_pilot024/  task.yaml, setup.sh, solution.sh, solutions/fct_support_tickets.sql, tests/plan_name_in_fct_support_tickets.sql
-  ops_pilot025/  task.yaml, setup.sh, solution.sh, solutions/int_workspace_roster.sql, tests/is_primary_in_int_workspace_roster.sql
+  helixops_saas001/  task.yaml, setup.sh, solution.sh, solutions/dim_accounts.sql, tests/billing_country_in_dim_accounts.sql
+  helixops_saas002/  task.yaml, setup.sh, solution.sh, solutions/mart_account_360.sql, tests/owner_team_in_mart_account_360.sql
+  helixops_saas003/  task.yaml, setup.sh, solution.sh, solutions/int_workspace_daily_metrics.sql, tests/environment_tier_in_metrics.sql
+  helixops_saas004/  task.yaml, setup.sh, solution.sh, solutions/fct_daily_account_usage.sql, tests/workspace_days_reporting_exists.sql
+  helixops_saas005/  task.yaml, setup.sh, solution.sh, solutions/int_workspace_roster.sql, tests/department_in_int_workspace_roster.sql
+  helixops_saas006/  task.yaml, setup.sh, solution.sh, solutions/int_account_users.sql, tests/user_status_in_int_account_users.sql
+  helixops_saas007/  task.yaml, setup.sh, solution.sh, solutions/int_subscription_history.sql, tests/support_tier_in_int_subscription_history.sql
+  helixops_saas008/  task.yaml, setup.sh, solution.sh, solutions/int_account_billing_snapshot.sql, tests/billing_cycle_in_snapshot.sql
+  helixops_saas009/  task.yaml, setup.sh, solution.sh, solutions/mart_account_360.sql, tests/discount_pct_in_mart_account_360.sql
+  helixops_saas010/  task.yaml, setup.sh, solution.sh, solutions/dim_accounts.sql, tests/customer_status_in_dim_accounts.sql
+  helixops_saas011/  task.yaml, setup.sh, solution.sh, solutions/int_account_workspaces.sql, tests/archived_workspaces_excluded.sql
+  helixops_saas012/  task.yaml, setup.sh, solution.sh, solutions/mart_account_health.sql, tests/active_workspace_count_in_health.sql
+  helixops_saas013/  task.yaml, setup.sh, solution.sh, solutions/dim_accounts.sql, tests/sandbox_workspace_count_in_dim_accounts.sql
+  helixops_saas014/  task.yaml, setup.sh, solution.sh, solutions/mart_account_360.sql, tests/latest_invoice_status_in_360.sql
+  helixops_saas015/  task.yaml, setup.sh, solution.sh, solutions/int_account_billing_snapshot.sql, tests/latest_payment_status_in_snapshot.sql
+  helixops_saas016/  task.yaml, setup.sh, solution.sh, solutions/int_monthly_revenue_prep.sql, tests/gross_revenue_usd_in_revenue_prep.sql
+  helixops_saas017/  task.yaml, setup.sh, solution.sh, solutions/int_invoice_finance.sql, tests/onboarding_excluded_from_recurring.sql
+  helixops_saas018/  task.yaml, setup.sh, solution.sh, solutions/fct_monthly_revenue.sql, tests/one_time_revenue_in_fct_monthly_revenue.sql
+  helixops_saas019/  task.yaml, setup.sh, solution.sh, solutions/mart_account_health.sql, tests/has_past_due_invoice_in_health.sql
+  helixops_saas020/  task.yaml, setup.sh, solution.sh, solutions/mart_account_360.sql, tests/avg_active_users_7d_in_360.sql
+  helixops_saas021/  task.yaml, setup.sh, solution.sh, solutions/mart_account_360.sql, tests/total_api_calls_30d_in_360.sql
+  helixops_saas022/  task.yaml, setup.sh, solution.sh, solutions/mart_account_360.sql, tests/open_ticket_count_in_360.sql
+  helixops_saas023/  task.yaml, setup.sh, solution.sh, solutions/fct_support_tickets.sql, tests/first_response_minutes_in_fct_support_tickets.sql
+  helixops_saas024/  task.yaml, setup.sh, solution.sh, solutions/fct_support_tickets.sql, tests/plan_name_in_fct_support_tickets.sql
+  helixops_saas025/  task.yaml, setup.sh, solution.sh, solutions/int_workspace_roster.sql, tests/is_primary_in_int_workspace_roster.sql
 ```
 
 ---
 
-## Task 1: ops_pilot001 — billing_country in dim_accounts (Type A)
+## Task 1: helixops_saas001 — billing_country in dim_accounts (Type A)
 
 **Files:**
-- Create: `tasks/ops_pilot001/task.yaml`
-- Create: `tasks/ops_pilot001/setup.sh`
-- Create: `tasks/ops_pilot001/solution.sh`
-- Create: `tasks/ops_pilot001/solutions/dim_accounts.sql` (copy of correct dim_accounts)
-- Create: `tasks/ops_pilot001/tests/billing_country_in_dim_accounts.sql`
+- Create: `tasks/helixops_saas001/task.yaml`
+- Create: `tasks/helixops_saas001/setup.sh`
+- Create: `tasks/helixops_saas001/solution.sh`
+- Create: `tasks/helixops_saas001/solutions/dim_accounts.sql` (copy of correct dim_accounts)
+- Create: `tasks/helixops_saas001/tests/billing_country_in_dim_accounts.sql`
 
 - [ ] **Step 1: Create task.yaml**
 
 ```yaml
-task_id: ops_pilot001
+task_id: helixops_saas001
 status: ready
 description: Add billing_country from stg_accounts to dim_accounts
 prompts:
   - key: base
     prompt: |-
-      You are working in a dbt project called ops_pilot. The `dim_accounts` model
+      You are working in a dbt project called helixops_saas. The `dim_accounts` model
       is missing the `billing_country` column. Add it by sourcing the value from
       the upstream staging model that contains it. When done, run
       `dbt run --select dim_accounts` to rebuild the model.
@@ -157,17 +157,17 @@ author_name: joel
 difficulty: easy
 tags:
   - dbt
-  - ops_pilot
+  - helixops_saas
 variants:
 - db_type: duckdb
-  db_name: ops_pilot
+  db_name: helixops_saas
   project_type: dbt
-  project_name: ops_pilot
+  project_name: helixops_saas
 solution_seeds:
   - table_name: dim_accounts
 ```
 
-- [ ] **Step 2: Create solutions/dim_accounts.sql** (complete correct SQL — copy from `shared/projects/dbt/ops_pilot/models/marts/dim_accounts.sql`)
+- [ ] **Step 2: Create solutions/dim_accounts.sql** (complete correct SQL — copy from `shared/projects/dbt/helixops_saas/models/marts/dim_accounts.sql`)
 
 - [ ] **Step 3: Create setup.sh**
 
@@ -199,13 +199,13 @@ limit 0
 - [ ] **Step 6: Commit**
 
 ```bash
-git add tasks/ops_pilot001/
-git commit -m "feat(ops_pilot001): billing_country in dim_accounts"
+git add tasks/helixops_saas001/
+git commit -m "feat(helixops_saas001): billing_country in dim_accounts"
 ```
 
 ---
 
-## Task 2: ops_pilot002 — owner_team in mart_account_360 (Type A)
+## Task 2: helixops_saas002 — owner_team in mart_account_360 (Type A)
 
 - [ ] **Create task.yaml** — prompt: `mart_account_360` is missing `owner_team`. Add it from the upstream account dimension.
 - [ ] **Create solutions/mart_account_360.sql** — correct mart_account_360 with `a.owner_team`
@@ -216,7 +216,7 @@ git commit -m "feat(ops_pilot001): billing_country in dim_accounts"
 
 ---
 
-## Task 3: ops_pilot003 — environment_tier in int_workspace_daily_metrics (Type A)
+## Task 3: helixops_saas003 — environment_tier in int_workspace_daily_metrics (Type A)
 
 - [ ] **Create task.yaml** — prompt: `int_workspace_daily_metrics` is missing `environment_tier`. Add it from the workspace data joined in this model.
 - [ ] **Create solutions/int_workspace_daily_metrics.sql** — correct version with `w.environment_tier`
@@ -227,7 +227,7 @@ git commit -m "feat(ops_pilot001): billing_country in dim_accounts"
 
 ---
 
-## Task 4: ops_pilot004 — workspace_days_reporting in fct_daily_account_usage (Type A)
+## Task 4: helixops_saas004 — workspace_days_reporting in fct_daily_account_usage (Type A)
 
 > Note: `fct_daily_account_usage` is at account-day grain. `workspace_status` from task list is ambiguous at this grain. This task instead uses `workspace_days_reporting` (workspace count per account-day), which is already in the model and is the relevant metric. The setup removes it.
 
@@ -240,7 +240,7 @@ git commit -m "feat(ops_pilot001): billing_country in dim_accounts"
 
 ---
 
-## Task 5: ops_pilot005 — department in int_workspace_roster (Type A)
+## Task 5: helixops_saas005 — department in int_workspace_roster (Type A)
 
 - [ ] **Create task.yaml** — prompt: `int_workspace_roster` is missing the `department` column for each workspace member. Add it from the upstream user data.
 - [ ] **Create solutions/int_workspace_roster.sql** — correct version with `u.department`
@@ -251,7 +251,7 @@ git commit -m "feat(ops_pilot001): billing_country in dim_accounts"
 
 ---
 
-## Task 6: ops_pilot006 — user_status in int_account_users (Type A)
+## Task 6: helixops_saas006 — user_status in int_account_users (Type A)
 
 - [ ] **Create task.yaml** — prompt: `int_account_users` is missing the `user_status` column. Add it from the staged user data.
 - [ ] **Create solutions/int_account_users.sql** — correct version
@@ -262,7 +262,7 @@ git commit -m "feat(ops_pilot001): billing_country in dim_accounts"
 
 ---
 
-## Task 7: ops_pilot007 — support_tier in int_subscription_history (Type A)
+## Task 7: helixops_saas007 — support_tier in int_subscription_history (Type A)
 
 - [ ] **Create task.yaml** — prompt: `int_subscription_history` is missing `support_tier`. Add it from the plan data that is already joined in this model.
 - [ ] **Create solutions/int_subscription_history.sql** — correct version with `p.support_tier`
@@ -273,7 +273,7 @@ git commit -m "feat(ops_pilot001): billing_country in dim_accounts"
 
 ---
 
-## Task 8: ops_pilot008 — billing_cycle in int_account_billing_snapshot (Type A)
+## Task 8: helixops_saas008 — billing_cycle in int_account_billing_snapshot (Type A)
 
 - [ ] **Create task.yaml** — prompt: `int_account_billing_snapshot` is missing `billing_cycle`. It should come from the latest subscription data.
 - [ ] **Create solutions/int_account_billing_snapshot.sql** — correct version with `ls.billing_cycle`
@@ -284,7 +284,7 @@ git commit -m "feat(ops_pilot001): billing_country in dim_accounts"
 
 ---
 
-## Task 9: ops_pilot009 — discount_pct in mart_account_360 (Type A)
+## Task 9: helixops_saas009 — discount_pct in mart_account_360 (Type A)
 
 - [ ] **Create task.yaml** — prompt: `mart_account_360` is missing `discount_pct`. Add it from the billing snapshot data already joined in this model.
 - [ ] **Create solutions/mart_account_360.sql** — correct version with `b.discount_pct`
@@ -295,7 +295,7 @@ git commit -m "feat(ops_pilot001): billing_country in dim_accounts"
 
 ---
 
-## Task 10: ops_pilot010 — Rename account_status to customer_status in dim_accounts (Type C)
+## Task 10: helixops_saas010 — Rename account_status to customer_status in dim_accounts (Type C)
 
 > This is a logic/naming change. setup.sh keeps the model as-is (with `account_status`). The agent must rename it.
 
@@ -319,7 +319,7 @@ limit 0
 
 ---
 
-## Task 11: ops_pilot011 — Filter archived workspaces from int_account_workspaces (Type B)
+## Task 11: helixops_saas011 — Filter archived workspaces from int_account_workspaces (Type B)
 
 > `int_account_workspaces` currently counts all workspaces including archived ones. Add a WHERE clause to exclude archived workspaces.
 
@@ -356,7 +356,7 @@ limit 1
 
 ---
 
-## Task 12: ops_pilot012 — active_workspace_count in mart_account_health (Type A)
+## Task 12: helixops_saas012 — active_workspace_count in mart_account_health (Type A)
 
 - [ ] **Create task.yaml** — prompt: `mart_account_health` is missing `active_workspace_count`. Add it from the engagement data already joined in this model.
 - [ ] **Create solutions/mart_account_health.sql** — correct version with `e.active_workspace_count`
@@ -367,7 +367,7 @@ limit 1
 
 ---
 
-## Task 13: ops_pilot013 — sandbox_workspace_count in dim_accounts (Type A)
+## Task 13: helixops_saas013 — sandbox_workspace_count in dim_accounts (Type A)
 
 - [ ] **Create task.yaml** — prompt: `dim_accounts` is missing `sandbox_workspace_count`. Add it from the workspace rollup data.
 - [ ] **Create solutions/dim_accounts.sql** — correct version with `coalesce(w.sandbox_workspace_count, 0) as sandbox_workspace_count`
@@ -378,7 +378,7 @@ limit 1
 
 ---
 
-## Task 14: ops_pilot014 — latest_invoice_status in mart_account_360 (Type A)
+## Task 14: helixops_saas014 — latest_invoice_status in mart_account_360 (Type A)
 
 - [ ] **Create task.yaml** — prompt: `mart_account_360` is missing `latest_invoice_status`. Add it from the billing snapshot already joined in this model.
 - [ ] **Create solutions/mart_account_360.sql** — correct version with `b.latest_invoice_status`
@@ -389,7 +389,7 @@ limit 1
 
 ---
 
-## Task 15: ops_pilot015 — latest_payment_status in int_account_billing_snapshot (Type A)
+## Task 15: helixops_saas015 — latest_payment_status in int_account_billing_snapshot (Type A)
 
 - [ ] **Create task.yaml** — prompt: `int_account_billing_snapshot` is missing `latest_payment_status`. Add it from the latest invoice data.
 - [ ] **Create solutions/int_account_billing_snapshot.sql** — correct version with `li.latest_payment_status`
@@ -400,7 +400,7 @@ limit 1
 
 ---
 
-## Task 16: ops_pilot016 — gross_revenue_usd in int_monthly_revenue_prep (Type B)
+## Task 16: helixops_saas016 — gross_revenue_usd in int_monthly_revenue_prep (Type B)
 
 > `gross_revenue_usd` does not currently exist. Define it as `subtotal_usd + tax_usd` (total billings before payment status).
 
@@ -430,7 +430,7 @@ limit 1
 
 ---
 
-## Task 17: ops_pilot017 — Exclude onboarding from recurring revenue (Type C)
+## Task 17: helixops_saas017 — Exclude onboarding from recurring revenue (Type C)
 
 > Currently `recurring_revenue_usd` in `int_invoice_finance` includes all lines where `is_recurring_line = true`. Onboarding line items (`line_type = 'onboarding'`) should be excluded even if flagged as recurring.
 
@@ -461,7 +461,7 @@ limit 1
 
 ---
 
-## Task 18: ops_pilot018 — one_time_revenue_usd in fct_monthly_revenue (Type A)
+## Task 18: helixops_saas018 — one_time_revenue_usd in fct_monthly_revenue (Type A)
 
 - [ ] **Create task.yaml** — prompt: `fct_monthly_revenue` is missing `one_time_revenue_usd`. Add it from the revenue prep data.
 - [ ] **Create solutions/fct_monthly_revenue.sql** — correct version with `r.one_time_revenue_usd`
@@ -472,7 +472,7 @@ limit 1
 
 ---
 
-## Task 19: ops_pilot019 — has_past_due_invoice in mart_account_health (Type A)
+## Task 19: helixops_saas019 — has_past_due_invoice in mart_account_health (Type A)
 
 - [ ] **Create task.yaml** — prompt: `mart_account_health` is missing `has_past_due_invoice`. Add it from the billing snapshot already joined in this model.
 - [ ] **Create solutions/mart_account_health.sql** — correct version with `b.has_past_due_invoice`
@@ -483,7 +483,7 @@ limit 1
 
 ---
 
-## Task 20: ops_pilot020 — avg_active_users_7d in mart_account_360 (Type A)
+## Task 20: helixops_saas020 — avg_active_users_7d in mart_account_360 (Type A)
 
 - [ ] **Create task.yaml** — prompt: `mart_account_360` is missing `avg_active_users_7d`. Add it from the engagement data already joined.
 - [ ] **Create solutions/mart_account_360.sql** — correct version with `e.avg_active_users_7d`
@@ -494,7 +494,7 @@ limit 1
 
 ---
 
-## Task 21: ops_pilot021 — total_api_calls_30d in mart_account_360 (Type A)
+## Task 21: helixops_saas021 — total_api_calls_30d in mart_account_360 (Type A)
 
 - [ ] **Create task.yaml** — prompt: `mart_account_360` is missing `total_api_calls_30d`. Add it from the engagement data.
 - [ ] **Create solutions/mart_account_360.sql** — correct version with `e.total_api_calls_30d`
@@ -505,7 +505,7 @@ limit 1
 
 ---
 
-## Task 22: ops_pilot022 — open_ticket_count in mart_account_360 (Type A)
+## Task 22: helixops_saas022 — open_ticket_count in mart_account_360 (Type A)
 
 - [ ] **Create task.yaml** — prompt: `mart_account_360` is missing `open_ticket_count`. Add it from the support rollup CTE already computed in this model.
 - [ ] **Create solutions/mart_account_360.sql** — correct version with `s.open_ticket_count`
@@ -516,7 +516,7 @@ limit 1
 
 ---
 
-## Task 23: ops_pilot023 — first_response_minutes in fct_support_tickets (Type A)
+## Task 23: helixops_saas023 — first_response_minutes in fct_support_tickets (Type A)
 
 - [ ] **Create task.yaml** — prompt: `fct_support_tickets` is missing `first_response_minutes`. Add it from the SLA data.
 - [ ] **Create solutions/fct_support_tickets.sql** — correct version with `s.first_response_minutes`
@@ -527,7 +527,7 @@ limit 1
 
 ---
 
-## Task 24: ops_pilot024 — plan_name in fct_support_tickets (Type A)
+## Task 24: helixops_saas024 — plan_name in fct_support_tickets (Type A)
 
 - [ ] **Create task.yaml** — prompt: `fct_support_tickets` is missing `plan_name`. Add it from the account billing snapshot data that is already joined in this model.
 - [ ] **Create solutions/fct_support_tickets.sql** — correct version with `b.plan_name`
@@ -538,7 +538,7 @@ limit 1
 
 ---
 
-## Task 25: ops_pilot025 — is_primary in int_workspace_roster (Type A)
+## Task 25: helixops_saas025 — is_primary in int_workspace_roster (Type A)
 
 - [ ] **Create task.yaml** — prompt: `int_workspace_roster` is missing the `is_primary` flag indicating whether the workspace is the primary workspace for the account. Add it from the workspace data already joined in this model.
 - [ ] **Create solutions/int_workspace_roster.sql** — correct version with `w.is_primary`
@@ -557,7 +557,7 @@ After all 25 tasks are created:
 
 ```bash
 cd /Users/joel/Documents/GitHub/ade-bench
-uv run scripts_python/run_harness.py --agent sage --task-ids ops_pilot001 --no-rebuild
+uv run scripts_python/run_harness.py --agent sage --task-ids helixops_saas001 --no-rebuild
 ```
 
 Expected: PASS
@@ -573,21 +573,21 @@ cd /tmp/test-ops-pilot
 - [ ] **Generate solution seeds for key tasks:**
 
 ```bash
-ade run ops_pilot001 ops_pilot016 ops_pilot017 --agent sage --db duckdb --project-type dbt --seed
+ade run helixops_saas001 helixops_saas016 helixops_saas017 --agent sage --db duckdb --project-type dbt --seed
 ```
 
 - [ ] **Final commit with all 25 tasks:**
 
 ```bash
-git add tasks/ops_pilot0*/
-git commit -m "feat(ops_pilot): add 25 benchmark tasks (ops_pilot001-025)"
+git add tasks/helixops_saas0*/
+git commit -m "feat(helixops_saas): add 25 benchmark tasks (helixops_saas001-025)"
 ```
 
 ---
 
 ## Key Reference Files
 
-- Shared project models: `shared/projects/dbt/ops_pilot/models/`
+- Shared project models: `shared/projects/dbt/helixops_saas/models/`
 - Existing task examples: `tasks/airbnb001/`, `tasks/analytics_engineering002/`
 - CONTRIBUTING.md: `docs/CONTRIBUTING.md`
 - Task template: `tasks/.template/task.yaml`

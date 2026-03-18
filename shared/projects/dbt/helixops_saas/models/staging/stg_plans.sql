@@ -1,5 +1,5 @@
 with src as (
-    select * from {{ source('ops_pilot', 'raw_plans') }}
+    select * from {{ source('helixops_saas', 'raw_plans') }}
 )
 select
     trim(plan_sku) as plan_id,

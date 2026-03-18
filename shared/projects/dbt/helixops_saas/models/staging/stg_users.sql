@@ -1,5 +1,5 @@
 with src as (
-    select * from {{ source('ops_pilot', 'raw_users') }}
+    select * from {{ source('helixops_saas', 'raw_users') }}
 )
 select
     trim(usr_id) as user_id,
