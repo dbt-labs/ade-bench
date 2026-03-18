@@ -1,5 +1,5 @@
 task_id: airbnb013
-status: draft
+status: ready
 description: Fix an incremental model that silently drops reviews with the same date as the current high-water mark.
 prompts:
   - key: base
