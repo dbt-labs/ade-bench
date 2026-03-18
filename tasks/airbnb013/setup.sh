@@ -8,11 +8,8 @@ cp "$SETUP_DIR/new_reviews.csv" /tmp/new_reviews.csv
 
 dbt deps
 dbt run
-
-# Inject 5 reviews on the current max date
 python3 /tmp/inject_reviews.py
-
-# Run incrementally — creates the broken state (5 injected reviews are dropped)
+dbt run --select src_reviews
 dbt run --select fct_reviews
 
 echo "Setup complete. fct_reviews is now missing the 5 injected reviews."

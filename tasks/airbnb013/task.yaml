@@ -17,8 +17,9 @@ tags:
 
 test_setup: |-
   python3 -c "import duckdb,csv; c=duckdb.connect('/app/airbnb.duckdb'); rows=list(csv.DictReader(open('/tmp/new_reviews.csv'))); [c.execute('DELETE FROM raw_reviews WHERE listing_id=? AND date=? AND reviewer_name=?',[int(r['listing_id']),r['date'],r['reviewer_name']]) for r in rows]; c.close()"
-  dbt run --full-refresh --select fct_reviews
+  dbt run --full-refresh --select src_reviews fct_reviews
   python3 /tmp/inject_reviews.py
+  dbt run --select src_reviews
   dbt run --select fct_reviews
 
 variants:
