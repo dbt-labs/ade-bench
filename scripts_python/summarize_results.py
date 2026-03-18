@@ -1,9 +1,10 @@
 import html
+from pathlib import Path
 
 from tabulate import tabulate
 from ade_bench.harness_models import BenchmarkResults
 from ade_bench.utils.results_writer import format_trial_result, get_failure_type, is_error_result
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional
 
 
 def summarize_results(results: BenchmarkResults) -> Dict[str, Any]:
@@ -208,7 +209,7 @@ def format_summary_table(summary: Dict[str, Any]) -> List[List[str]]:
     return table_data
 
 
-def generate_html_table(results: BenchmarkResults) -> str:
+def generate_html_table(results: BenchmarkResults, experiment_dir: Optional[Path] = None) -> str:
     """Generate an HTML table of benchmark results with action links."""
     summary = summarize_results(results)
 
@@ -264,7 +265,20 @@ def generate_html_table(results: BenchmarkResults) -> str:
 
     # Now replace the placeholders with actual action links, task buttons, and tools
     for i, task in enumerate(summary["tasks"]):
-        action_links = f'<div class="links"><a href="{task["task_id"]}/results.html" class="link results">Results</a> <a href="{task["task_id"]}/panes.html" class="link panes">Panes</a> <a href="{task["task_id"]}/diffs.html" class="link diffs">Diffs</a></div>'
+        # Check if data comparison artifacts exist in the trial directory
+        task_base_dir = experiment_dir / task["task_id"] if experiment_dir else None
+        has_data_comparisons = False
+        if task_base_dir and task_base_dir.exists():
+            for subdir in task_base_dir.iterdir():
+                if subdir.is_dir() and (subdir / "data_comparisons").exists():
+                    has_data_comparisons = True
+                    break
+
+        data_comparisons_link = ""
+        if has_data_comparisons:
+            data_comparisons_link = f' <a href="{task["task_id"]}/data_comparisons.html" class="link data-comparisons">Data Comparisons</a>'
+
+        action_links = f'<div class="links"><a href="{task["task_id"]}/results.html" class="link results">Results</a> <a href="{task["task_id"]}/panes.html" class="link panes">Panes</a> <a href="{task["task_id"]}/diffs.html" class="link diffs">File Diffs</a>{data_comparisons_link}</div>'
         html_table = html_table.replace(f"__ACTION_LINKS_{i}__", action_links)
 
         task_button = f'<button class="link task-btn" onclick="showTaskYaml(\'{task["task_id"]}\')">View</button>'
