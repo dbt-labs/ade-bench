@@ -5,6 +5,7 @@ For each variant: swaps model file, runs dbt test --select {model},test_type:uni
 records caught_bug=True if any test FAILED (good), False if all passed (bad).
 Writes one row per variant to broken_model_results table in DuckDB.
 """
+
 import os
 import shutil
 import subprocess
@@ -17,14 +18,42 @@ MODELS_AGG_DIR = os.path.join(PROJECT_DIR, "models", "agg")
 
 broken_variants = [
     # listing_agg_nps_reviews variants
-    {"variant_id": "listing_reversed_sign",        "model": "listing_agg_nps_reviews", "broken_file": "listing_reversed_sign.sql"},
-    {"variant_id": "listing_missing_negative",     "model": "listing_agg_nps_reviews", "broken_file": "listing_missing_negative.sql"},
-    {"variant_id": "listing_neutral_in_numerator", "model": "listing_agg_nps_reviews", "broken_file": "listing_neutral_in_numerator.sql"},
-    {"variant_id": "listing_wrong_denominator",    "model": "listing_agg_nps_reviews", "broken_file": "listing_wrong_denominator.sql"},
+    {
+        "variant_id": "listing_reversed_sign",
+        "model": "listing_agg_nps_reviews",
+        "broken_file": "listing_reversed_sign.sql",
+    },
+    {
+        "variant_id": "listing_missing_negative",
+        "model": "listing_agg_nps_reviews",
+        "broken_file": "listing_missing_negative.sql",
+    },
+    {
+        "variant_id": "listing_neutral_in_numerator",
+        "model": "listing_agg_nps_reviews",
+        "broken_file": "listing_neutral_in_numerator.sql",
+    },
+    {
+        "variant_id": "listing_wrong_denominator",
+        "model": "listing_agg_nps_reviews",
+        "broken_file": "listing_wrong_denominator.sql",
+    },
     # daily_agg_nps_reviews variants
-    {"variant_id": "daily_reversed_sign",          "model": "daily_agg_nps_reviews",   "broken_file": "daily_reversed_sign.sql"},
-    {"variant_id": "daily_neutral_in_numerator",   "model": "daily_agg_nps_reviews",   "broken_file": "daily_neutral_in_numerator.sql"},
-    {"variant_id": "daily_wrong_window",           "model": "daily_agg_nps_reviews",   "broken_file": "daily_wrong_window.sql"},
+    {
+        "variant_id": "daily_reversed_sign",
+        "model": "daily_agg_nps_reviews",
+        "broken_file": "daily_reversed_sign.sql",
+    },
+    {
+        "variant_id": "daily_neutral_in_numerator",
+        "model": "daily_agg_nps_reviews",
+        "broken_file": "daily_neutral_in_numerator.sql",
+    },
+    {
+        "variant_id": "daily_wrong_window",
+        "model": "daily_agg_nps_reviews",
+        "broken_file": "daily_wrong_window.sql",
+    },
 ]
 
 results = []
@@ -75,7 +104,7 @@ conn.execute("""
 for r in results:
     conn.execute(
         "INSERT INTO main.broken_model_results VALUES (?, ?, ?)",
-        [r["variant_id"], r["model_name"], r["caught_bug"]]
+        [r["variant_id"], r["model_name"], r["caught_bug"]],
     )
 conn.close()
 

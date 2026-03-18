@@ -3,6 +3,7 @@
 Appends 5 fixed new reviews (from new_reviews.csv) to raw_reviews.
 Idempotent: deletes matching (listing_id, date, reviewer_name) rows before inserting.
 """
+
 import csv
 import os
 import duckdb
@@ -24,7 +25,13 @@ for row in rows:
 for row in rows:
     conn.execute(
         "INSERT INTO raw_reviews (listing_id, date, reviewer_name, comments, sentiment) VALUES (?, ?, ?, ?, ?)",
-        [int(row["listing_id"]), row["date"], row["reviewer_name"], row["comments"], row["sentiment"]],
+        [
+            int(row["listing_id"]),
+            row["date"],
+            row["reviewer_name"],
+            row["comments"],
+            row["sentiment"],
+        ],
     )
 
 print(f"Injected {len(rows)} reviews on {rows[0]['date']}.")
