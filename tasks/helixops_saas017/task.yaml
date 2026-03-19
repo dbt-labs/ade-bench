@@ -1,0 +1,23 @@
+task_id: helixops_saas017
+status: ready
+description: Department column already exists in int_workspace_roster (no-op task)
+prompts:
+  - key: base
+    prompt: |-
+      Add department to the workspace roster.
+author_name: joel
+difficulty: easy
+tags:
+  - dbt
+  - helixops_saas
+variants:
+- db_type: duckdb
+  db_name: helixops_saas
+  project_type: dbt
+  project_name: helixops_saas
+- db_type: duckdb
+  db_name: helixops_saas
+  project_type: dbt-fusion
+  project_name: helixops_saas
+solution_seeds:
+  - table_name: int_workspace_roster

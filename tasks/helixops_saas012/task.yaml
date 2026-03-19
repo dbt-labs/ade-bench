@@ -1,0 +1,25 @@
+task_id: helixops_saas012
+status: ready
+description: Inline int_monthly_revenue_prep as a CTE in fct_monthly_revenue
+prompts:
+  - key: base
+    prompt: |-
+      Please move the monthly revenue prep model into being a CTE for the main revenue model.
+author_name: joel
+difficulty: medium
+tags:
+  - dbt
+  - helixops_saas
+test_setup: |-
+  dbt run --select fct_monthly_revenue
+variants:
+- db_type: duckdb
+  db_name: helixops_saas
+  project_type: dbt
+  project_name: helixops_saas
+- db_type: duckdb
+  db_name: helixops_saas
+  project_type: dbt-fusion
+  project_name: helixops_saas
+solution_seeds:
+  - table_name: fct_monthly_revenue

@@ -1,0 +1,25 @@
+task_id: helixops_saas013
+status: ready
+description: Fix onboarding fee line items being treated as recurring revenue
+prompts:
+  - key: base
+    prompt: |-
+      Helio Systems' onboarding fees are being treated as recurring revenue, please fix it.
+author_name: joel
+difficulty: medium
+tags:
+  - dbt
+  - helixops_saas
+test_setup: |-
+  dbt run --select stg_invoice_line_items int_invoice_finance fct_monthly_revenue
+variants:
+- db_type: duckdb
+  db_name: helixops_saas
+  project_type: dbt
+  project_name: helixops_saas
+- db_type: duckdb
+  db_name: helixops_saas
+  project_type: dbt-fusion
+  project_name: helixops_saas
+solution_seeds:
+  - table_name: fct_monthly_revenue

@@ -1,0 +1,25 @@
+task_id: helixops_saas007
+status: ready
+description: Add geo_segment column through billing snapshot to account marts
+prompts:
+  - key: base
+    prompt: |-
+      Add region and segment to int_account_billing_snapshot as a single geo_segment column, and carry it through to the account 360 and account health marts.
+author_name: joel
+difficulty: medium
+tags:
+  - dbt
+  - helixops_saas
+test_setup: |-
+  dbt run --select int_account_billing_snapshot mart_account_360 mart_account_health
+variants:
+- db_type: duckdb
+  db_name: helixops_saas
+  project_type: dbt
+  project_name: helixops_saas
+- db_type: duckdb
+  db_name: helixops_saas
+  project_type: dbt-fusion
+  project_name: helixops_saas
+solution_seeds:
+  - table_name: mart_account_360

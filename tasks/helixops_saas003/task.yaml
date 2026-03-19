@@ -1,0 +1,25 @@
+task_id: helixops_saas003
+status: ready
+description: Filter sandbox usage out of daily usage reporting
+prompts:
+  - key: base
+    prompt: |-
+      Please filter sandbox usage out of daily usage reporting.
+author_name: joel
+difficulty: medium
+tags:
+  - dbt
+  - helixops_saas
+test_setup: |-
+  dbt run --select stg_workspaces int_workspace_daily_metrics int_account_daily_usage
+variants:
+- db_type: duckdb
+  db_name: helixops_saas
+  project_type: dbt
+  project_name: helixops_saas
+- db_type: duckdb
+  db_name: helixops_saas
+  project_type: dbt-fusion
+  project_name: helixops_saas
+solution_seeds:
+  - table_name: int_account_daily_usage

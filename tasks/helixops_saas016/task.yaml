@@ -1,0 +1,25 @@
+task_id: helixops_saas016
+status: ready
+description: Add enterprise-only SLA targets with segment column in seed
+prompts:
+  - key: base
+    prompt: |-
+      We have new SLA targets for enterprise accounts only, effective 2025-06-16 at 08:00 UTC. Please update the SLA model so enterprise accounts get: urgent=20min, high=45min, medium=120min, standard=900min. Other segments keep existing SLAs.
+author_name: joel
+difficulty: hard
+tags:
+  - dbt
+  - helixops_saas
+test_setup: |-
+  dbt seed && dbt run --select int_support_sla fct_support_tickets
+variants:
+- db_type: duckdb
+  db_name: helixops_saas
+  project_type: dbt
+  project_name: helixops_saas
+- db_type: duckdb
+  db_name: helixops_saas
+  project_type: dbt-fusion
+  project_name: helixops_saas
+solution_seeds:
+  - table_name: fct_support_tickets

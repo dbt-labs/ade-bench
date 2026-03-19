@@ -1,0 +1,25 @@
+task_id: helixops_saas004
+status: ready
+description: Add department column to int_workspace_roster
+prompts:
+  - key: base
+    prompt: |-
+      I need to be able to work out what departments users belong to across their workspace memberships. Please add a department column — you can infer it from job title if needed.
+author_name: joel
+difficulty: easy
+tags:
+  - dbt
+  - helixops_saas
+test_setup: |-
+  dbt run --select int_workspace_roster
+variants:
+- db_type: duckdb
+  db_name: helixops_saas
+  project_type: dbt
+  project_name: helixops_saas
+- db_type: duckdb
+  db_name: helixops_saas
+  project_type: dbt-fusion
+  project_name: helixops_saas
+solution_seeds:
+  - table_name: int_workspace_roster

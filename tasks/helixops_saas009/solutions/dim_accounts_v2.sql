@@ -1,0 +1,22 @@
+select
+    account_id,
+    account_name,
+    industry,
+    region,
+    segment,
+    billing_country,
+    created_at,
+    account_status as customer_status,
+    is_churned,
+    employee_band,
+    owner_team,
+    workspace_count,
+    active_workspace_count,
+    prod_workspace_count,
+    sandbox_workspace_count,
+    primary_workspace_name,
+    user_count,
+    active_user_count,
+    inactive_user_count,
+    provisioned_user_count
+from {{ ref('dim_accounts') }}

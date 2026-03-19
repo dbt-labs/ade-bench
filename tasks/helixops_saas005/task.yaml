@@ -1,0 +1,25 @@
+task_id: helixops_saas005
+status: ready
+description: Fix failing model by adding email_address to staging users
+prompts:
+  - key: base
+    prompt: |-
+      Can you fix the failing model.
+author_name: joel
+difficulty: medium
+tags:
+  - dbt
+  - helixops_saas
+test_setup: |-
+  dbt run --select stg_users int_account_users
+variants:
+- db_type: duckdb
+  db_name: helixops_saas
+  project_type: dbt
+  project_name: helixops_saas
+- db_type: duckdb
+  db_name: helixops_saas
+  project_type: dbt-fusion
+  project_name: helixops_saas
+solution_seeds:
+  - table_name: int_account_users

@@ -1,0 +1,25 @@
+task_id: helixops_saas011
+status: ready
+description: Fix sbx environment tier not normalizing to sandbox in dim_accounts
+prompts:
+  - key: base
+    prompt: |-
+      The Falcon Works sandbox isn't showing up in dim_accounts.
+author_name: joel
+difficulty: medium
+tags:
+  - dbt
+  - helixops_saas
+test_setup: |-
+  dbt run --select stg_workspaces int_account_workspaces dim_accounts
+variants:
+- db_type: duckdb
+  db_name: helixops_saas
+  project_type: dbt
+  project_name: helixops_saas
+- db_type: duckdb
+  db_name: helixops_saas
+  project_type: dbt-fusion
+  project_name: helixops_saas
+solution_seeds:
+  - table_name: dim_accounts

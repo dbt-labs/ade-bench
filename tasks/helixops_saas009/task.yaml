@@ -1,0 +1,25 @@
+task_id: helixops_saas009
+status: ready
+description: Create dim_accounts_v2 with customer_status column
+prompts:
+  - key: base
+    prompt: |-
+      Please create a v2 of dim_accounts with account_status renamed to customer_status — this will become the primary version in 6 months.
+author_name: joel
+difficulty: easy
+tags:
+  - dbt
+  - helixops_saas
+test_setup: |-
+  dbt run --select dim_accounts_v2
+variants:
+- db_type: duckdb
+  db_name: helixops_saas
+  project_type: dbt
+  project_name: helixops_saas
+- db_type: duckdb
+  db_name: helixops_saas
+  project_type: dbt-fusion
+  project_name: helixops_saas
+solution_seeds:
+  - table_name: dim_accounts_v2

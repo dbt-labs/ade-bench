@@ -1,0 +1,25 @@
+task_id: helixops_saas008
+status: ready
+description: Rename account_status to customer_status and propagate through DAG
+prompts:
+  - key: base
+    prompt: |-
+      stg_accounts has account_status instead of customer_status, please rename and propagate.
+author_name: joel
+difficulty: hard
+tags:
+  - dbt
+  - helixops_saas
+test_setup: |-
+  dbt run --select stg_accounts+
+variants:
+- db_type: duckdb
+  db_name: helixops_saas
+  project_type: dbt
+  project_name: helixops_saas
+- db_type: duckdb
+  db_name: helixops_saas
+  project_type: dbt-fusion
+  project_name: helixops_saas
+solution_seeds:
+  - table_name: mart_account_360

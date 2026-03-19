@@ -1,0 +1,25 @@
+task_id: helixops_saas006
+status: ready
+description: Add net_mrr to mart_account_360 using upstream calculated value
+prompts:
+  - key: base
+    prompt: |-
+      Please add net_mrr to the account 360, based on contracted price less discount, divided by 12 if billed annually.
+author_name: joel
+difficulty: medium
+tags:
+  - dbt
+  - helixops_saas
+test_setup: |-
+  dbt run --select mart_account_360
+variants:
+- db_type: duckdb
+  db_name: helixops_saas
+  project_type: dbt
+  project_name: helixops_saas
+- db_type: duckdb
+  db_name: helixops_saas
+  project_type: dbt-fusion
+  project_name: helixops_saas
+solution_seeds:
+  - table_name: mart_account_360

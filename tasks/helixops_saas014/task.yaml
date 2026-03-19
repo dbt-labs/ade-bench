@@ -1,0 +1,25 @@
+task_id: helixops_saas014
+status: ready
+description: Restore api_calls through all DAG layers to mart_account_360
+prompts:
+  - key: base
+    prompt: |-
+      Please add total API calls to the account 360.
+author_name: joel
+difficulty: hard
+tags:
+  - dbt
+  - helixops_saas
+test_setup: |-
+  dbt run --select stg_workspace_usage_daily+
+variants:
+- db_type: duckdb
+  db_name: helixops_saas
+  project_type: dbt
+  project_name: helixops_saas
+- db_type: duckdb
+  db_name: helixops_saas
+  project_type: dbt-fusion
+  project_name: helixops_saas
+solution_seeds:
+  - table_name: mart_account_360
