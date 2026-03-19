@@ -9,6 +9,7 @@ prompts:
     prompt: |-
       We updated our support SLAs effective 2025-06-16 at 08:00 UTC. Please move priority and response_sla_minutes into a new seed with valid_from and valid_to timestamps, and update the models accordingly. New SLAs: urgent=20min, high=90min, medium=300min, low=1500min.
 author_name: joel
+author_email: joel@example.com
 difficulty: medium
 tags:
   - dbt

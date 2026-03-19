@@ -6,6 +6,7 @@ prompts:
     prompt: |-
       Please create a v2 of dim_accounts with account_status renamed to customer_status — this will become the primary version in 6 months.
 author_name: joel
+author_email: joel@example.com
 difficulty: easy
 tags:
   - dbt

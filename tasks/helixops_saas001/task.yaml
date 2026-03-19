@@ -6,6 +6,7 @@ prompts:
     prompt: |-
       Add billing_country to dim_accounts.
 author_name: joel
+author_email: joel@example.com
 difficulty: easy
 tags:
   - dbt

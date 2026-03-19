@@ -6,6 +6,7 @@ prompts:
     prompt: |-
       Can you fix the failing model.
 author_name: joel
+author_email: joel@example.com
 difficulty: medium
 tags:
   - dbt

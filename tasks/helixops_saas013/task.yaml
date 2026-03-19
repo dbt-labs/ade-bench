@@ -6,6 +6,7 @@ prompts:
     prompt: |-
       Helio Systems' onboarding fees are being treated as recurring revenue, please fix it.
 author_name: joel
+author_email: joel@example.com
 difficulty: medium
 tags:
   - dbt

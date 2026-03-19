@@ -6,6 +6,7 @@ prompts:
     prompt: |-
       Add region and segment to int_account_billing_snapshot as a single geo_segment column, and carry it through to the account 360 and account health marts.
 author_name: joel
+author_email: joel@example.com
 difficulty: medium
 tags:
   - dbt

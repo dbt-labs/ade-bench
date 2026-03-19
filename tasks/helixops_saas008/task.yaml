@@ -6,6 +6,7 @@ prompts:
     prompt: |-
       stg_accounts has account_status instead of customer_status, please rename and propagate.
 author_name: joel
+author_email: joel@example.com
 difficulty: hard
 tags:
   - dbt

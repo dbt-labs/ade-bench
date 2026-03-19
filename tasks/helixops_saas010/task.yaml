@@ -6,6 +6,7 @@ prompts:
     prompt: |-
       Please filter out archived workspaces after the staging layer.
 author_name: joel
+author_email: joel@example.com
 difficulty: easy
 tags:
   - dbt

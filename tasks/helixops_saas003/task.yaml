@@ -6,6 +6,7 @@ prompts:
     prompt: |-
       Please filter sandbox usage out of daily usage reporting.
 author_name: joel
+author_email: joel@example.com
 difficulty: medium
 tags:
   - dbt

@@ -6,6 +6,7 @@ prompts:
     prompt: |-
       Please add net_mrr to the account 360, based on contracted price less discount, divided by 12 if billed annually.
 author_name: joel
+author_email: joel@example.com
 difficulty: medium
 tags:
   - dbt

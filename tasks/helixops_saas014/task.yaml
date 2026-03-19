@@ -6,6 +6,7 @@ prompts:
     prompt: |-
       Please add total API calls to the account 360.
 author_name: joel
+author_email: joel@example.com
 difficulty: hard
 tags:
   - dbt

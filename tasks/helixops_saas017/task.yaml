@@ -6,6 +6,7 @@ prompts:
     prompt: |-
       Add department to the workspace roster.
 author_name: joel
+author_email: joel@example.com
 difficulty: easy
 tags:
   - dbt

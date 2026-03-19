@@ -6,6 +6,7 @@ prompts:
     prompt: |-
       The Falcon Works sandbox isn't showing up in dim_accounts.
 author_name: joel
+author_email: joel@example.com
 difficulty: medium
 tags:
   - dbt
