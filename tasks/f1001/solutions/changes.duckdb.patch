@@ -1,3 +1,143 @@
+--- /dev/null
++++ b/models/core/src_circuits.sql
+@@ -0,0 +1,7 @@
++{{
++  config(
++    materialized='view'
++  )
++}}
++
++select * from {{ source('f1_dataset', 'circuits') }}
+--- /dev/null
++++ b/models/core/src_constructor_results.sql
+@@ -0,0 +1,7 @@
++{{
++  config(
++    materialized='view'
++  )
++}}
++
++select * from {{ source('f1_dataset', 'constructor_results') }}
+--- /dev/null
++++ b/models/core/src_constructor_standings.sql
+@@ -0,0 +1,7 @@
++{{
++  config(
++    materialized='view'
++  )
++}}
++
++select * from {{ source('f1_dataset', 'constructor_standings') }}
+--- /dev/null
++++ b/models/core/src_constructors.sql
+@@ -0,0 +1,7 @@
++{{
++  config(
++    materialized='view'
++  )
++}}
++
++select * from {{ source('f1_dataset', 'constructors') }}
+--- /dev/null
++++ b/models/core/src_driver_standings.sql
+@@ -0,0 +1,7 @@
++{{
++  config(
++    materialized='view'
++  )
++}}
++
++select * from {{ source('f1_dataset', 'driver_standings') }}
+--- /dev/null
++++ b/models/core/src_drivers.sql
+@@ -0,0 +1,7 @@
++{{
++  config(
++    materialized='view'
++  )
++}}
++
++select * from {{ source('f1_dataset', 'drivers') }}
+--- /dev/null
++++ b/models/core/src_lap_times.sql
+@@ -0,0 +1,7 @@
++{{
++  config(
++    materialized='view'
++  )
++}}
++
++select * from {{ source('f1_dataset', 'lap_times') }}
+--- /dev/null
++++ b/models/core/src_pit_stops.sql
+@@ -0,0 +1,7 @@
++{{
++  config(
++    materialized='view'
++  )
++}}
++
++select * from {{ source('f1_dataset', 'pit_stops') }}
+--- /dev/null
++++ b/models/core/src_position_descriptions.sql
+@@ -0,0 +1,7 @@
++{{
++  config(
++    materialized='view'
++  )
++}}
++
++select * from {{ source('f1_dataset', 'position_descriptions') }}
+--- /dev/null
++++ b/models/core/src_qualifying.sql
+@@ -0,0 +1,7 @@
++{{
++  config(
++    materialized='view'
++  )
++}}
++
++select * from {{ source('f1_dataset', 'qualifying') }}
+--- /dev/null
++++ b/models/core/src_races.sql
+@@ -0,0 +1,7 @@
++{{
++  config(
++    materialized='view'
++  )
++}}
++
++select * from {{ source('f1_dataset', 'races') }}
+--- /dev/null
++++ b/models/core/src_results.sql
+@@ -0,0 +1,7 @@
++{{
++  config(
++    materialized='view'
++  )
++}}
++
++select * from {{ source('f1_dataset', 'results') }}
+--- /dev/null
++++ b/models/core/src_seasons.sql
+@@ -0,0 +1,7 @@
++{{
++  config(
++    materialized='view'
++  )
++}}
++
++select * from {{ source('f1_dataset', 'seasons') }}
+--- /dev/null
++++ b/models/core/src_status.sql
+@@ -0,0 +1,7 @@
++{{
++  config(
++    materialized='view'
++  )
++}}
++
++select * from {{ source('f1_dataset', 'status') }}
 --- a/models/staging/f1_dataset/stg_f1_dataset__circuits.sql
 +++ b/models/staging/f1_dataset/stg_f1_dataset__circuits.sql
 @@ -9,7 +9,7 @@
