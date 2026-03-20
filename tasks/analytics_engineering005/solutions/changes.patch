@@ -1,0 +1,31 @@
+--- a/models/warehouse/fact_inventory.sql
++++ b/models/warehouse/fact_inventory.sql
+@@ -17,7 +17,24 @@
+         customer_order_id,
+         comments
+     FROM {{ ref('stg_inventory_transactions') }}
++),
++
++unique_source AS (
++    SELECT
++        *,
++        ROW_NUMBER() OVER(PARTITION BY inventory_id ORDER BY inventory_id) AS row_number
++    FROM source
+ )
+ 
+-SELECT *
+-FROM source
+\ No newline at end of file
++SELECT
++    inventory_id,
++    transaction_type,
++    transaction_created_date,
++    transaction_modified_date,
++    product_id,
++    quantity,
++    purchase_order_id,
++    customer_order_id,
++    comments
++FROM unique_source
++WHERE row_number = 1
+\ No newline at end of file

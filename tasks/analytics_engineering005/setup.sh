@@ -17,24 +17,12 @@ insert into ${schema}.inventory_transactions
 SQL
 
 
-## Copy the new fact_inventory model that doesn't handle duplicates
-file="fact_inventory.sql"
-
-SETUP_DIR="$(dirname "$(readlink -f "${BASH_SOURCE}")")/setup"
-
-if [[ "$OSTYPE" == "darwin"* ]]; then
-  SED_CMD=(sed -i '')
+## Replace the fact_inventory model with a version that doesn't handle duplicates
+if [[ "$*" == *"--db-type=snowflake"* ]]; then
+    patch -p1 < /app/setup/changes.snowflake.patch
 else
-  SED_CMD=(sed -i)
+    patch -p1 < /app/setup/changes.duckdb.patch
 fi
-
-if [[ "$*" != *"--db-type=duckdb"* ]]; then
-    find="CAST(STRPTIME(transaction_created_date, '%m/%d/%Y %H:%M:%S') AS DATE)"
-    replace="TO_DATE(TO_TIMESTAMP(transaction_created_date, 'MM/DD/YYYY HH24:MI:SS'))"
-    "${SED_CMD[@]}" "s|${find}|${replace}|g" $SETUP_DIR/$file
-fi
-
-cp $SETUP_DIR/$file models/warehouse/$file
 
 dbt deps
 dbt run

@@ -1,0 +1,45 @@
+--- a/models/source/src_hosts.sql
++++ b/models/source/src_hosts.sql
+@@ -1,3 +1,12 @@
++{{
++	config(
++		materialized="view" ,
++		alias="src_hosts" ,
++		schema="main" ,
++		unique_key="HOST_ID"
++	)
++}}
++
+ WITH RAW_HOSTS AS (
+ 	SELECT *
+ 	FROM {{source('airbnb','hosts')}}
+--- a/models/source/src_listings.sql
++++ b/models/source/src_listings.sql
+@@ -1,3 +1,12 @@
++{{
++	config(
++		materialized="view" ,
++		alias="src_listings" ,
++		schema="main" ,
++		unique_key="LISTING_ID"
++	)
++}}
++
+ WITH RAW_LISTINGS AS (
+ 	SELECT *
+ 	FROM {{source('airbnb','listings')}}
+--- a/models/source/src_reviews.sql
++++ b/models/source/src_reviews.sql
+@@ -1,3 +1,12 @@
++{{
++	config(
++		materialized="view" ,
++		alias="src_reviews" ,
++		schema="main" ,
++		unique_key="LISTING_ID"
++	)
++}}
++
+ WITH RAW_REVIEWS AS (
+ 	SELECT * 
+ 	FROM {{source('airbnb','reviews')}}

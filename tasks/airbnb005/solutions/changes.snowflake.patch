@@ -1,0 +1,87 @@
+--- /dev/null
++++ b/models/agg/daily_agg_nps_reviews.sql
+@@ -0,0 +1,48 @@
++{{
++	config(
++		materialized="table" ,
++		alias="daily_agg_nps_reviews" ,
++		schema="public"
++	)
++}}
++
++with with_nps_scores as (
++  select
++    *,
++    case
++      when review_sentiment = 'positive' then 1
++      when review_sentiment = 'negative' then -1
++      else 0 end as nps_score
++  from {{ ref('fct_reviews') }}
++),
++
++daily as (
++  select
++    review_date,
++    count(case when nps_score = 1 then 1 else null end) as positive,
++    count(case when nps_score = -1 then 1 else null end) as negative,
++    count(*) as reviews_daily,
++    (positive - negative) / reviews_daily as nps_daily
++  from with_nps_scores
++  group by 1
++),
++
++rolling as (
++  select
++    review_date,
++    nps_daily,
++    reviews_daily,
++    sum(positive) over (order by review_date range between interval '27 day' preceding and current row) as positive_28d,
++    sum(negative) over (order by review_date range between interval '27 day' preceding and current row) as negative_28d,
++    sum(reviews_daily) over (order by review_date range between interval '27 day' preceding and current row) as reviews_28d,
++    (positive_28d - negative_28d)/reviews_28d as nps_28d
++  from daily
++)
++
++select
++  review_date,
++  round(nps_daily * 100, 0) as nps_daily,
++  reviews_daily,
++  round(nps_28d * 100, 0) as nps_28d,
++  reviews_28d
++from rolling
+\ No newline at end of file
+--- /dev/null
++++ b/models/agg/listing_agg_nps_reviews.sql
+@@ -0,0 +1,31 @@
++{{
++	config(
++		materialized="table" ,
++		alias="listing_agg_nps_reviews" ,
++		schema="public"
++	)
++}}
++
++with with_nps_scores as (
++  select
++    listing_id,
++    count(case when review_sentiment = 'positive' then 1 else null end) as positive,
++    count(case when review_sentiment = 'negative' then 1 else null end) as negative,
++    count(*) as reviews_total
++  from {{ ref('fct_reviews') }} r
++  group by 1
++),
++
++final as (
++  select
++    l.listing_id,
++    l.listing_name,
++    l.room_type,
++    round(((s.positive-s.negative) / s.reviews_total) * 100, 0) as nps_total,
++    s.reviews_total,
++  from {{ ref('dim_listings') }} l
++  join with_nps_scores s
++    on s.listing_id = l.listing_id
++)
++
++select * from final
+\ No newline at end of file

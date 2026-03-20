@@ -22,11 +22,5 @@ drop table ${schema}.task_data;
 alter table ${schema}.task_data_temp rename to task_data;
 SQL
 
-## MOVE FILES
-SOLUTIONS_DIR="$(dirname "$(readlink -f "${BASH_SOURCE}")")/solutions"
-
-project="asana__project.sql"
-agg="int_asana__project_user_agg.sql"
-
-cp $SOLUTIONS_DIR/$project models/$project
-cp $SOLUTIONS_DIR/$agg models/intermediate/$agg
+## Copy solution files
+patch -p1 < /sage/solutions/changes.patch

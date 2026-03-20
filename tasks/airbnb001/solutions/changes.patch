@@ -1,0 +1,51 @@
+--- a/models/agg/daily_agg_reviews.sql
++++ b/models/agg/daily_agg_reviews.sql
+@@ -16,7 +16,7 @@
+ 	COUNT(*) AS REVIEW_TOTALS ,
+ 	REVIEW_SENTIMENT ,
+ 	REVIEW_DATE::DATE AS REVIEW_DATE ,
+-	{{dbt_utils.surrogate_key(['REVIEW_SENTIMENT','REVIEW_DATE::DATE'])}} AS DATE_SENTIMENT_ID
++	{{dbt_utils.generate_surrogate_key(['REVIEW_SENTIMENT','REVIEW_DATE::DATE'])}} AS DATE_SENTIMENT_ID
+ FROM review_cte
+ 
+ {% if is_incremental() %}
+--- a/models/agg/mom_agg_reviews.sql
++++ b/models/agg/mom_agg_reviews.sql
+@@ -48,5 +48,5 @@
+ 	/*using LAG with 29 days as offset to calculate month over month metrics */
+ 	ROUND(((REVIEW_TOTALS * 100) / LAG(REVIEW_TOTALS,29) OVER (PARTITION BY REVIEW_SENTIMENT
+ 																ORDER BY AGGREGATION_DATE ASC) - 100),2) AS MOM,
+-	{{dbt_utils.surrogate_key(['AGGREGATION_DATE::DATE','REVIEW_SENTIMENT'])}} AS DATE_SENTIMENT_ID
++	{{dbt_utils.generate_surrogate_key(['AGGREGATION_DATE::DATE','REVIEW_SENTIMENT'])}} AS DATE_SENTIMENT_ID
+ FROM final_cte
+--- a/models/agg/monthly_agg_reviews.sql
++++ b/models/agg/monthly_agg_reviews.sql
+@@ -18,7 +18,7 @@
+ 	STRFTIME('%m-%Y', REVIEW_DATE) AS MONTH_YEAR,
+ 	EXTRACT(MONTH FROM REVIEW_DATE) AS MONTH,
+ 	EXTRACT(YEAR FROM REVIEW_DATE) AS YEAR,
+-	{{dbt_utils.surrogate_key(['CAST(EXTRACT(MONTH FROM REVIEW_DATE) AS TEXT)',
++	{{dbt_utils.generate_surrogate_key(['CAST(EXTRACT(MONTH FROM REVIEW_DATE) AS TEXT)',
+ 							   'CAST(EXTRACT(YEAR FROM REVIEW_DATE) AS TEXT)',
+ 							   'REVIEW_SENTIMENT'])}} AS DATE_SENTIMENT_ID
+ FROM review_cte
+--- a/models/agg/wow_agg_reviews.sql
++++ b/models/agg/wow_agg_reviews.sql
+@@ -48,5 +48,5 @@
+ 	/*using LAG with 6 days as offset to calculate month over month metrics */
+ 	ROUND(((REVIEW_TOTALS * 100) / LAG(REVIEW_TOTALS,6) OVER (PARTITION BY REVIEW_SENTIMENT
+ 																ORDER BY AGGREGATION_DATE ASC) - 100),2) AS WOW,
+-	{{dbt_utils.surrogate_key(['AGGREGATION_DATE::DATE','REVIEW_SENTIMENT'])}} AS DATE_SENTIMENT_ID
++	{{dbt_utils.generate_surrogate_key(['AGGREGATION_DATE::DATE','REVIEW_SENTIMENT'])}} AS DATE_SENTIMENT_ID
+ FROM final_cte
+--- a/models/dim/dim_listings_hosts.sql
++++ b/models/dim/dim_listings_hosts.sql
+@@ -28,7 +28,7 @@
+ 	listings_cte.HOST_ID ,
+ 	hosts_cte.HOST_NAME ,
+ 	hosts_cte.IS_SUPERHOST ,
+-	{{dbt_utils.surrogate_key(['listings_cte.LISTING_ID','hosts_cte.HOST_ID'])}} AS LISTING_HOST_ID
++	{{dbt_utils.generate_surrogate_key(['listings_cte.LISTING_ID','hosts_cte.HOST_ID'])}} AS LISTING_HOST_ID
+ FROM listings_cte
+ LEFT JOIN hosts_cte
+ 	ON listings_cte.HOST_ID = hosts_cte.HOST_ID

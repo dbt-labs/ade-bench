@@ -1,0 +1,127 @@
+--- /dev/null
++++ b/models/warehouse/dim_products.sql
+@@ -0,0 +1,44 @@
++WITH source AS (
++    SELECT
++        p.id AS product_id,
++        p.product_code,
++        p.product_name,
++        p.description,
++        s.company AS supplier_company,
++        p.standard_cost,
++        p.list_price,
++        p.reorder_level,
++        p.target_level,
++        p.quantity_per_unit,
++        p.discontinued,
++        p.minimum_reorder_quantity,
++        p.category,
++        p.attachments
++    FROM {{ ref('stg_products') }} p
++    LEFT JOIN {{ ref('stg_suppliers') }} s
++    ON s.id = p.supplier_id
++),
++
++unique_source AS (
++    SELECT *,
++           row_number() OVER(PARTITION BY product_id ORDER BY product_id) AS row_number
++    FROM source
++)
++
++SELECT
++    product_id,
++    product_code,
++    product_name,
++    description,
++    supplier_company,
++    standard_cost,
++    list_price,
++    reorder_level,
++    target_level,
++    quantity_per_unit,
++    discontinued,
++    minimum_reorder_quantity,
++    category,
++    attachments
++FROM unique_source
++WHERE row_number = 1
+\ No newline at end of file
+--- /dev/null
++++ b/models/warehouse/fact_inventory.sql
+@@ -0,0 +1,40 @@
++{{ config(
++    partition_by={
++        "field": "transaction_created_date",
++        "data_type": "date"
++    }
++) }}
++
++WITH source AS (
++    SELECT
++        id AS inventory_id,
++        transaction_type,
++        TO_DATE(TO_TIMESTAMP(transaction_created_date, 'MM/DD/YYYY HH24:MI:SS')) AS transaction_created_date,
++        transaction_modified_date,
++        product_id,
++        quantity,
++        purchase_order_id,
++        customer_order_id,
++        comments
++    FROM {{ ref('stg_inventory_transactions') }}
++),
++
++unique_source AS (
++    SELECT
++        *,
++        ROW_NUMBER() OVER(PARTITION BY inventory_id ORDER BY inventory_id) AS row_number
++    FROM source
++)
++
++SELECT
++    inventory_id,
++    transaction_type,
++    transaction_created_date,
++    transaction_modified_date,
++    product_id,
++    quantity,
++    purchase_order_id,
++    customer_order_id,
++    comments
++FROM unique_source
++WHERE row_number = 1
+\ No newline at end of file
+--- /dev/null
++++ b/models/analytics_obt/obt_product_inventory.sql
+@@ -0,0 +1,31 @@
++WITH source AS (
++    SELECT
++        p.product_id,
++        p.product_code,
++        p.product_name,
++        p.description,
++        p.supplier_company,
++        p.standard_cost,
++        p.list_price,
++        p.reorder_level,
++        p.target_level,
++        p.quantity_per_unit,
++        p.discontinued,
++        p.minimum_reorder_quantity,
++        p.category,
++        i.inventory_id,
++        i.transaction_type,
++        i.transaction_created_date,
++        i.transaction_modified_date,
++        i.product_id AS ipd,
++        i.quantity,
++        i.purchase_order_id,
++        i.customer_order_id,
++        i.comments
++FROM {{ ref('fact_inventory') }} i
++LEFT JOIN {{ ref('dim_products') }} p
++ON p.product_id = i.product_id
++)
++
++SELECT *
++FROM source
+\ No newline at end of file

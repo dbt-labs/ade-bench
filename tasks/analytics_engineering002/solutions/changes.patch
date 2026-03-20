@@ -1,0 +1,11 @@
+--- a/models/analytics_obt/obt_product_inventory.sql
++++ b/models/analytics_obt/obt_product_inventory.sql
+@@ -4,7 +4,7 @@
+         p.product_code,
+         p.product_name,
+         p.description,
+-        p.supplier_company
++        p.supplier_company,
+         p.standard_cost,
+         p.list_price,
+         p.reorder_level,
