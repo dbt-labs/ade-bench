@@ -1,0 +1,14 @@
+--- a/models/staging/f1_dataset/stg_f1_dataset__results.sql
++++ b/models/staging/f1_dataset/stg_f1_dataset__results.sql
+@@ -53,9 +53,9 @@
+          s.status_desc,
+          p.position_desc
+     from results as r
+-    left join position_descriptions as p
++    join position_descriptions as p
+   using (position_text)
+-    left join status_descriptions as s
++    join status_descriptions as s
+   using (status_id)
+ )
+ 

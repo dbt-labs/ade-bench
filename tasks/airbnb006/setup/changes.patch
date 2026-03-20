@@ -1,0 +1,18 @@
+--- a/models/fact/fct_reviews.sql
++++ b/models/fact/fct_reviews.sql
+@@ -6,13 +6,13 @@
+ 	)
+ }}
+ 
+-WITH src_reviews_cte AS (
++WITH src_listings_cte AS (
+ 	SELECT *
+ 	FROM {{ref('src_reviews')}}
+ )
+ 
+ SELECT * 
+-FROM src_reviews_cte
++FROM src_listings_cte
+ WHERE REVIEW_TEXT IS NOT NULL
+ 
+ {% if is_incremental() %}
