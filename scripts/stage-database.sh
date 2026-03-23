@@ -5,6 +5,7 @@
 #
 # Requires an open PR on the current branch. Run from the repo root.
 set -euo pipefail
+export GH_REPO="dbt-labs/ade-bench"
 
 if [ $# -eq 0 ]; then
   echo "Usage: $0 <file.duckdb> [file2.duckdb ...]" >&2

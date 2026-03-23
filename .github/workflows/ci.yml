@@ -83,16 +83,20 @@ jobs:
       - name: Download DuckDB databases
         run: |
           mkdir -p shared/databases/duckdb
-          # Per-PR staging release takes precedence over production
+          # Per-PR staging release takes precedence over production (only exists when a new DB is being introduced)
           PR_TAG="databases-staging-pr-${{ github.event.pull_request.number }}"
-          gh release download "$PR_TAG" \
-            --pattern "*.duckdb" \
-            --dir shared/databases/duckdb \
-            --skip-existing 2>/dev/null || true
+          if gh release view "$PR_TAG" --repo dbt-labs/ade-bench &>/dev/null; then
+            gh release download "$PR_TAG" \
+              --repo dbt-labs/ade-bench \
+              --pattern "*.duckdb" \
+              --dir shared/databases/duckdb \
+              --skip-existing
+          fi
           gh release download databases \
+            --repo dbt-labs/ade-bench \
             --pattern "*.duckdb" \
             --dir shared/databases/duckdb \
-            --skip-existing 2>/dev/null || true
+            --skip-existing
         env:
           GH_TOKEN: ${{ github.token }}
 
