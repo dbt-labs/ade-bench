@@ -18,6 +18,7 @@
 -	{{dbt_utils.generate_surrogate_key(['AGGREGATION_DATE::DATE','REVIEW_SENTIMENT'])}} AS DATE_SENTIMENT_ID
 +	{{dbt_utils.surrogate_key(['AGGREGATION_DATE::DATE','REVIEW_SENTIMENT'])}} AS DATE_SENTIMENT_ID
  FROM final_cte
+\ No newline at end of file
 --- a/models/agg/monthly_agg_reviews.sql
 +++ b/models/agg/monthly_agg_reviews.sql
 @@ -18,7 +18,7 @@
@@ -38,6 +39,7 @@
 -	{{dbt_utils.generate_surrogate_key(['AGGREGATION_DATE::DATE','REVIEW_SENTIMENT'])}} AS DATE_SENTIMENT_ID
 +	{{dbt_utils.surrogate_key(['AGGREGATION_DATE::DATE','REVIEW_SENTIMENT'])}} AS DATE_SENTIMENT_ID
  FROM final_cte
+\ No newline at end of file
 --- a/models/dim/dim_listings_hosts.sql
 +++ b/models/dim/dim_listings_hosts.sql
 @@ -28,7 +28,7 @@
