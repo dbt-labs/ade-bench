@@ -273,10 +273,8 @@ ADE-bench can automatically migrate DuckDB databases into Snowflake. For more, s
 
 ### Staging a new database for CI
 
-Database files are stored in the [`databases` GitHub Release](https://github.com/dbt-labs/ade-bench/releases/tag/databases) and downloaded automatically by CI. To introduce a new `.duckdb` file (or update an existing one), upload it to a per-PR staging release before pushing:
+Database files are stored in the [`databases` GitHub Release](https://github.com/dbt-labs/ade-bench/releases/tag/databases) and downloaded automatically by CI. To introduce a new `.duckdb` file (or update an existing one), upload it to a per-PR staging release after pushing your branch and opening a PR, but before triggering any CI runs you want to validate:
 
-```bash
-# Open a PR on your branch first, then:
 ./scripts/stage-database.sh shared/databases/duckdb/my_new_database.duckdb
 ```
 

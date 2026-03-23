@@ -58,7 +58,7 @@ ade --help
 Databases are distributed via [GitHub Releases](https://github.com/dbt-labs/ade-bench/releases/tag/databases). Download them with the `gh` CLI:
 
 ```bash
-gh release download databases --pattern "*.duckdb" --dir shared/databases/duckdb
+gh release download databases --repo dbt-labs/ade-bench --pattern "*.duckdb" --dir shared/databases/duckdb
 ```
 
 ### 5. Checkpoint: try running a task without any LLMs
