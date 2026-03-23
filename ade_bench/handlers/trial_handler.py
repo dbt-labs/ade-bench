@@ -82,6 +82,10 @@ class Task(BaseModel):
             "merge_yaml.py",
             "run_sql.py",
             "run_sql.sh",
+            "detect_failing_equality_tests.py",
+            "dump_tables.py",
+            "compare_tables.py",
+            "run-comparison.sh",
         ],
         description="List of test scripts to use for the task",
     )

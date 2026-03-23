@@ -1,0 +1,26 @@
+--- a/models/stats/finishes_by_driver.sql
++++ b/models/stats/finishes_by_driver.sql
+@@ -47,17 +47,17 @@
+             sum(case when position_order = 20 then 1 else 0 end) as p20,
+             sum(case when position_order > 20 then 1 else 0 end) as p21plus,
+             sum(
+-                case when position_desc = 'disqualified' then 1 else 0 end
++                case when position_desc = 'Disqualified' then 1 else 0 end
+             ) as disqualified,
+-            sum(case when position_desc = 'excluded' then 1 else 0 end) as excluded,
++            sum(case when position_desc = 'Excluded' then 1 else 0 end) as excluded,
+             sum(
+-                case when position_desc = 'failed to qualify' then 1 else 0 end
++                case when position_desc = 'Failed to Qualify' then 1 else 0 end
+             ) as failed_to_qualify,
+             sum(
+-                case when position_desc = 'not classified' then 1 else 0 end
++                case when position_desc = 'Unclassified' then 1 else 0 end
+             ) as not_classified,
+-            sum(case when position_desc = 'retired' then 1 else 0 end) as retired,
+-            sum(case when position_desc = 'withdrew' then 1 else 0 end) as withdrew
++            sum(case when position_desc = 'Retired' then 1 else 0 end) as retired,
++            sum(case when position_desc = 'Withdrew' then 1 else 0 end) as withdrew
+         from podiums
+         group by 1, 2
+     ),

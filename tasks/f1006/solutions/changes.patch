@@ -1,0 +1,22 @@
+--- a/models/stats/constructor_points.sql
++++ b/models/stats/constructor_points.sql
+@@ -2,7 +2,7 @@
+   SELECT
+     c.constructor_name,
+     r.race_year as season,
+-    sum(cs.points) AS total_points
++    max(cs.points) AS total_points
+   FROM {{ ref('stg_f1_dataset__constructor_standings') }} cs
+   JOIN {{ ref('stg_f1_dataset__races') }} r ON cs.raceId = r.race_id
+   JOIN {{ ref('stg_f1_dataset__constructors') }} c on cs.constructorId = c.constructor_id
+--- a/models/stats/driver_points.sql
++++ b/models/stats/driver_points.sql
+@@ -2,7 +2,7 @@
+   SELECT
+     d.driver_full_name,
+     r.race_year as season,
+-    sum(ds.points) AS total_points
++    max(ds.points) AS total_points
+   FROM {{ ref('stg_f1_dataset__driver_standings') }} ds
+   JOIN {{ ref('stg_f1_dataset__races') }} r ON ds.raceId = r.race_id
+   JOIN {{ ref('stg_f1_dataset__drivers') }} d on ds.driverId = d.driver_id

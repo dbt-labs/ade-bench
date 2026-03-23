@@ -1,0 +1,121 @@
+unit_tests:
+
+  # listing_agg_nps_reviews tests
+
+  - name: test_listing_nps_all_positive
+    description: All positive reviews → NPS = 100
+    model: listing_agg_nps_reviews
+    given:
+      - input: ref('fct_reviews')
+        rows:
+          - {listing_id: 1, review_sentiment: positive}
+          - {listing_id: 1, review_sentiment: positive}
+          - {listing_id: 1, review_sentiment: positive}
+      - input: ref('dim_listings')
+        rows:
+          - {listing_id: 1, listing_name: Test Listing, room_type: Entire home/apt}
+    expect:
+      rows:
+        - {listing_id: 1, nps_total: 100, reviews_total: 3}
+
+  - name: test_listing_nps_all_negative
+    description: All negative reviews → NPS = -100
+    model: listing_agg_nps_reviews
+    given:
+      - input: ref('fct_reviews')
+        rows:
+          - {listing_id: 1, review_sentiment: negative}
+          - {listing_id: 1, review_sentiment: negative}
+      - input: ref('dim_listings')
+        rows:
+          - {listing_id: 1, listing_name: Test Listing, room_type: Private room}
+    expect:
+      rows:
+        - {listing_id: 1, nps_total: -100, reviews_total: 2}
+
+  - name: test_listing_nps_equal_positive_negative
+    description: Equal positive and negative → NPS = 0
+    model: listing_agg_nps_reviews
+    given:
+      - input: ref('fct_reviews')
+        rows:
+          - {listing_id: 1, review_sentiment: positive}
+          - {listing_id: 1, review_sentiment: negative}
+          - {listing_id: 1, review_sentiment: positive}
+          - {listing_id: 1, review_sentiment: negative}
+      - input: ref('dim_listings')
+        rows:
+          - {listing_id: 1, listing_name: Test Listing, room_type: Private room}
+    expect:
+      rows:
+        - {listing_id: 1, nps_total: 0, reviews_total: 4}
+
+  - name: test_listing_nps_neutral_counted_in_denominator
+    description: Neutral reviews count toward total but not NPS score
+    model: listing_agg_nps_reviews
+    given:
+      - input: ref('fct_reviews')
+        rows:
+          - {listing_id: 1, review_sentiment: positive}
+          - {listing_id: 1, review_sentiment: neutral}
+          - {listing_id: 1, review_sentiment: neutral}
+      - input: ref('dim_listings')
+        rows:
+          - {listing_id: 1, listing_name: Test Listing, room_type: Private room}
+    expect:
+      rows:
+        - {listing_id: 1, nps_total: 33, reviews_total: 3}
+
+  # daily_agg_nps_reviews tests
+
+  - name: test_daily_nps_all_positive
+    description: A day with only positive reviews → nps_daily = 100
+    model: daily_agg_nps_reviews
+    given:
+      - input: ref('fct_reviews')
+        rows:
+          - {review_date: '2024-01-01', review_sentiment: positive}
+          - {review_date: '2024-01-01', review_sentiment: positive}
+    expect:
+      rows:
+        - {review_date: '2024-01-01', nps_daily: 100, reviews_daily: 2}
+
+  - name: test_daily_nps_all_negative
+    description: A day with only negative reviews → nps_daily = -100
+    model: daily_agg_nps_reviews
+    given:
+      - input: ref('fct_reviews')
+        rows:
+          - {review_date: '2024-01-01', review_sentiment: negative}
+    expect:
+      rows:
+        - {review_date: '2024-01-01', nps_daily: -100, reviews_daily: 1}
+
+  - name: test_daily_nps_neutral_counted_in_denominator
+    description: Neutral reviews count toward daily total but not NPS score
+    model: daily_agg_nps_reviews
+    given:
+      - input: ref('fct_reviews')
+        rows:
+          - {review_date: '2024-01-01', review_sentiment: positive}
+          - {review_date: '2024-01-01', review_sentiment: neutral}
+    expect:
+      rows:
+        - {review_date: '2024-01-01', nps_daily: 50, reviews_daily: 2}
+
+  - name: test_daily_nps_rolling_window_excludes_old_reviews
+    description: Reviews older than 28 days must NOT be included in the rolling NPS
+    model: daily_agg_nps_reviews
+    given:
+      - input: ref('fct_reviews')
+        rows:
+          - {review_date: '2024-01-01', review_sentiment: positive}
+          - {review_date: '2024-01-01', review_sentiment: positive}
+          - {review_date: '2024-01-01', review_sentiment: positive}
+          - {review_date: '2024-01-29', review_sentiment: positive}
+          - {review_date: '2024-01-30', review_sentiment: negative}
+    expect:
+      rows:
+        - {review_date: '2024-01-01', nps_daily: 100, reviews_daily: 3, nps_28d: 100, reviews_28d: 3}
+        - {review_date: '2024-01-29', nps_daily: 100, reviews_daily: 1, nps_28d: 100, reviews_28d: 1}
+        - {review_date: '2024-01-30', nps_daily: -100, reviews_daily: 1, nps_28d: 0, reviews_28d: 2}

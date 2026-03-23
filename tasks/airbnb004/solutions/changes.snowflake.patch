@@ -1,0 +1,29 @@
+--- a/models/fact/fct_reviews.sql
++++ b/models/fact/fct_reviews.sql
+@@ -2,7 +2,7 @@
+ 	config(
+ 		materialized="incremental" ,
+ 		alias="fct_reviews" ,
+-		schema="main"
++		schema="public"
+ 	)
+ }}
+ 
+@@ -11,7 +11,9 @@
+ 	FROM {{ref('src_reviews')}}
+ )
+ 
+-SELECT * 
++SELECT
++	{{dbt_utils.generate_surrogate_key(['LISTING_ID','REVIEW_DATE','REVIEWER_NAME','REVIEW_TEXT'])}} AS REVIEW_ID,
++	*
+ FROM src_reviews_cte
+ WHERE REVIEW_TEXT IS NOT NULL
+ 
+@@ -19,4 +21,4 @@
+ 	AND REVIEW_DATE > (SELECT MAX(REVIEW_DATE)
+ 					   FROM {{ this}}
+ 					   )
+-{% endif %}
+\ No newline at end of file
++{% endif %}

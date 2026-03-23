@@ -1,0 +1,73 @@
+name: Promote databases to production
+
+on:
+  pull_request_target:
+    branches: [main]
+    types: [closed]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: promote-databases
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for staging release
+        id: check
+        run: |
+          TAG="databases-staging-pr-${{ github.event.pull_request.number }}"
+          if gh release view "$TAG" &>/dev/null; then
+            echo "tag=$TAG" >> $GITHUB_OUTPUT
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "No staging release found for PR #${{ github.event.pull_request.number }} — skipping."
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+
+      - name: Download staged databases
+        if: steps.check.outputs.exists == 'true'
+        run: |
+          mkdir -p /tmp/dbs
+          gh release download "${{ steps.check.outputs.tag }}" \
+            --pattern "*.duckdb" \
+            --dir /tmp/dbs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+
+      - name: Upsert into production release
+        if: steps.check.outputs.exists == 'true'
+        run: |
+          shopt -s nullglob
+          dbs=(/tmp/dbs/*.duckdb)
+          if [ ${#dbs[@]} -eq 0 ]; then
+            echo "No .duckdb files found in staging release — skipping upload."
+            exit 0
+          fi
+
+          # Create production release if it doesn't exist yet
+          gh release view databases &>/dev/null || \
+            gh release create databases \
+              --title "Databases (production)" \
+              --notes "Stable DuckDB database files for ADE-bench tasks. Also used for CI unless a PR-specific override exists (see \`scripts/stage-database.sh\`)"
+
+          gh release upload databases "${dbs[@]}" --clobber
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+
+      - name: Delete staging release
+        if: always() && steps.check.outputs.exists == 'true'
+        run: |
+          gh release delete "${{ steps.check.outputs.tag }}" --cleanup-tag --yes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}

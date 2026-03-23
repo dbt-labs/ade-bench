@@ -1,0 +1,778 @@
+diff -ruN baseline/dbt_project.yml solution_snowflake/dbt_project.yml
+--- a/dbt_project.yml	2026-03-20 15:24:30
++++ b/dbt_project.yml	2026-03-20 15:24:42
+@@ -6,7 +6,7 @@
+ require-dbt-version: [">=1.3.0", "<2.0.0"]
+ 
+ 
+-profile: 'quickbooks-duckdb'
++profile: 'quickbooks-snowflake'
+ 
+ models:
+   +materialized: table
+@@ -102,6 +102,7 @@
+     using_department: true
+     using_deposit: true
+     using_estimate: true
++    using_exchange_rate: false
+     using_invoice: true
+     using_invoice_bundle: true
+     using_journal_entry: true
+@@ -114,8 +115,6 @@
+ 
+ analysis-paths: ["analysis"]
+ clean-targets:
+-  - target
+-  - dbt_modules
+-  - dbt_packages
+-flags:
+-  require_generic_test_arguments_property: true
+\ No newline at end of file
++- target
++- dbt_modules
++- dbt_packages
+diff -ruN baseline/models/double_entry_transactions/int_quickbooks__bill_double_entry.sql solution_snowflake/models/double_entry_transactions/int_quickbooks__bill_double_entry.sql
+--- a/models/double_entry_transactions/int_quickbooks__bill_double_entry.sql	2026-03-20 15:24:30
++++ b/models/double_entry_transactions/int_quickbooks__bill_double_entry.sql	2026-03-20 15:24:42
+@@ -37,7 +37,9 @@
+         bill_lines.index,
+         bills.transaction_date,
+         bill_lines.amount,
+-        (bill_lines.amount * coalesce(bills.exchange_rate, 1)) as converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            (bill_lines.amount * coalesce(bills.exchange_rate, 1)) as converted_amount,
++        {% endif %}
+         coalesce(bill_lines.account_expense_account_id,items.asset_account_id, items.expense_account_id, items.parent_expense_account_id, items.expense_account_id, items.parent_income_account_id, items.income_account_id) as payed_to_account_id,
+         bills.payable_account_id,
+         coalesce(bill_lines.account_expense_customer_id, bill_lines.item_expense_customer_id) as customer_id,
+@@ -64,7 +66,9 @@
+         customer_id,
+         vendor_id,
+         amount,
+-        converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            converted_amount,
++        {% endif %}
+         payed_to_account_id as account_id,
+         class_id,
+         department_id,
+@@ -82,7 +86,9 @@
+         customer_id,
+         vendor_id,
+         amount,
+-        converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            converted_amount,
++        {% endif %}
+         payable_account_id as account_id,
+         class_id,
+         department_id,
+diff -ruN baseline/models/double_entry_transactions/int_quickbooks__bill_payment_double_entry.sql solution_snowflake/models/double_entry_transactions/int_quickbooks__bill_payment_double_entry.sql
+--- a/models/double_entry_transactions/int_quickbooks__bill_payment_double_entry.sql	2026-03-20 15:24:30
++++ b/models/double_entry_transactions/int_quickbooks__bill_payment_double_entry.sql	2026-03-20 15:24:42
+@@ -45,7 +45,9 @@
+             order by bill_payments.source_relation, bill_payments.transaction_date) - 1 as index,
+         bill_payments.transaction_date,
+         bill_payments.total_amount as amount,
+-        (bill_payments.total_amount * coalesce(bill_payments.exchange_rate, 1)) as converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            (bill_payments.total_amount * coalesce(bill_payments.exchange_rate, 1)) as converted_amount,
++        {% endif %}
+         coalesce(bill_payments.credit_card_account_id,bill_payments.check_bank_account_id) as payment_account_id,
+         ap_accounts.account_id,
+         bill_payments.vendor_id,
+@@ -67,7 +69,9 @@
+         cast(null as {{ dbt.type_string() }}) as customer_id,
+         vendor_id,
+         amount,
+-        converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            converted_amount,
++        {% endif %}
+         payment_account_id as account_id,
+         cast(null as {{ dbt.type_string() }}) as class_id,
+         department_id,
+@@ -85,7 +89,9 @@
+         cast(null as {{ dbt.type_string() }}) as customer_id,
+         vendor_id,
+         amount,
+-        converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            converted_amount,
++        {% endif %}
+         account_id,
+         cast(null as {{ dbt.type_string() }}) as class_id,
+         department_id,
+diff -ruN baseline/models/double_entry_transactions/int_quickbooks__credit_memo_double_entry.sql solution_snowflake/models/double_entry_transactions/int_quickbooks__credit_memo_double_entry.sql
+--- a/models/double_entry_transactions/int_quickbooks__credit_memo_double_entry.sql	2026-03-20 15:24:30
++++ b/models/double_entry_transactions/int_quickbooks__credit_memo_double_entry.sql	2026-03-20 15:24:42
+@@ -50,7 +50,9 @@
+         credit_memo_lines.index,
+         credit_memos.transaction_date,
+         credit_memo_lines.amount,
+-        (credit_memo_lines.amount * coalesce(credit_memos.exchange_rate, 1)) as converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            (credit_memo_lines.amount * coalesce(credit_memos.exchange_rate, 1)) as converted_amount,
++        {% endif %}
+         coalesce(credit_memo_lines.sales_item_account_id, items.income_account_id, items.expense_account_id) as account_id,
+         credit_memos.customer_id,
+         coalesce(credit_memo_lines.sales_item_class_id, credit_memo_lines.discount_class_id, credit_memos.class_id) as class_id,
+@@ -80,7 +82,9 @@
+         customer_id,
+         cast(null as {{ dbt.type_string() }}) as vendor_id,
+         amount * -1 as amount,
+-        converted_amount * -1 as converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            converted_amount * -1 as converted_amount,
++        {% endif %}
+         account_id,
+         class_id,
+         department_id,
+@@ -98,7 +102,9 @@
+         customer_id,
+         cast(null as {{ dbt.type_string() }}) as vendor_id,
+         amount * -1 as amount,
+-        converted_amount * -1 as converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            converted_amount * -1 as converted_amount,
++        {% endif %}
+         df_accounts.account_id,
+         class_id,
+         department_id,
+diff -ruN baseline/models/double_entry_transactions/int_quickbooks__invoice_double_entry.sql solution_snowflake/models/double_entry_transactions/int_quickbooks__invoice_double_entry.sql
+--- a/models/double_entry_transactions/int_quickbooks__invoice_double_entry.sql	2026-03-20 15:24:30
++++ b/models/double_entry_transactions/int_quickbooks__invoice_double_entry.sql	2026-03-20 15:24:42
+@@ -107,10 +107,12 @@
+         case when invoice_lines.bundle_id is not null and invoices.total_amount = 0 then invoices.total_amount
+             else invoice_lines.amount
+         end as amount,
+-        case when invoice_lines.bundle_id is not null and invoices.total_amount = 0 
+-            then (invoices.total_amount * coalesce(invoices.exchange_rate, 1))
+-            else (invoice_lines.amount * coalesce(invoices.exchange_rate, 1))
+-        end as converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            case when invoice_lines.bundle_id is not null and invoices.total_amount = 0 
++                then (invoices.total_amount * coalesce(invoices.exchange_rate, 1))
++                else (invoice_lines.amount * coalesce(invoices.exchange_rate, 1))
++            end as converted_amount,
++        {% endif %}
+         case when invoice_lines.detail_type is not null then invoice_lines.detail_type
+             when coalesce(invoice_lines.account_id, items.parent_income_account_id, items.income_account_id, bundle_income_accounts.account_id, invoice_lines.sales_item_account_id) is not null then 'SalesItemLineDetail'
+             when invoice_lines.discount_account_id is not null then 'DiscountLineDetail'
+@@ -120,7 +122,9 @@
+ 
+         {% else %}
+         invoice_lines.amount as amount,
+-        (invoice_lines.amount * coalesce(invoices.exchange_rate, 1)) as converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            (invoice_lines.amount * coalesce(invoices.exchange_rate, 1)) as converted_amount,
++        {% endif %}
+         case when invoice_lines.detail_type is not null then invoice_lines.detail_type
+             when coalesce(invoice_lines.account_id, items.parent_income_account_id, items.income_account_id, invoice_lines.sales_item_account_id) is not null then 'SalesItemLineDetail'
+             when invoice_lines.discount_account_id is not null then 'DiscountLineDetail'
+@@ -169,7 +173,9 @@
+         customer_id,
+         cast(null as {{ dbt.type_string() }}) as vendor_id,
+         amount,
+-        converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            converted_amount,
++        {% endif %}
+         account_id,
+         class_id,
+         department_id,
+@@ -191,7 +197,9 @@
+         customer_id,
+         cast(null as {{ dbt.type_string() }}) as vendor_id,
+         amount,
+-        converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            converted_amount,
++        {% endif %}
+         ar_accounts.account_id,
+         class_id,
+         department_id,
+diff -ruN baseline/models/double_entry_transactions/int_quickbooks__journal_entry_double_entry.sql solution_snowflake/models/double_entry_transactions/int_quickbooks__journal_entry_double_entry.sql
+--- a/models/double_entry_transactions/int_quickbooks__journal_entry_double_entry.sql	2026-03-20 15:24:30
++++ b/models/double_entry_transactions/int_quickbooks__journal_entry_double_entry.sql	2026-03-20 15:24:42
+@@ -27,7 +27,9 @@
+         journal_entry_lines.customer_id,
+         journal_entry_lines.vendor_id,
+         journal_entry_lines.amount,
+-        (journal_entry_lines.amount * coalesce(journal_entries.exchange_rate, 1)) as converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            (journal_entry_lines.amount * coalesce(journal_entries.exchange_rate, 1)) as converted_amount,
++        {% endif %}
+         journal_entry_lines.account_id,
+         class_id,
+         journal_entry_lines.department_id,
+diff -ruN baseline/models/double_entry_transactions/int_quickbooks__payment_double_entry.sql solution_snowflake/models/double_entry_transactions/int_quickbooks__payment_double_entry.sql
+--- a/models/double_entry_transactions/int_quickbooks__payment_double_entry.sql	2026-03-20 15:24:30
++++ b/models/double_entry_transactions/int_quickbooks__payment_double_entry.sql	2026-03-20 15:24:42
+@@ -45,7 +45,9 @@
+             order by payments.source_relation, payments.transaction_date) - 1 as index,
+         payments.transaction_date,
+         payments.total_amount as amount,
+-        (payments.total_amount * coalesce(payments.exchange_rate, 1)) as converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            (payments.total_amount * coalesce(payments.exchange_rate, 1)) as converted_amount,
++        {% endif %}
+         payments.deposit_to_account_id,
+         payments.receivable_account_id,
+         payments.customer_id,
+@@ -63,7 +65,9 @@
+         customer_id,
+         cast(null as {{ dbt.type_string() }}) as vendor_id,
+         amount,
+-        converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            converted_amount,
++        {% endif %}
+         deposit_to_account_id as account_id,
+         cast(null as {{ dbt.type_string() }}) as class_id,
+         cast(null as {{ dbt.type_string() }}) as department_id,
+@@ -81,7 +85,9 @@
+         customer_id,
+         cast(null as {{ dbt.type_string() }}) as vendor_id,
+         amount,
+-        converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            converted_amount,
++        {% endif %}
+         coalesce(receivable_account_id, ar_accounts.account_id) as account_id,
+         cast(null as {{ dbt.type_string() }}) as class_id,
+         cast(null as {{ dbt.type_string() }}) as department_id,
+diff -ruN baseline/models/double_entry_transactions/int_quickbooks__purchase_double_entry.sql solution_snowflake/models/double_entry_transactions/int_quickbooks__purchase_double_entry.sql
+--- a/models/double_entry_transactions/int_quickbooks__purchase_double_entry.sql	2026-03-20 15:24:30
++++ b/models/double_entry_transactions/int_quickbooks__purchase_double_entry.sql	2026-03-20 15:24:42
+@@ -33,7 +33,9 @@
+         purchase_lines.index,
+         purchases.transaction_date,
+         purchase_lines.amount,
+-        (purchase_lines.amount * coalesce(purchases.exchange_rate, 1)) as converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            (purchase_lines.amount * coalesce(purchases.exchange_rate, 1)) as converted_amount,
++        {% endif %}
+         coalesce(purchase_lines.account_expense_account_id, items.parent_expense_account_id, items.expense_account_id) as payed_to_account_id,
+         purchases.account_id as payed_from_account_id,
+         case when coalesce(purchases.credit, false) = true then 'debit' else 'credit' end as payed_from_transaction_type,
+@@ -63,7 +65,9 @@
+         customer_id,
+         vendor_id,
+         amount,
+-        converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            converted_amount,
++        {% endif %}
+         payed_from_account_id as account_id,
+         class_id,
+         department_id,
+@@ -81,7 +85,9 @@
+         customer_id,
+         vendor_id,
+         amount,
+-        converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            converted_amount,
++        {% endif %}
+         payed_to_account_id as account_id,
+         class_id,
+         department_id,
+diff -ruN baseline/models/double_entry_transactions/int_quickbooks__refund_receipt_double_entry.sql solution_snowflake/models/double_entry_transactions/int_quickbooks__refund_receipt_double_entry.sql
+--- a/models/double_entry_transactions/int_quickbooks__refund_receipt_double_entry.sql	2026-03-20 15:24:30
++++ b/models/double_entry_transactions/int_quickbooks__refund_receipt_double_entry.sql	2026-03-20 15:24:42
+@@ -37,7 +37,9 @@
+         refund_receipt_lines.index,
+         refund_receipts.transaction_date,
+         refund_receipt_lines.amount,
+-        (refund_receipt_lines.amount * coalesce(refund_receipts.exchange_rate, 1)) as converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            (refund_receipt_lines.amount * coalesce(refund_receipts.exchange_rate, 1)) as converted_amount,
++        {% endif %}
+         refund_receipts.deposit_to_account_id as credit_to_account_id,
+         coalesce(refund_receipt_lines.discount_account_id, refund_receipt_lines.sales_item_account_id, items.parent_income_account_id, items.income_account_id) as debit_account_id,
+         refund_receipts.customer_id,
+@@ -66,7 +68,9 @@
+         customer_id,
+         cast(null as {{ dbt.type_string() }}) as vendor_id,
+         amount,
+-        converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            converted_amount,
++        {% endif %}
+         credit_to_account_id as account_id,
+         class_id,
+         department_id,
+@@ -84,7 +88,9 @@
+         customer_id,
+         cast(null as {{ dbt.type_string() }}) as vendor_id,
+         amount,
+-        converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            converted_amount,
++        {% endif %}
+         debit_account_id as account_id,
+         class_id,
+         department_id,
+diff -ruN baseline/models/double_entry_transactions/int_quickbooks__sales_receipt_double_entry.sql solution_snowflake/models/double_entry_transactions/int_quickbooks__sales_receipt_double_entry.sql
+--- a/models/double_entry_transactions/int_quickbooks__sales_receipt_double_entry.sql	2026-03-20 15:24:30
++++ b/models/double_entry_transactions/int_quickbooks__sales_receipt_double_entry.sql	2026-03-20 15:24:42
+@@ -41,11 +41,13 @@
+             then sales_receipt_lines.amount * (-1)
+             else sales_receipt_lines.amount
+         end as amount,
+-        case 
+-            when sales_receipt_lines.discount_account_id is not null 
+-            then (sales_receipt_lines.amount * coalesce(-sales_receipts.exchange_rate, -1))
+-            else (sales_receipt_lines.amount * coalesce(sales_receipts.exchange_rate, 1))
+-        end as converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            case 
++                when sales_receipt_lines.discount_account_id is not null 
++                then (sales_receipt_lines.amount * coalesce(-sales_receipts.exchange_rate, -1))
++                else (sales_receipt_lines.amount * coalesce(sales_receipts.exchange_rate, 1))
++            end as converted_amount,
++        {% endif %}
+         sales_receipts.deposit_to_account_id as debit_to_account_id,
+         coalesce(sales_receipt_lines.discount_account_id, sales_receipt_lines.sales_item_account_id, items.parent_income_account_id, items.income_account_id) as credit_to_account_id,
+         sales_receipts.customer_id,
+@@ -74,7 +76,9 @@
+         customer_id,
+         cast(null as {{ dbt.type_string() }}) as vendor_id,
+         amount,
+-        converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            converted_amount,
++        {% endif %}
+         debit_to_account_id as account_id,
+         class_id,
+         department_id,
+@@ -92,7 +96,9 @@
+         customer_id,
+         cast(null as {{ dbt.type_string() }}) as vendor_id,
+         amount,
+-        converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            converted_amount,
++        {% endif %}
+         credit_to_account_id as account_id,
+         class_id,
+         department_id,
+diff -ruN baseline/models/double_entry_transactions/int_quickbooks__vendor_credit_double_entry.sql solution_snowflake/models/double_entry_transactions/int_quickbooks__vendor_credit_double_entry.sql
+--- a/models/double_entry_transactions/int_quickbooks__vendor_credit_double_entry.sql	2026-03-20 15:24:30
++++ b/models/double_entry_transactions/int_quickbooks__vendor_credit_double_entry.sql	2026-03-20 15:24:42
+@@ -37,7 +37,9 @@
+         vendor_credit_lines.index,
+         vendor_credits.transaction_date,
+         vendor_credit_lines.amount,
+-        (vendor_credit_lines.amount * coalesce(vendor_credits.exchange_rate, 1)) as converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            (vendor_credit_lines.amount * coalesce(vendor_credits.exchange_rate, 1)) as converted_amount,
++        {% endif %}
+         vendor_credits.payable_account_id as debit_to_account_id,
+         coalesce(vendor_credit_lines.account_expense_account_id, items.parent_income_account_id, items.income_account_id, items.expense_account_id) as credit_account_id,
+         coalesce(account_expense_customer_id, item_expense_customer_id) as customer_id,
+@@ -64,7 +66,9 @@
+         customer_id,
+         vendor_id,
+         amount,
+-        converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            converted_amount,
++        {% endif %}
+         credit_account_id as account_id,
+         class_id,
+         department_id,
+@@ -82,7 +86,9 @@
+         customer_id,
+         vendor_id,
+         amount,
+-        converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            converted_amount,
++        {% endif %}
+         debit_to_account_id as account_id,
+         class_id,
+         department_id,
+diff -ruN baseline/models/intermediate/int_quickbooks__bill_join.sql solution_snowflake/models/intermediate/int_quickbooks__bill_join.sql
+--- a/models/intermediate/int_quickbooks__bill_join.sql	2026-03-20 15:24:30
++++ b/models/intermediate/int_quickbooks__bill_join.sql	2026-03-20 15:24:42
+@@ -71,13 +71,17 @@
+         bill_link.vendor_id as vendor_id,
+         bill_link.payable_account_id,
+         bill_link.total_amount as total_amount,
+-        (bill_link.total_amount * coalesce(bill_link.exchange_rate, 1)) as total_converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            (bill_link.total_amount * coalesce(bill_link.exchange_rate, 1)) as total_converted_amount,
++        {% endif %}
+         bill_link.balance as current_balance,
+         bill_link.due_date_at as due_date,
+         min(bill_payments.transaction_date) as initial_payment_date,
+         max(bill_payments.transaction_date) as recent_payment_date,
+         sum(coalesce(bill_payment_lines.amount, 0)) as total_current_payment,
+-        sum(coalesce(bill_payment_lines.amount, 0) * coalesce(bill_payments.exchange_rate, 1)) as total_current_converted_payment
++        {% if var('using_exchange_rate', True) %}
++            sum(coalesce(bill_payment_lines.amount, 0) * coalesce(bill_payments.exchange_rate, 1)) as total_current_converted_payment,
++        {% endif %}
+ 
+     from bill_link
+ 
+@@ -91,7 +95,12 @@
+         and bill_link.bill_id = bill_payment_lines.bill_id
+         and bill_link.source_relation = bill_payment_lines.source_relation
+     
+-    {{ dbt_utils.group_by(11) }} 
++    {% if var('using_exchange_rate', True) %}
++        {{ dbt_utils.group_by(11) }} 
++    {% else %}
++        {{ dbt_utils.group_by(10) }} 
++    {% endif %}
++    
+ )
+ 
+ select * 
+diff -ruN baseline/models/intermediate/int_quickbooks__expenses_union.sql solution_snowflake/models/intermediate/int_quickbooks__expenses_union.sql
+--- a/models/intermediate/int_quickbooks__expenses_union.sql	2026-03-20 15:24:30
++++ b/models/intermediate/int_quickbooks__expenses_union.sql	2026-03-20 15:24:42
+@@ -88,9 +88,13 @@
+         expense_union.billable_status,
+         expense_union.description,
+         expense_union.amount,
+-        expense_union.converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            expense_union.converted_amount,
++        {% endif %}
+         expense_union.total_amount,
+-        expense_union.total_converted_amount
++        {% if var('using_exchange_rate', True) %}
++            expense_union.total_converted_amount
++        {% endif %}
+ 
+     from expense_union
+ 
+diff -ruN baseline/models/intermediate/int_quickbooks__invoice_join.sql solution_snowflake/models/intermediate/int_quickbooks__invoice_join.sql
+--- a/models/intermediate/int_quickbooks__invoice_join.sql	2026-03-20 15:24:30
++++ b/models/intermediate/int_quickbooks__invoice_join.sql	2026-03-20 15:24:42
+@@ -96,17 +96,24 @@
+         invoice_link.shipping_address_id,
+         invoice_link.delivery_type,
+         invoice_link.total_amount as total_amount,
+-        (invoice_link.total_amount * coalesce(invoice_link.exchange_rate, 1)) as total_converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            (invoice_link.total_amount * coalesce(invoice_link.exchange_rate, 1)) as total_converted_amount,
++        {% endif %}
+         invoice_link.balance as current_balance,
+ 
+         {% if var('using_estimate', True) %}
+         coalesce(estimates.total_amount, 0) as estimate_total_amount,
+-        coalesce(estimates.total_amount, 0) * coalesce(estimates.exchange_rate, 1) as estimate_total_converted_amount,
++
++        {% if var('using_exchange_rate', True) %}
++            coalesce(estimates.total_amount, 0) * coalesce(estimates.exchange_rate, 1) as estimate_total_converted_amount,
++        {% endif %}
+         estimates.transaction_status as estimate_status,
+ 
+         {% else %}
+         cast(null as {{ dbt.type_numeric() }}) as estimate_total_amount,
+-        cast(null as {{ dbt.type_numeric() }}) as estimate_total_converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            cast(null as {{ dbt.type_numeric() }}) as estimate_total_converted_amount,
++        {% endif %}
+         cast(null as {{ dbt.type_string() }}) as estimate_status,
+ 
+         {% endif %}
+@@ -115,7 +122,9 @@
+         min(payments.transaction_date) as initial_payment_date,
+         max(payments.transaction_date) as recent_payment_date,
+         sum(coalesce(payment_lines_payment.amount, 0)) as total_current_payment,
+-        sum(coalesce(payment_lines_payment.amount, 0) * coalesce(payments.exchange_rate, 1)) as total_current_converted_payment
++        {% if var('using_exchange_rate', True) %}
++            sum(coalesce(payment_lines_payment.amount, 0) * coalesce(payments.exchange_rate, 1)) as total_current_converted_payment,
++        {% endif %}
+ 
+     from invoice_link
+ 
+@@ -134,8 +143,11 @@
+         and invoice_link.invoice_id = payment_lines_payment.invoice_id
+         and invoice_link.source_relation = payment_lines_payment.source_relation
+ 
+-
+-    {{ dbt_utils.group_by(17) }} 
++    {% if var('using_exchange_rate', True) %}
++        {{ dbt_utils.group_by(17) }} 
++    {% else %}
++        {{ dbt_utils.group_by(15) }} 
++    {% endif %}
+ )
+ 
+ select * 
+diff -ruN baseline/models/intermediate/int_quickbooks__sales_union.sql solution_snowflake/models/intermediate/int_quickbooks__sales_union.sql
+--- a/models/intermediate/int_quickbooks__sales_union.sql	2026-03-20 15:24:30
++++ b/models/intermediate/int_quickbooks__sales_union.sql	2026-03-20 15:24:42
+@@ -93,9 +93,13 @@
+         sales_union.billable_status,
+         sales_union.description,
+         sales_union.amount,
+-        sales_union.converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            sales_union.converted_amount,
++        {% endif %}
+         sales_union.total_amount,
+-        sales_union.total_converted_amount
++        {% if var('using_exchange_rate', True) %}
++            sales_union.total_converted_amount,
++        {% endif %}
+     from sales_union
+ 
+     inner join income_accounts
+diff -ruN baseline/models/quickbooks__ap_ar_enhanced.sql solution_snowflake/models/quickbooks__ap_ar_enhanced.sql
+--- a/models/quickbooks__ap_ar_enhanced.sql	2026-03-20 15:24:30
++++ b/models/quickbooks__ap_ar_enhanced.sql	2026-03-20 15:24:42
+@@ -70,9 +70,13 @@
+         cast(null as {{ dbt.type_string() }}) as delivery_type,
+         cast(null as {{ dbt.type_string() }}) as estimate_status,
+         bill_join.total_amount,
+-        bill_join.total_converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            bill_join.total_converted_amount,
++        {% endif %}
+         cast(null as {{ dbt.type_numeric() }}) as estimate_total_amount,
+-        cast(null as {{ dbt.type_numeric() }}) as estimate_total_converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            cast(null as {{ dbt.type_numeric() }}) as estimate_total_converted_amount,
++        {% endif %}
+         bill_join.current_balance,
+         bill_join.due_date,
+         case when bill_join.current_balance != 0 and {{ dbt.datediff("bill_join.recent_payment_date", "bill_join.due_date", 'day') }} < 0
+@@ -86,7 +90,9 @@
+         bill_join.initial_payment_date,
+         bill_join.recent_payment_date,
+         bill_join.total_current_payment,
+-        bill_join.total_current_converted_payment
++        {% if var('using_exchange_rate', True) %}
++            bill_join.total_current_converted_payment,
++        {% endif %}
+     from bill_join
+ 
+     {% if var('using_department', True) %}
+@@ -133,9 +139,13 @@
+         invoice_join.delivery_type,
+         invoice_join.estimate_status,
+         invoice_join.total_amount as total_amount,
+-        invoice_join.total_converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            invoice_join.total_converted_amount,
++        {% endif %}
+         invoice_join.estimate_total_amount as estimate_total_amount,
+-        invoice_join.estimate_total_converted_amount as estimate_total_converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            invoice_join.estimate_total_converted_amount as estimate_total_converted_amount,
++        {% endif %}
+         invoice_join.current_balance as current_balance,
+         invoice_join.due_date,
+         case when invoice_join.current_balance != 0 and {{ dbt.datediff("invoice_join.recent_payment_date", "invoice_join.due_date", 'day') }} < 0
+@@ -149,7 +159,9 @@
+         invoice_join.initial_payment_date,
+         invoice_join.recent_payment_date,
+         invoice_join.total_current_payment as total_current_payment,
+-        invoice_join.total_current_converted_payment
++        {% if var('using_exchange_rate', True) %}
++            invoice_join.total_current_converted_payment,
++        {% endif %}
+ 
+     from invoice_join
+ 
+diff -ruN baseline/models/transaction_lines/int_quickbooks__bill_transactions.sql solution_snowflake/models/transaction_lines/int_quickbooks__bill_transactions.sql
+--- a/models/transaction_lines/int_quickbooks__bill_transactions.sql	2026-03-20 15:24:30
++++ b/models/transaction_lines/int_quickbooks__bill_transactions.sql	2026-03-20 15:24:42
+@@ -45,9 +45,13 @@
+         ) as billable_status,
+         coalesce(bill_lines.description, items.name) as description,
+         bill_lines.amount,
+-        bill_lines.amount * coalesce(bills.exchange_rate, 1) as converted_amount,
+-        bills.total_amount,
+-        bills.total_amount * coalesce(bills.exchange_rate, 1) as total_converted_amount
++        {% if var('using_exchange_rate', True) %}
++            bill_lines.amount * coalesce(bills.exchange_rate, 1) as converted_amount,
++        {% endif %}
++        bills.total_amount, 
++        {% if var('using_exchange_rate', True) %}
++            bills.total_amount * coalesce(bills.exchange_rate, 1) as total_converted_amount,
++        {% endif %}
+     from bills
+ 
+     inner join bill_lines 
+diff -ruN baseline/models/transaction_lines/int_quickbooks__credit_memo_transactions.sql solution_snowflake/models/transaction_lines/int_quickbooks__credit_memo_transactions.sql
+--- a/models/transaction_lines/int_quickbooks__credit_memo_transactions.sql	2026-03-20 15:24:30
++++ b/models/transaction_lines/int_quickbooks__credit_memo_transactions.sql	2026-03-20 15:24:42
+@@ -42,9 +42,13 @@
+         cast(null as {{ dbt.type_string() }}) as billable_status,
+         credit_memo_lines.description,
+         credit_memo_lines.amount * -1 as amount,
+-        credit_memo_lines.amount * coalesce(-credit_memos.exchange_rate, -1) as converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            credit_memo_lines.amount * coalesce(-credit_memos.exchange_rate, -1) as converted_amount,
++        {% endif %}
+         credit_memos.total_amount * -1 as total_amount,
+-        credit_memos.total_amount * coalesce(-credit_memos.exchange_rate, -1) as total_converted_amount
++        {% if var('using_exchange_rate', True) %}
++            credit_memos.total_amount * coalesce(-credit_memos.exchange_rate, -1) as total_converted_amount
++        {% endif %}
+     from credit_memos
+ 
+     inner join credit_memo_lines
+diff -ruN baseline/models/transaction_lines/int_quickbooks__deposit_transactions.sql solution_snowflake/models/transaction_lines/int_quickbooks__deposit_transactions.sql
+--- a/models/transaction_lines/int_quickbooks__deposit_transactions.sql	2026-03-20 15:24:30
++++ b/models/transaction_lines/int_quickbooks__deposit_transactions.sql	2026-03-20 15:24:42
+@@ -30,9 +30,13 @@
+         cast(null as {{ dbt.type_string() }}) as billable_status,
+         deposit_lines.description,
+         deposit_lines.amount,
+-        deposit_lines.amount * (coalesce(deposits.home_total_amount/nullif(deposits.total_amount, 0), 1)) as converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            deposit_lines.amount * (coalesce(deposits.home_total_amount/nullif(deposits.total_amount, 0), 1)) as converted_amount,
++        {% endif %}
+         deposits.total_amount,
+-        deposits.total_amount * (coalesce(deposits.home_total_amount/nullif(deposits.total_amount, 0), 1)) as total_converted_amount
++        {% if var('using_exchange_rate', True) %}
++            deposits.total_amount * (coalesce(deposits.home_total_amount/nullif(deposits.total_amount, 0), 1)) as total_converted_amount
++        {% endif %}
+     from deposits
+     
+     inner join deposit_lines 
+diff -ruN baseline/models/transaction_lines/int_quickbooks__invoice_transactions.sql solution_snowflake/models/transaction_lines/int_quickbooks__invoice_transactions.sql
+--- a/models/transaction_lines/int_quickbooks__invoice_transactions.sql	2026-03-20 15:24:30
++++ b/models/transaction_lines/int_quickbooks__invoice_transactions.sql	2026-03-20 15:24:42
+@@ -42,9 +42,13 @@
+         cast(null as {{ dbt.type_string() }}) as billable_status,
+         invoice_lines.description,
+         invoice_lines.amount,
+-        invoice_lines.amount * coalesce(invoices.exchange_rate, 1) as converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            invoice_lines.amount * coalesce(invoices.exchange_rate, 1) as converted_amount,
++        {% endif %}
+         invoices.total_amount,
+-        invoices.total_amount * coalesce(invoices.exchange_rate, 1) as total_converted_amount
++        {% if var('using_exchange_rate', True) %}
++            invoices.total_amount * coalesce(invoices.exchange_rate, 1) as total_converted_amount
++        {% endif %}
+     from invoices
+ 
+     inner join invoice_lines
+diff -ruN baseline/models/transaction_lines/int_quickbooks__journal_entry_transactions.sql solution_snowflake/models/transaction_lines/int_quickbooks__journal_entry_transactions.sql
+--- a/models/transaction_lines/int_quickbooks__journal_entry_transactions.sql	2026-03-20 15:24:30
++++ b/models/transaction_lines/int_quickbooks__journal_entry_transactions.sql	2026-03-20 15:24:42
+@@ -33,12 +33,16 @@
+             then journal_entry_lines.amount * -1 
+             else journal_entry_lines.amount 
+         end as amount,
+-        case when lower(journal_entry_lines.posting_type) = 'credit'
+-            then journal_entry_lines.amount * coalesce(-journal_entries.exchange_rate, -1)
+-            else journal_entry_lines.amount * coalesce(journal_entries.exchange_rate, 1)
+-        end as converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            case when lower(journal_entry_lines.posting_type) = 'credit'
++                then journal_entry_lines.amount * coalesce(-journal_entries.exchange_rate, -1)
++                else journal_entry_lines.amount * coalesce(journal_entries.exchange_rate, 1)
++            end as converted_amount,
++        {% endif %}
+         journal_entries.total_amount,
+-        journal_entries.total_amount * coalesce(journal_entries.exchange_rate, 1) as total_converted_amount
++        {% if var('using_exchange_rate', True) %}
++            journal_entries.total_amount * coalesce(journal_entries.exchange_rate, 1) as total_converted_amount
++        {% endif %}
+     from journal_entries
+ 
+     inner join journal_entry_lines
+diff -ruN baseline/models/transaction_lines/int_quickbooks__purchase_transactions.sql solution_snowflake/models/transaction_lines/int_quickbooks__purchase_transactions.sql
+--- a/models/transaction_lines/int_quickbooks__purchase_transactions.sql	2026-03-20 15:24:30
++++ b/models/transaction_lines/int_quickbooks__purchase_transactions.sql	2026-03-20 15:24:42
+@@ -45,18 +45,22 @@
+             then -1 * purchase_lines.amount
+             else purchase_lines.amount
+         end as amount,
+-        case when coalesce(purchases.credit, false)
+-            then purchase_lines.amount * coalesce(-purchases.exchange_rate, -1)
+-            else purchase_lines.amount * coalesce(purchases.exchange_rate, 1)
+-        end as converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            case when coalesce(purchases.credit, false)
++                then purchase_lines.amount * coalesce(-purchases.exchange_rate, -1)
++                else purchase_lines.amount * coalesce(purchases.exchange_rate, 1)
++            end as converted_amount,
++        {% endif %}
+         case when coalesce(purchases.credit, false) 
+             then -1 * purchases.total_amount
+             else purchases.total_amount
+         end as total_amount,
+-        case when coalesce(purchases.credit, false) 
+-            then purchases.total_amount * coalesce(-purchases.exchange_rate, -1)
+-            else purchases.total_amount * coalesce(purchases.exchange_rate, 1)
+-        end as total_converted_amount
++        {% if var('using_exchange_rate', True) %}
++            case when coalesce(purchases.credit, false) 
++                then purchases.total_amount * coalesce(-purchases.exchange_rate, -1)
++                else purchases.total_amount * coalesce(purchases.exchange_rate, 1)
++            end as total_converted_amount
++        {% endif %}
+     from purchases
+ 
+     inner join purchase_lines 
+diff -ruN baseline/models/transaction_lines/int_quickbooks__refund_receipt_transactions.sql solution_snowflake/models/transaction_lines/int_quickbooks__refund_receipt_transactions.sql
+--- a/models/transaction_lines/int_quickbooks__refund_receipt_transactions.sql	2026-03-20 15:24:30
++++ b/models/transaction_lines/int_quickbooks__refund_receipt_transactions.sql	2026-03-20 15:24:42
+@@ -42,9 +42,13 @@
+         cast(null as {{ dbt.type_string() }}) as billable_status,
+         refund_receipt_lines.description,
+         refund_receipt_lines.amount * -1 as amount,
+-        refund_receipt_lines.amount * coalesce(-refund_receipts.exchange_rate, -1) as converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            refund_receipt_lines.amount * coalesce(-refund_receipts.exchange_rate, -1) as converted_amount,
++        {% endif %}
+         refund_receipts.total_amount * -1 as total_amount,
+-        refund_receipts.total_amount * coalesce(-refund_receipts.exchange_rate, -1) as total_converted_amount
++        {% if var('using_exchange_rate', True) %}
++            refund_receipts.total_amount * coalesce(-refund_receipts.exchange_rate, -1) as total_converted_amount
++        {% endif %}
+     from refund_receipts
+ 
+     inner join refund_receipt_lines
+diff -ruN baseline/models/transaction_lines/int_quickbooks__sales_receipt_transactions.sql solution_snowflake/models/transaction_lines/int_quickbooks__sales_receipt_transactions.sql
+--- a/models/transaction_lines/int_quickbooks__sales_receipt_transactions.sql	2026-03-20 15:24:30
++++ b/models/transaction_lines/int_quickbooks__sales_receipt_transactions.sql	2026-03-20 15:24:42
+@@ -39,9 +39,13 @@
+         cast(null as {{ dbt.type_string() }}) as billable_status,
+         sales_receipt_lines.description,
+         sales_receipt_lines.amount,
+-        sales_receipt_lines.amount * (coalesce(sales_receipts.exchange_rate, 1)) as converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            sales_receipt_lines.amount * (coalesce(sales_receipts.exchange_rate, 1)) as converted_amount,
++        {% endif %}
+         sales_receipts.total_amount,
+-        sales_receipts.total_amount * (coalesce(sales_receipts.exchange_rate, 1)) as total_converted_amount
++        {% if var('using_exchange_rate', True) %}
++            sales_receipts.total_amount * (coalesce(sales_receipts.exchange_rate, 1)) as total_converted_amount
++        {% endif %}
+     from sales_receipts
+ 
+     inner join sales_receipt_lines
+diff -ruN baseline/models/transaction_lines/int_quickbooks__vendor_credit_transactions.sql solution_snowflake/models/transaction_lines/int_quickbooks__vendor_credit_transactions.sql
+--- a/models/transaction_lines/int_quickbooks__vendor_credit_transactions.sql	2026-03-20 15:24:30
++++ b/models/transaction_lines/int_quickbooks__vendor_credit_transactions.sql	2026-03-20 15:24:42
+@@ -64,10 +64,14 @@
+         
+         -- Correct type handling for negative amounts
+         vendor_credit_lines.amount * -1 as amount,
+-        vendor_credit_lines.amount * coalesce(-vendor_credits.exchange_rate, -1) as converted_amount,
++        {% if var('using_exchange_rate', True) %}
++            vendor_credit_lines.amount * coalesce(-vendor_credits.exchange_rate, -1) as converted_amount,
++        {% endif %}
+         
+         vendor_credits.total_amount * -1 as total_amount,
+-        vendor_credits.total_amount * coalesce(-vendor_credits.exchange_rate, -1) as total_converted_amount
++        {% if var('using_exchange_rate', True) %}
++            vendor_credits.total_amount * coalesce(-vendor_credits.exchange_rate, -1) as total_converted_amount
++        {% endif %}
+         
+     from vendor_credits
+ 

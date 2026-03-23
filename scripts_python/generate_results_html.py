@@ -140,7 +140,7 @@ class ResultsHTMLGenerator:
         from scripts_python.summarize_results import summarize_results
 
         summary_data = summarize_results(benchmark_results)
-        html_table = generate_html_table(benchmark_results)
+        html_table = generate_html_table(benchmark_results, self.experiment_dir)
 
         # Extract summary stats
         summary = summary_data["summary"]
@@ -313,6 +313,9 @@ class ResultsHTMLGenerator:
         # Generate diffs page
         self._generate_diffs_page(task_data, task_dir, task_html_dir)
 
+        # Generate data comparisons page (only if comparison artifacts exist)
+        self._generate_data_comparisons_page(task_data, task_dir, task_html_dir)
+
     def _generate_results_page(
         self, task_data: Dict[str, Any], task_dir: Path, task_html_dir: Path
     ):
@@ -450,6 +453,87 @@ class ResultsHTMLGenerator:
         self._write_detail_page(
             task_html_dir / "diffs.html", "File Diffs", task_data["task_id"], content, "diffs"
         )
+
+    def _generate_data_comparisons_page(
+        self, task_data: Dict[str, Any], task_dir: Path, task_html_dir: Path
+    ):
+        """Generate data comparisons detail page from diff.html artifacts."""
+        comparisons_dir = task_dir / "data_comparisons"
+        if not comparisons_dir.exists():
+            return  # No data comparisons for this task
+
+        # Collect all diff.html files
+        diff_files = sorted(comparisons_dir.glob("*/diff.html"))
+        if not diff_files:
+            return
+
+        # Combine all diff HTMLs into one page
+        combined_html = ""
+        for diff_file in diff_files:
+            diff_content = diff_file.read_text()
+            # Extract just the body content from each diff.html
+            # Each diff.html is self-contained, so we extract between <body> tags
+            import re
+
+            body_match = re.search(r"<body>(.*)</body>", diff_content, re.DOTALL)
+            if body_match:
+                combined_html += body_match.group(1)
+            else:
+                combined_html += diff_content
+            combined_html += '<hr style="border-color: #3c3c3c; margin: 32px 0;">'
+
+        # Write as a full page using the same styling as individual diffs
+        page_html = f"""<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Data Comparisons - {html.escape(task_data['task_id'])}</title>
+    <style>
+        body {{
+            background: #1e1e1e;
+            color: #d4d4d4;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 13px;
+            padding: 20px;
+            margin: 0;
+        }}
+        a {{ color: #569cd6; }}
+        .back-link {{ margin-bottom: 16px; }}
+        .header {{ margin-bottom: 20px; }}
+        .header h2 {{ color: #569cd6; margin: 0 0 5px 0; }}
+        .header.error .error-msg {{ color: #f44747; font-size: 14px; }}
+        .section {{ margin-bottom: 24px; }}
+        .section h3 {{ color: #dcdcaa; border-bottom: 1px solid #3c3c3c; padding-bottom: 4px; }}
+        .col-list {{ color: #9cdcfe; }}
+        .missing {{ color: #f44747; }}
+        .extra {{ color: #6a9955; }}
+        .within-tolerance {{ color: #dcdcaa; }}
+        table {{ border-collapse: collapse; width: 100%; margin: 8px 0; }}
+        th, td {{ text-align: left; padding: 4px 12px; border: 1px solid #3c3c3c; }}
+        th {{ background: #2d2d2d; color: #569cd6; }}
+        .summary-table {{ width: auto; }}
+        .summary-table td.num {{ text-align: right; padding-left: 24px; color: #b5cea8; }}
+        .summary-table tr.missing td {{ color: #f44747; }}
+        .summary-table tr.extra td {{ color: #6a9955; }}
+        .diff-table td.expected {{ color: #f44747; }}
+        .diff-table td.actual {{ color: #6a9955; }}
+        .diff-row.within-tolerance td {{ color: #dcdcaa; }}
+        .data-table.missing td {{ color: #f44747; }}
+        .data-table.extra td {{ color: #6a9955; }}
+        details {{ margin: 8px 0; }}
+        summary {{ cursor: pointer; color: #9cdcfe; padding: 4px 0; }}
+        code {{ background: #2d2d2d; padding: 2px 6px; border-radius: 3px; }}
+        ul {{ margin: 4px 0; padding-left: 24px; }}
+    </style>
+</head>
+<body>
+<div class="back-link"><a href="../index.html">&larr; Back to summary</a></div>
+{combined_html}
+</body>
+</html>"""
+
+        with open(task_html_dir / "data_comparisons.html", "w") as f:
+            f.write(page_html)
 
     def _write_detail_page(
         self,

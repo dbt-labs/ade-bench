@@ -16,6 +16,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -80,7 +81,24 @@ jobs:
         run: uv sync
 
       - name: Download DuckDB databases
-        run: uv run --with gdown gdown --folder https://drive.google.com/drive/folders/1CNS_8mf81to02868HA-celmcPEFu4BPE -O shared/databases/duckdb
+        run: |
+          mkdir -p shared/databases/duckdb
+          # Per-PR staging release takes precedence over production (only exists when a new DB is being introduced)
+          PR_TAG="databases-staging-pr-${{ github.event.pull_request.number }}"
+          if gh release view "$PR_TAG" --repo dbt-labs/ade-bench &>/dev/null; then
+            gh release download "$PR_TAG" \
+              --repo dbt-labs/ade-bench \
+              --pattern "*.duckdb" \
+              --dir shared/databases/duckdb \
+              --skip-existing
+          fi
+          gh release download databases \
+            --repo dbt-labs/ade-bench \
+            --pattern "*.duckdb" \
+            --dir shared/databases/duckdb \
+            --skip-existing
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       # Pre-build the Docker image once to avoid race conditions when multiple
       # concurrent trials try to build the same cached image simultaneously

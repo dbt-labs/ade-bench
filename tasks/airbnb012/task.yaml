@@ -1,0 +1,33 @@
+task_id: airbnb012
+status: ready
+description: Add unit tests to verify the NPS calculation logic in the review aggregation models.
+prompts:
+  - key: base
+    prompt: |-
+      Add tests to verify the logic in the `listing_agg_nps_reviews` and `daily_agg_nps_reviews`
+      models is correct.
+author_name: test
+author_email: test
+difficulty: hard
+tags:
+  - dbt
+  - dbt-unit-tests
+  - data-inspection
+  - external-knowledge
+
+test_setup: |-
+  dbt run --select listing_agg_nps_reviews daily_agg_nps_reviews
+  python3 /tmp/check_unit_tests.py
+  dbt seed --select unit_test_manifest
+  python3 /tmp/run_broken_model_tests.py
+  dbt seed --select broken_model_results
+
+variants:
+- db_type: duckdb
+  db_name: airbnb
+  project_type: dbt
+  project_name: airbnb
+- db_type: duckdb
+  db_name: airbnb
+  project_type: dbt-fusion
+  project_name: airbnb
