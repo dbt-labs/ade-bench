@@ -1,0 +1,15 @@
+
+
+seeds:
+  helixops_saas:
+    solution__int_account_workspaces:
+      +column_types:
+        account_id: varchar
+        workspace_count: bigint
+        active_workspace_count: bigint
+        prod_workspace_count: bigint
+        sandbox_workspace_count: bigint
+        primary_workspace_count: bigint
+        primary_workspace_name: varchar
+        first_workspace_created_at: timestamp
+        latest_workspace_created_at: timestamp

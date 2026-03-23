@@ -1,0 +1,25 @@
+
+
+seeds:
+  helixops_saas:
+    solution__int_account_users:
+      +column_types:
+        user_id: varchar
+        account_id: varchar
+        account_name: varchar
+        industry: varchar
+        region: varchar
+        segment: varchar
+        billing_country: varchar
+        account_status: varchar
+        owner_team: varchar
+        email_address: varchar
+        full_name: varchar
+        title: varchar
+        department: varchar
+        created_at: timestamp
+        last_login_at: timestamp
+        user_status: varchar
+        is_active_user: boolean
+        is_test_user: boolean
+        days_since_last_login: bigint

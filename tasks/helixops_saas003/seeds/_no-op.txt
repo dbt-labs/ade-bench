@@ -1,0 +1,20 @@
+
+
+seeds:
+  helixops_saas:
+    solution__int_account_daily_usage:
+      +column_types:
+        account_id: varchar
+        account_name: varchar
+        industry: varchar
+        segment: varchar
+        region: varchar
+        billing_country: varchar
+        usage_date: date
+        workspace_days_reporting: bigint
+        active_users: bigint
+        projects_run: bigint
+        api_calls: bigint
+        alerts_sent: bigint
+        max_storage_gb: double
+        avg_storage_gb: double

@@ -1,0 +1,34 @@
+
+
+seeds:
+  helixops_saas:
+    solution__fct_support_tickets:
+      +column_types:
+        ticket_id: varchar
+        account_id: varchar
+        account_name: varchar
+        segment: varchar
+        region: varchar
+        billing_country: varchar
+        plan_name: varchar
+        plan_family: varchar
+        support_tier: varchar
+        workspace_id: varchar
+        workspace_name: varchar
+        environment_tier: varchar
+        opened_by_user_id: varchar
+        opened_at: timestamp
+        first_response_at: timestamp
+        resolved_at: timestamp
+        priority: varchar
+        category: varchar
+        ticket_status: varchar
+        csat_score: integer
+        first_response_minutes: bigint
+        resolution_minutes: bigint
+        response_sla_minutes: integer
+        met_response_sla: boolean
+        is_open_ticket: boolean
+        ticket_age_days: bigint
+        opened_month: date
+        resolved_month: date

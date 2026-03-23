@@ -1,0 +1,26 @@
+
+
+seeds:
+  helixops_saas:
+    solution__dim_accounts_v2:
+      +column_types:
+        account_id: varchar
+        account_name: varchar
+        industry: varchar
+        region: varchar
+        segment: varchar
+        billing_country: varchar
+        created_at: timestamp
+        customer_status: varchar
+        is_churned: boolean
+        employee_band: varchar
+        owner_team: varchar
+        workspace_count: bigint
+        active_workspace_count: bigint
+        prod_workspace_count: bigint
+        sandbox_workspace_count: bigint
+        primary_workspace_name: varchar
+        user_count: bigint
+        active_user_count: bigint
+        inactive_user_count: bigint
+        provisioned_user_count: bigint

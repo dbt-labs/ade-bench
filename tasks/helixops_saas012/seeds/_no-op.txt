@@ -1,0 +1,25 @@
+
+
+seeds:
+  helixops_saas:
+    solution__fct_monthly_revenue:
+      +column_types:
+        account_id: varchar
+        account_name: varchar
+        segment: varchar
+        region: varchar
+        billing_country: varchar
+        invoice_month: date
+        plan_name: varchar
+        latest_subscription_status: varchar
+        invoice_count: bigint
+        recurring_revenue_usd: double
+        one_time_revenue_usd: double
+        subtotal_usd: double
+        tax_usd: double
+        total_revenue_usd: double
+        collected_revenue_usd: double
+        outstanding_revenue_usd: double
+        open_invoice_count: bigint
+        past_due_invoice_count: bigint
+        has_past_due_invoice: boolean
