@@ -271,6 +271,17 @@ dbt projects need data to run against. The easiest way to share data is via a Du
 
 ADE-bench can automatically migrate DuckDB databases into Snowflake. For more, see the [README](/README#4-migrate-duckdb-databases-to-snowflake).
 
+### Staging a new database for CI
+
+Database files are stored in the [`databases` GitHub Release](https://github.com/dbt-labs/ade-bench/releases/tag/databases) and downloaded automatically by CI. To introduce a new `.duckdb` file (or update an existing one), upload it to a per-PR staging release before pushing:
+
+```bash
+# Open a PR on your branch first, then:
+./scripts/stage-database.sh shared/databases/duckdb/my_new_database.duckdb
+```
+
+This creates a `databases-staging-pr-<N>` pre-release scoped to your PR. CI will download from it first, falling back to the production release for any files not in staging. When your PR is merged, the promotion workflow automatically upserts your staged file(s) into the production release and cleans up the staging release.
+
 ---
 
 ## Connecting to external projects and data sources

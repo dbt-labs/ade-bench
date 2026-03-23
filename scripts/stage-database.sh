@@ -24,7 +24,7 @@ if ! gh release view "$TAG" &>/dev/null; then
   gh release create "$TAG" \
     --prerelease \
     --title "Databases (staging PR #${PR})" \
-    --notes "Staging database files for PR #${PR}. Promoted to production on merge."
+    --notes "Staging DuckDB database files for PR #${PR}. Promoted to production on merge (see \`scripts/stage-database.sh\`)."
   echo "Created staging release $TAG"
 fi
 

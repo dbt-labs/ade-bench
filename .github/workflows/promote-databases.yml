@@ -50,7 +50,7 @@ jobs:
           gh release view databases &>/dev/null || \
             gh release create databases \
               --title "Databases (production)" \
-              --notes "Stable database files for ADE-Bench tasks."
+              --notes "Stable DuckDB database files for ADE-bench tasks. Also used for CI unless a PR-specific override exists (see \`scripts/stage-database.sh\`)"
 
           gh release upload databases /tmp/dbs/*.duckdb --clobber
         env:
