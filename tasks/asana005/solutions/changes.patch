@@ -1,0 +1,131 @@
+--- a/models/asana__project.sql
++++ b/models/asana__project.sql
+@@ -10,24 +10,12 @@
+     from {{ var('project') }}
+ ),
+ 
+-project_user as (
+-    
+-    select *
+-    from {{ ref('int_asana__project_user') }}
+-),
+-
+-asana_user as (
+-    select *
+-    from {{ var('user') }}
+-),
+-
+ team as (
+     select *
+     from {{ var('team') }}
+ ),
+ 
+ agg_sections as (
+-
+     select
+         project_id,
+         {{ fivetran_utils.string_agg( 'section_name', "', '") }} as sections
+@@ -37,30 +25,13 @@
+     group by 1
+ ),
+ 
+-agg_project_users as (
++project_user_agg as (
+ 
+-    select 
+-        project_user.project_id,
+-        {{ fivetran_utils.string_agg( "asana_user.user_name || ' as ' || project_user.role" , "', '" ) }} as users
++    select *
++    from {{ ref('int_asana__project_user_agg') }}
+ 
+-    from project_user join asana_user using(user_id)
+-
+-    group by 1
+-
+ ),
+ 
+--- need to split from above due to redshift's inability to string/list_agg and use distinct aggregates
+-count_project_users as (
+- 
+-    select 
+-        project_id, 
+-        count(distinct user_id) as number_of_users_involved
+-
+-    from project_user
+-    group by 1
+-
+-),
+-
+ project_join as (
+ 
+     select
+@@ -83,8 +54,8 @@
+         due_date,
+         modified_at as last_modified_at,
+         owner_user_id,
+-        agg_project_users.users as users_involved,
+-        coalesce(count_project_users.number_of_users_involved, 0) as number_of_users_involved,
++        project_user_agg.users as users_involved,
++        coalesce(project_user_agg.number_of_users_involved, 0) as number_of_users_involved,
+         agg_sections.sections,
+         project.notes,
+         project.is_public
+@@ -92,8 +63,7 @@
+     from
+     project 
+     left join project_task_metrics on project.project_id = project_task_metrics.project_id 
+-    left join agg_project_users on project.project_id = agg_project_users.project_id  
+-    left join count_project_users on project.project_id = count_project_users.project_id
++    left join project_user_agg on project.project_id = project_user_agg.project_id  
+     join team on team.team_id = project.team_id -- every project needs a team
+     left join agg_sections on project.project_id = agg_sections.project_id
+ 
+--- /dev/null
++++ b/models/intermediate/int_asana__project_user_agg.sql
+@@ -0,0 +1,45 @@
++with project as (
++    select *
++    from {{ var('project') }}
++),
++
++project_user as (
++    select *
++    from {{ ref('int_asana__project_user') }}
++),
++
++asana_user as (
++    select *
++    from {{ var('user') }}
++),
++
++agg_project_users as (
++    select 
++        project_user.project_id,
++        {{ fivetran_utils.string_agg( "asana_user.user_name || ' as ' || project_user.role" , "', '" ) }} as users
++    from project_user join asana_user using(user_id)
++
++    group by 1
++),
++
++-- need to split from above due to redshift's inability to string/list_agg and use distinct aggregates
++count_project_users as (
++    select 
++        project_id, 
++        count(distinct user_id) as number_of_users_involved
++    from project_user
++    group by 1
++),
++
++project_user_join as (
++    select
++        p.project_id,
++        agg.users,
++        cnt.number_of_users_involved
++    from project p
++    left join agg_project_users agg on agg.project_id = p.project_id
++    left join count_project_users cnt on cnt.project_id = p.project_id
++
++)
++
++select * from project_user_join
+\ No newline at end of file

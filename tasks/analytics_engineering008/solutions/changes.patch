@@ -1,0 +1,43 @@
+--- /dev/null
++++ b/dbt_project.yml
+@@ -0,0 +1,10 @@
++name: 'analytics_engineering'
++version: '1.0.0'
++
++# This setting configures which "profile" dbt uses for this project.
++profile: 'analytics_engineering'
++
++model-paths: ["models"]
++
++models:
++  +materialized: table
+--- /dev/null
++++ b/profiles.yml
+@@ -0,0 +1,7 @@
++analytics_engineering:
++  target: dev
++  outputs:
++    dev:
++      type: duckdb
++      path: "./analytics_engineering.duckdb"
++      schema: main
+--- /dev/null
++++ b/models/source.yml
+@@ -0,0 +1,6 @@
++version: 1
++sources:
++  - name: analytics_engineering
++    schema: main
++    tables:
++      - name: customer
+--- /dev/null
++++ b/models/stg_customer.sql
+@@ -0,0 +1,8 @@
++WITH source AS (
++    SELECT * 
++    FROM {{ source('analytics_engineering', 'customer') }}
++)
++SELECT
++    *,
++    get_current_timestamp() AS ingestion_timestamp
++FROM source

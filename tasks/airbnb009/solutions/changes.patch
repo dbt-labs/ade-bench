@@ -1,0 +1,18 @@
+--- a/models/agg/mom_agg_reviews.sql
++++ b/models/agg/mom_agg_reviews.sql
+@@ -20,11 +20,12 @@
+ dates_cte AS (
+ 	SELECT DATE_ACTUAL
+ 	FROM {{ ref('dim_dates') }}
+-	WHERE DATE_ACTUAL IN (SELECT DISTINCT REVIEW_DATE::DATE
+-						  FROM review_cte)
++	-- THIS IS THE FIX
++	WHERE DATE_ACTUAL >= (SELECT min(REVIEW_DATE::DATE) FROM review_cte)
++		AND DATE_ACTUAL <= (SELECT max(REVIEW_DATE::DATE) FROM review_cte)
+ 
+ 	{% if is_incremental() %}
+-		AND DATE_ACTUAL = (SELECT MAX(REVIEW_DATE::DATE) FROM {{ref('fct_reviews')}})
++		AND DATE_ACTUAL = (SELECT MAX(REVIEW_DATE::DATE) FROM review_cte)
+ 	{% endif %}
+ ),
+ 

@@ -1,0 +1,4 @@
+--- /dev/null	2026-03-20 15:27:21
++++ b/models/foo.sql
+@@ -0,0 +1 @@
++select 1 as bar

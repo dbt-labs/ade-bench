@@ -1,0 +1,38 @@
+--- a/models/fact/fct_reviews.sql
++++ b/models/fact/fct_reviews.sql
+@@ -6,13 +6,13 @@
+ 	)
+ }}
+ 
+-WITH src_listings_cte AS (
++WITH src_reviews_cte AS (
+ 	SELECT *
+ 	FROM {{ref('src_reviews')}}
+ )
+ 
+ SELECT * 
+-FROM src_listings_cte
++FROM src_reviews_cte
+ WHERE REVIEW_TEXT IS NOT NULL
+ 
+ {% if is_incremental() %}
+--- a/models/dim/dim_hosts.sql
++++ b/models/dim/dim_hosts.sql
+@@ -7,7 +7,7 @@
+ 	)
+ }}
+ 
+-WITH src_listings_cte AS (
++WITH src_hosts_cte AS (
+ 	SELECT *
+ 	FROM {{ref('src_hosts')}}
+ )
+@@ -19,6 +19,6 @@
+ 	CREATED_AT ,
+ 	UPDATED_AT
+ FROM
+-	src_listings_cte
++	src_hosts_cte
+ 
+ 	
+\ No newline at end of file

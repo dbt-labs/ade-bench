@@ -1,0 +1,398 @@
+--- a/dbt_project.yml
++++ b/dbt_project.yml
+@@ -1,15 +1,17 @@
+ config-version: 2
+ name: 'quickbooks'
+-
+ version: '0.14.1'
+-
+ require-dbt-version: [">=1.3.0", "<2.0.0"]
+-
+-
+ profile: 'quickbooks-duckdb'
+-
+ models:
+   +materialized: table
++  quickbooks_source:
++    stg_quickbooks__refund_receipt:
++      +enabled: false
++    stg_quickbooks__sales_receipt:
++      +enabled: false
++    stg_quickbooks__estimate:
++      +enabled: false
+ vars:
+   quickbooks_schema: main
+   quickbooks_source:
+@@ -53,7 +55,6 @@
+     quickbooks_vendor_credit_line_identifier: "vendor_credit_line_data"
+     quickbooks_vendor_credit_identifier: "vendor_credit_data"
+     quickbooks_vendor_identifier: "vendor_data"
+-
+   quickbooks:
+     account: "{{ ref('stg_quickbooks__account') }}"
+     address: "{{ ref('stg_quickbooks__address') }}"
+@@ -92,14 +93,11 @@
+     vendor_credit_line: "{{ ref('stg_quickbooks__vendor_credit_line') }}"
+     vendor_credit: "{{ ref('stg_quickbooks__vendor_credit') }}"
+     vendor: "{{ ref('stg_quickbooks__vendor') }}"
+-
+     financial_statement_ordinal: []
+     cash_flow_statement_type_ordinal: []
+-
+     using_address: true
+     using_bill: true
+     using_credit_memo: true
+-    using_department: true
+     using_deposit: true
+     using_estimate: true
+     using_invoice: true
+@@ -111,11 +109,10 @@
+     using_vendor_credit: true
+     using_sales_receipt: true
+     using_credit_card_payment_txn: false
+-
+ analysis-paths: ["analysis"]
+ clean-targets:
+   - target
+   - dbt_modules
+   - dbt_packages
+ flags:
+-  require_generic_test_arguments_property: true
+\ No newline at end of file
++  require_generic_test_arguments_property: true
+--- a/models/intermediate/int_quickbooks__expenses_union.sql
++++ b/models/intermediate/int_quickbooks__expenses_union.sql
+@@ -38,14 +38,6 @@
+     from {{ ref('stg_quickbooks__customer') }}
+ ),
+ 
+-{% if var('using_department', True) %}
+-departments as ( 
+-
+-    select *
+-    from {{ ref('stg_quickbooks__department') }}
+-),
+-{% endif %}
+-
+ vendors as (
+ 
+     select *
+@@ -77,9 +69,6 @@
+         expense_accounts.account_sub_type as account_sub_type,
+         expense_union.class_id,
+         expense_union.department_id,
+-        {% if var('using_department', True) %}
+-        departments.fully_qualified_name as department_name,
+-        {% endif %}
+         expense_union.customer_id,
+         customers.fully_qualified_name as customer_name,
+         customers.website as customer_website,
+@@ -106,11 +95,6 @@
+         on vendors.vendor_id = expense_union.vendor_id
+         and vendors.source_relation = expense_union.source_relation
+ 
+-    {% if var('using_department', True) %}
+-    left join departments
+-        on departments.department_id = expense_union.department_id
+-        and departments.source_relation = expense_union.source_relation
+-    {% endif %}
+ )
+ 
+ select *
+--- a/models/intermediate/int_quickbooks__sales_union.sql
++++ b/models/intermediate/int_quickbooks__sales_union.sql
+@@ -43,14 +43,6 @@
+     from {{ ref('stg_quickbooks__customer') }}
+ ),
+ 
+-{% if var('using_department', True) %}
+-departments as ( 
+-
+-    select *
+-    from {{ ref('stg_quickbooks__department') }}
+-),
+-{% endif %}
+-
+ vendors as (
+ 
+     select *
+@@ -82,9 +74,6 @@
+         income_accounts.account_sub_type as account_sub_type,
+         sales_union.class_id,
+         sales_union.department_id,
+-        {% if var('using_department', True) %}
+-        departments.fully_qualified_name as department_name,
+-        {% endif %}
+         sales_union.customer_id,
+         customers.fully_qualified_name as customer_name,
+         customers.website as customer_website,
+@@ -109,12 +98,6 @@
+     left join vendors
+         on vendors.vendor_id = sales_union.vendor_id
+         and vendors.source_relation = sales_union.source_relation
+-
+-    {% if var('using_department', True) %}
+-    left join departments
+-        on departments.department_id = sales_union.department_id
+-        and departments.source_relation = sales_union.source_relation
+-    {% endif %}
+ )
+ 
+ select *
+--- a/models/quickbooks__ap_ar_enhanced.sql
++++ b/models/quickbooks__ap_ar_enhanced.sql
+@@ -15,14 +15,6 @@
+ ),
+ {% endif %}
+ 
+-{% if var('using_department', True) %}
+-departments as ( 
+-
+-    select *
+-    from {{ ref('stg_quickbooks__department') }}
+-),
+-{% endif %}
+-
+ {% if var('using_address', True) %}
+ addresses as (
+ 
+@@ -52,10 +44,6 @@
+         doc_number,
+         cast(null as {{ dbt.type_string() }}) as estimate_id, 
+ 
+-        {% if var('using_department', True) %}
+-        departments.fully_qualified_name as department_name,
+-        {% endif %}
+-
+         'vendor' as transaction_with,
+         vendors.display_name as customer_vendor_name,
+         vendors.balance as customer_vendor_balance,
+@@ -89,12 +77,6 @@
+         bill_join.total_current_converted_payment
+     from bill_join
+ 
+-    {% if var('using_department', True) %}
+-    left join departments  
+-        on bill_join.department_id = departments.department_id
+-        and bill_join.source_relation = departments.source_relation
+-    {% endif %}
+-
+     left join vendors
+         on bill_join.vendor_id = vendors.vendor_id
+         and bill_join.source_relation = vendors.source_relation
+@@ -115,10 +97,6 @@
+         doc_number,
+         invoice_join.estimate_id,
+ 
+-        {% if var('using_department', True) %}
+-        departments.fully_qualified_name as department_name,
+-        {% endif %}
+-
+         'customer' as transaction_with,
+         customers.fully_qualified_name as customer_vendor_name,
+         customers.balance as customer_vendor_current_balance,
+@@ -153,12 +131,6 @@
+ 
+     from invoice_join
+ 
+-    {% if var('using_department', True) %}
+-    left join departments  
+-        on invoice_join.department_id = departments.department_id
+-        and invoice_join.source_relation = departments.source_relation
+-    {% endif %}
+-
+     {% if var('using_address', True) %}
+     left join addresses as billing_address
+         on invoice_join.billing_address_id = billing_address.address_id
+--- /dev/null
++++ b/models/staging/stg_quickbooks__refund_receipt.sql
+@@ -0,0 +1,62 @@
++--To disable this model, set the using_refund_receipt variable within your dbt_project.yml file to False.
++{{ config(enabled=var('using_refund_receipt', True)) }}
++
++with base as (
++
++    select * 
++    from {{ ref('stg_quickbooks__refund_receipt_tmp') }}
++
++),
++
++fields as (
++
++    select
++        /*
++        The below macro is used to generate the correct SQL for package staging models. It takes a list of columns 
++        that are expected/needed (staging_columns from dbt_quickbooks_source/models/tmp/) and compares it with columns 
++        in the source (source_columns from dbt_quickbooks_source/macros/).
++        For more information refer to our dbt_fivetran_utils documentation (https://github.com/fivetran/dbt_fivetran_utils.git).
++        */
++
++        {{
++            fivetran_utils.fill_staging_columns(
++                source_columns=adapter.get_columns_in_relation(ref('stg_quickbooks__refund_receipt_tmp')),
++                staging_columns=quickbooks_source.get_refund_receipt_columns()
++            )
++        }}
++
++        {{ 
++            fivetran_utils.source_relation(
++                union_schema_variable='quickbooks_union_schemas', 
++                union_database_variable='quickbooks_union_databases'
++                ) 
++        }}
++        
++    from base
++),
++
++final as (
++    
++    select 
++        cast(id as {{ dbt.type_string() }}) as refund_id,
++        balance,
++        cast(doc_number as {{ dbt.type_string() }}) as doc_number,
++        total_amount,
++        cast(class_id as {{ dbt.type_string() }}) as class_id,
++        cast(deposit_to_account_id as {{ dbt.type_string() }}) as deposit_to_account_id,
++        created_at,
++        cast(department_id as {{ dbt.type_string() }}) as department_id,
++        cast(customer_id as {{ dbt.type_string() }}) as customer_id,
++        currency_id,
++        exchange_rate,
++        -- Convert unix epoch to timestamp, then truncate to date
++        cast( {{ dbt.date_trunc('day', 'to_timestamp(transaction_date)') }} as date) as transaction_date,
++        _fivetran_deleted,
++        source_relation
++    from fields
++)
++
++select * 
++from final
++where not coalesce(_fivetran_deleted, false)
++
+--- /dev/null
++++ b/models/staging/stg_quickbooks__sales_receipt.sql
+@@ -0,0 +1,60 @@
++{{ config(enabled=var('using_sales_receipt', True)) }}
++
++with base as (
++
++    select * 
++    from {{ ref('stg_quickbooks__sales_receipt_tmp') }}
++
++),
++
++fields as (
++
++    select
++        /*
++        The below macro is used to generate the correct SQL for package staging models. It takes a list of columns 
++        that are expected/needed (staging_columns from dbt_quickbooks_source/models/tmp/) and compares it with columns 
++        in the source (source_columns from dbt_quickbooks_source/macros/).
++        For more information refer to our dbt_fivetran_utils documentation (https://github.com/fivetran/dbt_fivetran_utils.git).
++        */
++
++        {{
++            fivetran_utils.fill_staging_columns(
++                source_columns=adapter.get_columns_in_relation(ref('stg_quickbooks__sales_receipt_tmp')),
++                staging_columns=quickbooks_source.get_sales_receipt_columns()
++            )
++        }}
++        
++        {{ 
++            fivetran_utils.source_relation(
++                union_schema_variable='quickbooks_union_schemas', 
++                union_database_variable='quickbooks_union_databases'
++                ) 
++        }}
++    from base
++),
++
++final as (
++    
++    select 
++        cast(id as {{ dbt.type_string() }}) as sales_receipt_id,
++        balance,
++        cast(doc_number as {{ dbt.type_string() }}) as doc_number,
++        total_amount,
++        cast(deposit_to_account_id as {{ dbt.type_string() }}) as deposit_to_account_id,
++        created_at,
++        cast(customer_id as {{ dbt.type_string() }}) as customer_id,
++        cast(department_id as {{ dbt.type_string() }}) as department_id,
++        cast(class_id as {{ dbt.type_string() }}) as class_id,
++        currency_id,
++        exchange_rate,
++        -- Convert unix epoch to timestamp, then truncate to date
++        cast( {{ dbt.date_trunc('day', 'to_timestamp(transaction_date)') }} as date) as transaction_date,
++        _fivetran_deleted,
++        source_relation
++    from fields
++)
++
++select * 
++from final
++where not coalesce(_fivetran_deleted, false)
++
+--- /dev/null
++++ b/models/staging/stg_quickbooks__estimate.sql
+@@ -0,0 +1,61 @@
++--To disable this model, set the using_estimate variable within your dbt_project.yml file to False.
++{{ config(enabled=var('using_estimate', True)) }}
++
++with base as (
++
++    select * 
++    from {{ ref('stg_quickbooks__estimate_tmp') }}
++
++), 
++
++fields as (
++
++    select
++        /*
++        The below macro is used to generate the correct SQL for package staging models. It takes a list of columns 
++        that are expected/needed (staging_columns from dbt_quickbooks_source/models/tmp/) and compares it with columns 
++        in the source (source_columns from dbt_quickbooks_source/macros/).
++        For more information refer to our dbt_fivetran_utils documentation (https://github.com/fivetran/dbt_fivetran_utils.git).
++        */
++
++        {{
++            fivetran_utils.fill_staging_columns(
++                source_columns=adapter.get_columns_in_relation(ref('stg_quickbooks__estimate_tmp')),
++                staging_columns=quickbooks_source.get_estimate_columns()
++            )
++        }}
++
++        {{ 
++            fivetran_utils.source_relation(
++                union_schema_variable='quickbooks_union_schemas', 
++                union_database_variable='quickbooks_union_databases'
++                ) 
++        }}
++        
++    from base
++),
++
++final as (
++    
++    select 
++        cast(id as {{ dbt.type_string() }}) as estimate_id,
++        cast(class_id as {{ dbt.type_string() }}) as class_id,
++        created_at,
++        currency_id,
++        customer_id,
++        cast(department_id as {{ dbt.type_string() }}) as department_id,
++        -- Convert unix epoch to timestamp, then truncate to date
++        cast( {{ dbt.date_trunc('day', 'to_timestamp(due_date)') }} as date) as due_date, 
++        exchange_rate,
++        total_amount,
++        cast( {{ dbt.date_trunc('day', 'transaction_date') }} as date) as transaction_date,
++        transaction_status,
++        _fivetran_deleted,
++        source_relation
++    from fields
++)
++
++select * 
++from final
++where not coalesce(_fivetran_deleted, false)
++

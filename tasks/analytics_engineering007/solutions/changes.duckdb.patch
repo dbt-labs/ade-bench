@@ -1,0 +1,36 @@
+--- a/models/warehouse/fact_inventory.sql
++++ b/models/warehouse/fact_inventory.sql
+@@ -11,7 +11,7 @@
+         transaction_type,
+         CAST(STRPTIME(transaction_created_date, '%m/%d/%Y %H:%M:%S') AS DATE) AS transaction_created_date,
+         transaction_modified_date,
+-        product_id,
++        product_id::varchar AS product_id,
+         quantity,
+         purchase_order_id,
+         customer_order_id,
+@@ -37,4 +37,4 @@
+     customer_order_id,
+     comments
+ FROM unique_source
+-WHERE row_number = 1
++WHERE row_number = 1
+\ No newline at end of file
+--- a/models/warehouse/fact_sales.sql
++++ b/models/warehouse/fact_sales.sql
+@@ -8,7 +8,7 @@
+ WITH source AS (
+     SELECT
+         od.order_id,
+-        od.product_id,
++        od.product_id::varchar AS product_id,
+         o.customer_id,
+         o.employee_id,
+         o.shipper_id,
+@@ -51,4 +51,4 @@
+     shipped_date,
+     paid_date
+ FROM unique_source
+-WHERE row_number = 1
++WHERE row_number = 1
+\ No newline at end of file

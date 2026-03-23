@@ -1,0 +1,11 @@
+--- a/models/stats/constructor_points.sql
++++ b/models/stats/constructor_points.sql
+@@ -2,7 +2,7 @@
+   SELECT
+     c.constructor_name,
+     r.race_year as season,
+-    max(cs.points) AS total_points
++    sum(cs.points) AS total_points
+   FROM {{ ref('stg_f1_dataset__constructor_standings') }} cs
+   JOIN {{ ref('stg_f1_dataset__races') }} r ON cs.raceId = r.race_id
+   JOIN {{ ref('stg_f1_dataset__constructors') }} c on cs.constructorId = c.constructor_id

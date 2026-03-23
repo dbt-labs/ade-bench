@@ -1,6 +1,5 @@
 -- Define columns to compare
 {% set table_name = 'int_quickbooks__invoice_double_entry' %}
-{% set answer_keys = ['solution__int_quickbooks__invoice_double_entry'] %}
 
 {% set cols_to_include = [
     
@@ -11,9 +10,21 @@
 ] %}
 
 
+
 -------------------------------------
 ---- DO NOT EDIT BELOW THIS LINE ----
--- depends_on: {{ ref(table_name) }}
--- depends_on: {{ ref('solution__int_quickbooks__invoice_double_entry') }}
+{% set answer_key = 'solution__' + table_name %}
 
-{{ ade_bench_equality_test(table_name=table_name, answer_keys=answer_keys, cols_to_exclude=cols_to_exclude) }}
+{% set table_a = load_relation(ref(answer_key)) %}
+{% set table_b = load_relation(ref(table_name)) %}
+
+{% if table_a is none or table_b is none %}
+    select 1
+{% else %}
+    {{ dbt_utils.test_equality(
+        model=ref(answer_key),
+        compare_model=ref(table_name),
+        compare_columns=cols_to_include,
+        exclude_columns=cols_to_exclude
+    ) }}
+{% endif %}
