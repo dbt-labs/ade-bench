@@ -1,7 +1,7 @@
 name: Promote databases to production
 
 on:
-  pull_request:
+  pull_request_target:
     branches: [main]
     types: [closed]
 
@@ -65,7 +65,7 @@ jobs:
           GH_REPO: ${{ github.repository }}
 
       - name: Delete staging release
-        if: steps.check.outputs.exists == 'true'
+        if: always() && steps.check.outputs.exists == 'true'
         run: |
           gh release delete "${{ steps.check.outputs.tag }}" --cleanup-tag --yes
         env:
