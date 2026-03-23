@@ -13,6 +13,17 @@ seeds:
         dbt_updated_at: timestamp
         dbt_valid_from: timestamp
         dbt_valid_to: timestamp
+    solution__snap__hosts_aliased:
+      +column_types:
+        HOST_ID: integer
+        HOST_NAME: varchar
+        IS_SUPERHOST: varchar
+        CREATED_AT: timestamp
+        UPDATED_AT: timestamp
+        dbt_scd_id: varchar
+        dbt_updated_at: timestamp
+        dbt_valid_from: timestamp
+        dbt_valid_to: timestamp
     solution__dim_superhost_evolution:
       +column_types:
         HOST_ID: integer
