@@ -1,0 +1,33 @@
+task_id: airbnb013
+status: ready
+description: Fix an incremental model that silently drops reviews with the same date as the current high-water mark.
+prompts:
+  - key: base
+    prompt: |-
+      The `fct_reviews` model is missing some reviews compared to its source. Figure out why the model isn't picking them up and fix it.
+author_name: test
+author_email: test
+difficulty: hard
+tags:
+  - dbt
+  - dbt-incremental
+  - data-inspection
+  - debugging
+  - model-refactor
+
+test_setup: |-
+  python3 -c "import duckdb,csv; c=duckdb.connect('/app/airbnb.duckdb'); rows=list(csv.DictReader(open('/tmp/new_reviews.csv'))); [c.execute('DELETE FROM raw_reviews WHERE listing_id=? AND date=? AND reviewer_name=?',[int(r['listing_id']),r['date'],r['reviewer_name']]) for r in rows]; c.close()"
+  dbt run --full-refresh --select src_reviews fct_reviews
+  python3 /tmp/inject_reviews.py
+  dbt run --select src_reviews
+  dbt run --select fct_reviews
+
+variants:
+- db_type: duckdb
+  db_name: airbnb
+  project_type: dbt
+  project_name: airbnb
+- db_type: duckdb
+  db_name: airbnb
+  project_type: dbt-fusion
+  project_name: airbnb

@@ -36,5 +36,8 @@ seeds:
     RAW_LISTINGS:
       +column_types:
         PRICE: "STRING"
+    broken_model_results:
+      +column_types:
+        caught_bug: "boolean"
 flags:
   require_generic_test_arguments_property: true
