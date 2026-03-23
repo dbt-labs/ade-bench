@@ -1,5 +1,3 @@
 #!/bin/bash
-SOLUTIONS_DIR="$(dirname "$(readlink -f "${BASH_SOURCE}")")/solutions"
-cp "$SOLUTIONS_DIR/fct_monthly_revenue.sql" models/marts/fct_monthly_revenue.sql
-rm -f models/intermediate/int_monthly_revenue_prep.sql
+patch -p1 < /sage/solutions/changes.patch
 dbt run --select fct_monthly_revenue

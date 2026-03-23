@@ -1,0 +1,31 @@
+--- a/models/staging/stg_users.sql
++++ b/models/staging/stg_users.sql
+@@ -4,7 +4,6 @@
+ select
+     trim(usr_id) as user_id,
+     trim(acct_id_fk) as account_id,
+-    lower(trim(email_addr)) as email,
+     trim(full_nm) as full_name,
+     trim(title_txt) as title,
+     lower(trim(dept_txt)) as department,
+--- a/models/intermediate/int_account_users.sql
++++ b/models/intermediate/int_account_users.sql
+@@ -14,7 +14,7 @@
+     a.billing_country,
+     a.account_status,
+     a.owner_team,
+-    u.email,
++    u.email_address,
+     u.full_name,
+     u.title,
+     u.department,
+--- a/models/intermediate/int_workspace_roster.sql
++++ b/models/intermediate/int_workspace_roster.sql
+@@ -23,7 +23,6 @@
+     a.region,
+     a.billing_country,
+     m.user_id,
+-    u.email,
+     u.full_name,
+     u.title,
+     u.department,

@@ -1,0 +1,30 @@
+--- a/models/intermediate/int_account_billing_snapshot.sql
++++ b/models/intermediate/int_account_billing_snapshot.sql
+@@ -48,6 +48,7 @@
+     ls.contracted_seats,
+     ls.discount_pct,
+     ls.effective_monthly_value_usd,
++    ls.region || ' / ' || ls.segment as geo_segment,
+     li.invoice_id as latest_invoice_id,
+     li.invoice_date as latest_invoice_date,
+     li.due_date as latest_invoice_due_date,
+--- a/models/marts/mart_account_360.sql
++++ b/models/marts/mart_account_360.sql
+@@ -66,6 +66,7 @@
+     b.latest_payment_date,
+     b.latest_outstanding_amount_usd,
+     b.has_past_due_invoice,
++    b.geo_segment,
+     lr.invoice_month as latest_revenue_month,
+     lr.recurring_revenue_usd as latest_recurring_revenue_usd,
+     lr.one_time_revenue_usd as latest_one_time_revenue_usd,
+--- a/models/marts/mart_account_health.sql
++++ b/models/marts/mart_account_health.sql
+@@ -40,6 +40,7 @@
+     b.latest_payment_status,
+     b.latest_outstanding_amount_usd,
+     b.has_past_due_invoice,
++    b.geo_segment,
+     e.active_user_count,
+     e.active_workspace_count,
+     e.avg_active_users_7d,

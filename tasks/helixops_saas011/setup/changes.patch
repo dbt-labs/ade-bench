@@ -1,0 +1,14 @@
+--- a/models/staging/stg_workspaces.sql
++++ b/models/staging/stg_workspaces.sql
+@@ -11,10 +11,7 @@
+         else 'active'
+     end as workspace_status,
+     {{ epoch_to_timestamp('deact_ts_epoch') }} as deactivated_at,
+-    case
+-        when lower(trim(env_tier)) in ('sandbox', 'sbx') then 'sandbox'
+-        else 'prod'
+-    end as environment_tier,
++    lower(trim(env_tier)) as environment_tier,
+     coalesce({{ bool_from_text('primary_ws_yn') }}, false) as is_primary,
+     case
+         when lower(trim(ws_stat_cd)) in ('arch', 'archived', 'disabled') then false

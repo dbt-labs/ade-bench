@@ -1,4 +1,3 @@
 #!/bin/bash
-sed -i '/    a.owner_team,/d' models/marts/dim_accounts.sql
-sed -i '/    a.owner_team,/d' models/marts/mart_account_360.sql
+patch -p1 < /app/setup/changes.patch
 dbt run --select dim_accounts mart_account_360

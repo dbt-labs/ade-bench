@@ -1,5 +1,0 @@
-priority,segment,response_sla_minutes,valid_from,valid_to
-urgent,enterprise,20,2025-06-16 08:00:00,9999-12-31 00:00:00
-high,enterprise,45,2025-06-16 08:00:00,9999-12-31 00:00:00
-medium,enterprise,120,2025-06-16 08:00:00,9999-12-31 00:00:00
-low,enterprise,900,2025-06-16 08:00:00,9999-12-31 00:00:00

@@ -1,0 +1,10 @@
+--- a/models/staging/stg_invoice_line_items.sql
++++ b/models/staging/stg_invoice_line_items.sql
+@@ -12,6 +12,7 @@
+     lower(trim(product_family_guess)) as product_family,
+     coalesce({{ bool_from_text('recurring_hint') }}, false) as is_recurring_hint,
+     case
++        when lower(trim(li_typ_cd)) = 'onboarding_addon' then false
+         when lower(trim(li_typ_cd)) = 'base_subscription' then true
+         else coalesce({{ bool_from_text('recurring_hint') }}, false)
+     end as is_recurring_line

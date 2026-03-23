@@ -1,0 +1,10 @@
+--- a/models/staging/stg_users.sql
++++ b/models/staging/stg_users.sql
+@@ -4,6 +4,7 @@
+ select
+     trim(usr_id) as user_id,
+     trim(acct_id_fk) as account_id,
++    lower(trim(email_addr)) as email_address,
+     trim(full_nm) as full_name,
+     trim(title_txt) as title,
+     lower(trim(dept_txt)) as department,
