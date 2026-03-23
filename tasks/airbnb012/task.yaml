@@ -16,14 +16,11 @@ tags:
   - external-knowledge
 
 test_setup: |-
-  # Build the NPS models
   dbt run --select listing_agg_nps_reviews daily_agg_nps_reviews
-
-  # Parse project and write unit test manifest to a seed table
   python3 /tmp/check_unit_tests.py
-
-  # Run broken model variants against agent's unit tests
+  dbt seed --select unit_test_manifest
   python3 /tmp/run_broken_model_tests.py
+  dbt seed --select broken_model_results
 
 variants:
 - db_type: duckdb

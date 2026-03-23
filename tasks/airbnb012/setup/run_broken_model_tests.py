@@ -1,20 +1,15 @@
 #!/usr/bin/env python3
-"""
-Runs agent's unit tests against each broken NPS model variant.
-For each variant: swaps model file, runs dbt test --select {model},test_type:unit,
-records caught_bug=True if any test FAILED (good), False if all passed (bad).
-Writes one row per variant to broken_model_results table in DuckDB.
-"""
-
+import json
 import os
 import shutil
 import subprocess
-import duckdb
+import csv
 
-DB_PATH = "/app/airbnb.duckdb"
 PROJECT_DIR = "/app"
 BROKEN_DIR = "/tmp/broken"
 MODELS_AGG_DIR = os.path.join(PROJECT_DIR, "models", "agg")
+MANIFEST_PATH = os.path.join(PROJECT_DIR, "target", "manifest.json")
+SEED_PATH = os.path.join(PROJECT_DIR, "seeds", "broken_model_results.csv")
 
 broken_variants = [
     # listing_agg_nps_reviews variants
@@ -56,6 +51,13 @@ broken_variants = [
     },
 ]
 
+models_with_tests = set()
+if os.path.exists(MANIFEST_PATH):
+    with open(MANIFEST_PATH) as f:
+        manifest = json.load(f)
+    for node_key, node in manifest.get("unit_tests", {}).items():
+        models_with_tests.add(node.get("model", ""))
+
 results = []
 
 for v in broken_variants:
@@ -64,6 +66,11 @@ for v in broken_variants:
     original_file = os.path.join(MODELS_AGG_DIR, f"{model}.sql")
     broken_file = os.path.join(BROKEN_DIR, v["broken_file"])
     backup = original_file + ".bak"
+
+    if model not in models_with_tests:
+        print(f"[{variant_id}] no unit tests defined for {model}")
+        results.append({"variant_id": variant_id, "model_name": model, "caught_bug": False})
+        continue
 
     shutil.copy2(original_file, backup)
     shutil.copy2(broken_file, original_file)
@@ -75,10 +82,7 @@ for v in broken_variants:
             capture_output=True,
             text=True,
         )
-        # Exit code != 0: at least one test FAILED → bug was caught (good)
-        # "Nothing to do": no unit tests defined → not caught
-        no_tests = "Nothing to do" in result.stdout or "no tests" in result.stdout.lower()
-        caught_bug = result.returncode != 0 and not no_tests
+        caught_bug = result.returncode != 0
         print(f"[{variant_id}] caught_bug={caught_bug} (returncode={result.returncode})")
         if not caught_bug:
             print(f"  WARNING: unit tests did NOT catch bug in '{variant_id}'")
@@ -92,20 +96,10 @@ for v in broken_variants:
 
     results.append({"variant_id": variant_id, "model_name": model, "caught_bug": caught_bug})
 
-conn = duckdb.connect(DB_PATH)
-conn.execute("DROP TABLE IF EXISTS main.broken_model_results")
-conn.execute("""
-    CREATE TABLE main.broken_model_results (
-        variant_id VARCHAR,
-        model_name VARCHAR,
-        caught_bug BOOLEAN
-    )
-""")
-for r in results:
-    conn.execute(
-        "INSERT INTO main.broken_model_results VALUES (?, ?, ?)",
-        [r["variant_id"], r["model_name"], r["caught_bug"]],
-    )
-conn.close()
+os.makedirs(os.path.dirname(SEED_PATH), exist_ok=True)
+with open(SEED_PATH, "w", newline="") as f:
+    writer = csv.DictWriter(f, fieldnames=["variant_id", "model_name", "caught_bug"])
+    writer.writeheader()
+    writer.writerows(results)
 
 print(f"broken_model_results written: {results}")
