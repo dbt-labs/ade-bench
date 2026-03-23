@@ -77,6 +77,8 @@ test_setup: |-
 
 solution_seeds:
   - table_name: snap__hosts
+    alternates:
+      - snap__hosts_aliased
     exclude_columns:
       - dbt_scd_id
   - table_name: dim_superhost_evolution

@@ -285,6 +285,7 @@ class Harness:
         with tempfile.TemporaryDirectory() as temp_test_dir:
             temp_test_path = Path(temp_test_dir) / "tests"
             temp_test_path.mkdir()
+            temp_macro_path = Path(temp_test_dir) / "macros"
 
             # Copy existing tests from the shared test directory (excluding AUTO_* files
             # which will be regenerated)
@@ -295,7 +296,7 @@ class Harness:
 
             # Generate solution tests in the temp directory
             if trial_handler.task.solution_seeds:
-                self._generate_solution_tests(trial_handler, temp_test_path)
+                self._generate_solution_tests(trial_handler, temp_test_path, temp_macro_path)
 
                 # Also write the generated tests back to the shared directory as a log
                 # of what was generated (useful for debugging). This is safe because we
@@ -313,6 +314,15 @@ class Harness:
                         shutil.copy2(test_file, shared_test_dir / test_file.name)
                     except OSError:
                         pass  # Ignore errors if another process is writing
+                # Also write back the macro for debugging
+                if temp_macro_path.exists():
+                    shared_macros_dir = trial_handler.input_path / "macros"
+                    shared_macros_dir.mkdir(parents=True, exist_ok=True)
+                    for macro_file in temp_macro_path.iterdir():
+                        try:
+                            shutil.copy2(macro_file, shared_macros_dir / macro_file.name)
+                        except OSError:
+                            pass
 
             # Copy test-related files from temp directory
             terminal.copy_to_container(
@@ -323,6 +333,17 @@ class Harness:
                 ],
                 container_dir=str(DockerComposeManager.CONTAINER_TEST_DIR),
             )
+
+            # Copy generated macros into the dbt project's macros directory.
+            # mkdir -p first because not all dbt project images ship a macros/ dir.
+            if temp_macro_path.exists():
+                terminal.container.exec_run(
+                    f"mkdir -p {DockerComposeManager.CONTAINER_APP_DIR}/macros"
+                )
+                terminal.copy_to_container(
+                    paths=[temp_macro_path],
+                    container_dir=str(DockerComposeManager.CONTAINER_APP_DIR / "macros"),
+                )
 
             # Copy test scripts to the scripts directory
             for script_path in trial_handler.task.test_script_paths:
@@ -429,12 +450,15 @@ class Harness:
 
         return FailureMode.NONE
 
-    def _generate_solution_tests(self, trial_handler: TrialHandler, target_dir: Path) -> None:
+    def _generate_solution_tests(
+        self, trial_handler: TrialHandler, target_dir: Path, macros_dir: Path | None = None
+    ) -> None:
         """Generate solution tests for tables specified in solution_seeds.
 
         Args:
             trial_handler: The trial handler containing task configuration
             target_dir: Directory to write generated tests to
+            macros_dir: Optional directory to write the equality macro to
         """
         if not trial_handler.task.solution_seeds:
             return
@@ -449,7 +473,7 @@ class Harness:
         # Generate tests for each solution seed
         for config in trial_handler.task.get_solution_seed_configs():
             try:
-                generate_solution_tests(config.table_name, target_dir, config)
+                generate_solution_tests(config.table_name, target_dir, config, macros_dir)
             except Exception as e:
                 self._logger.error(f"Failed to generate tests for {config.table_name}: {e}")
 
@@ -934,6 +958,9 @@ class Harness:
             if self._create_seed:
                 self._extract_csv_files(terminal, trial_handler)
 
+            # Extract comparison artifacts (always, if they exist)
+            self._extract_comparison_artifacts(terminal, trial_handler)
+
             # If the test failed, but the agent didn't, use the test failure mode
             if test_failure_mode != FailureMode.NONE and results.failure_mode == FailureMode.UNSET:
                 results.failure_mode = test_failure_mode
@@ -1052,6 +1079,52 @@ class Harness:
                 "seed",
                 f"CSV extraction not supported for db_type: {variant_db_type}",
             )
+
+    def _extract_comparison_artifacts(
+        self, terminal: Terminal, trial_handler: TrialHandler
+    ) -> None:
+        """Extract comparison artifacts from the container after test execution."""
+        import subprocess
+
+        container_name = terminal.container.name
+        comparisons_src = "/app/data_comparisons"
+
+        # Check if comparisons directory exists in container
+        try:
+            check = subprocess.run(
+                ["docker", "exec", container_name, "test", "-d", comparisons_src],
+                capture_output=True,
+                timeout=30,
+            )
+        except subprocess.TimeoutExpired:
+            self._logger.warning("Timed out checking for comparison artifacts")
+            return
+        if check.returncode != 0:
+            return  # No comparisons generated
+
+        comparisons_dest = trial_handler._task_output_path / "data_comparisons"
+        comparisons_dest.mkdir(parents=True, exist_ok=True)
+
+        try:
+            result = subprocess.run(
+                ["docker", "cp", f"{container_name}:{comparisons_src}/.", str(comparisons_dest)],
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+        except subprocess.TimeoutExpired:
+            self._logger.warning("Timed out extracting comparison artifacts")
+            return
+
+        if result.returncode == 0:
+            log_harness_info(
+                self._logger,
+                trial_handler.task_id,
+                "comparison",
+                f"Extracted comparison artifacts to {comparisons_dest}",
+            )
+        else:
+            self._logger.error(f"Failed to extract comparisons: {result.stderr}")
 
     def _extract_duckdb_csv(
         self,

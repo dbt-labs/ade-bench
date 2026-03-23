@@ -73,3 +73,8 @@ fi
 
 # run dbt data tests for evaluation
 dbt test --select "test_type:singular"
+
+# STEP 6: Compare failing equality tests (if scripts are available)
+if [ -f "/scripts/run-comparison.sh" ]; then
+    bash /scripts/run-comparison.sh "$@"
+fi
