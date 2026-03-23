@@ -340,6 +340,7 @@ class Harness:
                 terminal.container.exec_run(
                     f"mkdir -p {DockerComposeManager.CONTAINER_APP_DIR}/macros"
                 )
+
                 terminal.copy_to_container(
                     paths=[temp_macro_path],
                     container_dir=str(DockerComposeManager.CONTAINER_APP_DIR / "macros"),
