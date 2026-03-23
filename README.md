@@ -53,12 +53,12 @@ ade --help
 
 [Learn more about virtual environments](https://docs.astral.sh/uv/pip/environments/#creating-a-virtual-environment), including activation instructions for Windows.
 
-### 4. Download the [sample DuckDB databases](https://drive.google.com/drive/folders/1CNS_8mf81to02868HA-celmcPEFu4BPE) to `/shared/databases/duckdb`
+### 4. Download the shared DuckDB databases
 
-Or run the following command:
+Databases are distributed via [GitHub Releases](https://github.com/dbt-labs/ade-bench/releases/tag/databases). Download them with the `gh` CLI:
 
 ```bash
-uv run --with gdown gdown --folder https://drive.google.com/drive/folders/1CNS_8mf81to02868HA-celmcPEFu4BPE -O shared/databases/duckdb
+gh release download databases --repo dbt-labs/ade-bench --pattern "*.duckdb" --dir shared/databases/duckdb
 ```
 
 ### 5. Checkpoint: try running a task without any LLMs
