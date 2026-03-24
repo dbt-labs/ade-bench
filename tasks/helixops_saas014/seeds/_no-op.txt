@@ -40,9 +40,11 @@ seeds:
         latest_usage_date: date
         latest_daily_active_users: bigint
         latest_daily_projects_run: bigint
+        latest_daily_api_calls: bigint
         avg_active_users_7d: double
         avg_active_users_30d: double
         total_projects_run_30d: bigint
+        total_api_calls_30d: bigint
         peak_storage_gb_30d: double
         lifetime_ticket_count: bigint
         open_ticket_count: bigint
