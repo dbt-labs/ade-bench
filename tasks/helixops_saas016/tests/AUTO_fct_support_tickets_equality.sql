@@ -7,7 +7,7 @@
 ] %}
 
 {% set cols_to_exclude = [
-    
+    'ticket_age_days'
 ] %}
 
 

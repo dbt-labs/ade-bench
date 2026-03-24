@@ -7,7 +7,7 @@
 ] %}
 
 {% set cols_to_exclude = [
-    
+    'days_since_last_login'
 ] %}
 
 
