@@ -9,6 +9,17 @@
      trim(employee_band_txt) as employee_band,
      trim(owner_team_txt) as owner_team,
      {{ bool_from_text('is_deleted_flag') }} as is_deleted,
+--- a/models/intermediate/int_account_users.sql
++++ b/models/intermediate/int_account_users.sql
+@@ -12,7 +12,7 @@
+     a.region,
+     a.segment,
+     a.billing_country,
+-    a.account_status,
++    a.customer_status,
+     a.owner_team,
+     u.email,
+     u.full_name,
 --- a/models/marts/dim_accounts.sql
 +++ b/models/marts/dim_accounts.sql
 @@ -22,7 +22,7 @@

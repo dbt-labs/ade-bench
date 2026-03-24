@@ -12,6 +12,7 @@ tags:
   - dbt
   - helixops_saas
 test_setup: |-
+  dbt run-operation drop_relation --args '{schema: main, identifier: int_monthly_revenue_prep, type: view}' || true
   dbt run --select fct_monthly_revenue
 variants:
 - db_type: duckdb

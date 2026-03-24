@@ -162,7 +162,8 @@ jobs:
               results = json.load(f)
 
           # Tasks that are allowed to pass even for the "none" agent
-          ALLOWED_TO_PASS = {"analytics_engineering001"}
+          # (e.g. no-op tasks where the answer is already in place)
+          ALLOWED_TO_PASS = {"analytics_engineering001", "helixops_saas017"}
 
           failed_tasks = []
           passed_tasks = []

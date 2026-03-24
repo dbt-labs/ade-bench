@@ -10,7 +10,7 @@ seeds:
         region: varchar
         segment: varchar
         billing_country: varchar
-        account_status: varchar
+        customer_status: varchar
         is_churned: boolean
         employee_band: varchar
         owner_team: varchar
