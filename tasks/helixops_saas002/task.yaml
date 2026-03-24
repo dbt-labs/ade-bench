@@ -1,6 +1,6 @@
 task_id: helixops_saas002
 status: ready
-description: Add owner_team to the account 360 mart
+description: Add owner_team to mart_account_360 — absent from direct parent dim_accounts and must be sourced from grandparent stg_accounts
 prompts:
   - key: base
     prompt: |-

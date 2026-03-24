@@ -1,6 +1,6 @@
 task_id: helixops_saas012
 status: ready
-description: Inline int_monthly_revenue_prep as a CTE in fct_monthly_revenue
+description: Inline an intermediate model as a CTE and delete the original file — data output is unchanged but the model must be removed from the project
 prompts:
   - key: base
     prompt: |-

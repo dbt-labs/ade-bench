@@ -1,6 +1,6 @@
 task_id: helixops_saas008
 status: ready
-description: Rename account_status to customer_status and propagate through DAG
+description: Rename account_status to customer_status in staging and propagate the breaking change through five downstream models
 prompts:
   - key: base
     prompt: |-

@@ -1,6 +1,6 @@
 task_id: helixops_saas014
 status: ready
-description: Restore api_calls through all DAG layers to mart_account_360
+description: Restore api_calls through a six-model chain from staging to mart — must propagate incrementally through each layer, not jump directly to the mart
 prompts:
   - key: base
     prompt: |-

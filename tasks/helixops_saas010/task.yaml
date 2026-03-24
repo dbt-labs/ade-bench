@@ -1,6 +1,6 @@
 task_id: helixops_saas010
 status: ready
-description: Filter archived workspaces from int_account_workspaces
+description: Add a WHERE clause to filter archived workspaces from an intermediate model
 prompts:
   - key: base
     prompt: |-

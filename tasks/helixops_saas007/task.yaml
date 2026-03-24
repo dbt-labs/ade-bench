@@ -1,6 +1,6 @@
 task_id: helixops_saas007
 status: ready
-description: Add geo_segment column through billing snapshot to account marts
+description: Add a new derived concatenation column (region + segment) through the billing snapshot to two downstream marts
 prompts:
   - key: base
     prompt: |-

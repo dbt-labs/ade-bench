@@ -1,6 +1,6 @@
 task_id: helixops_saas004
 status: ready
-description: Add department column to int_workspace_roster
+description: Add department to int_workspace_roster — column already exists in stg_users and can be joined directly rather than inferred from job title
 prompts:
   - key: base
     prompt: |-

@@ -1,6 +1,6 @@
 task_id: helixops_saas015
 status: ready
-description: Move SLA config to a time-bounded seed with urgent/high/medium/low priorities
+description: Move SLA config to a time-bounded seed — the base prompt uses 'standard' as a priority name but the actual data value is 'low'
 prompts:
   - key: base
     prompt: |-

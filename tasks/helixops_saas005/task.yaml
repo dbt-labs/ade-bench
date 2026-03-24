@@ -1,6 +1,6 @@
 task_id: helixops_saas005
 status: ready
-description: Fix failing model by adding email_address to staging users
+description: Fix a broken intermediate model by tracing the error back to a missing column in the staging layer
 prompts:
   - key: base
     prompt: |-

@@ -1,6 +1,6 @@
 task_id: helixops_saas016
 status: ready
-description: Add enterprise-only SLA targets with segment column in seed
+description: Add enterprise SLA overrides using a seed with a three-way join on priority, segment, and valid date range
 prompts:
   - key: base
     prompt: |-

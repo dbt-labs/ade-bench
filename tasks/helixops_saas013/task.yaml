@@ -1,6 +1,6 @@
 task_id: helixops_saas013
 status: ready
-description: Fix onboarding fee line items being treated as recurring revenue
+description: Fix recurring revenue logic — overriding a misleading raw data flag for onboarding line items requires changing the staging CASE expression
 prompts:
   - key: base
     prompt: |-

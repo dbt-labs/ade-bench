@@ -1,6 +1,6 @@
 task_id: helixops_saas003
 status: ready
-description: Filter sandbox usage out of daily usage reporting
+description: Filter sandbox workspaces from usage metrics — requires fixing environment_tier normalization in staging before the filter can work
 prompts:
   - key: base
     prompt: |-

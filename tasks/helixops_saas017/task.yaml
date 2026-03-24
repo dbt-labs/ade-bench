@@ -1,6 +1,6 @@
 task_id: helixops_saas017
 status: ready
-description: Department column already exists in int_workspace_roster (no-op task)
+description: Add department to workspace roster — column already exists in the model, the correct response is to make no changes
 prompts:
   - key: base
     prompt: |-

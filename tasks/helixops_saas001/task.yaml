@@ -1,6 +1,6 @@
 task_id: helixops_saas001
 status: ready
-description: Add billing_country to dim_accounts
+description: Add a missing column to dim_accounts that already exists in the parent stg_accounts model
 prompts:
   - key: base
     prompt: |-

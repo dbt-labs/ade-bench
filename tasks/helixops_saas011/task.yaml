@@ -1,6 +1,6 @@
 task_id: helixops_saas011
 status: ready
-description: Fix sbx environment tier not normalizing to sandbox in dim_accounts
+description: Fix a missing workspace by tracing the bug back to a staging CASE expression that does not handle the raw value 'sbx'
 prompts:
   - key: base
     prompt: |-
