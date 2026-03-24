@@ -23,4 +23,10 @@ variants:
   project_type: dbt-fusion
   project_name: helixops_saas
 solution_seeds:
+  - table_name: stg_workspace_usage_daily
+  - table_name: int_workspace_daily_metrics
+  - table_name: int_account_daily_usage
+  - table_name: int_account_engagement
+  - table_name: fct_daily_account_usage
   - table_name: mart_account_360
+  - table_name: mart_account_health

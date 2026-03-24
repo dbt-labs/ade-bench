@@ -2,6 +2,91 @@
 
 seeds:
   helixops_saas:
+    solution__stg_workspace_usage_daily:
+      +column_types:
+        usage_id: varchar
+        workspace_id: varchar
+        usage_date: date
+        active_users: integer
+        projects_run: integer
+        api_calls: integer
+        storage_gb: double
+        alerts_sent: integer
+        is_weekend: boolean
+        usage_week: date
+        weekday_num: bigint
+    solution__int_workspace_daily_metrics:
+      +column_types:
+        usage_id: varchar
+        workspace_id: varchar
+        account_id: varchar
+        account_name: varchar
+        industry: varchar
+        segment: varchar
+        region: varchar
+        billing_country: varchar
+        workspace_name: varchar
+        environment_tier: varchar
+        workspace_status: varchar
+        is_primary: boolean
+        usage_date: date
+        usage_week: date
+        weekday_num: bigint
+        is_weekend: boolean
+        active_users: integer
+        projects_run: integer
+        api_calls: integer
+        storage_gb: double
+        alerts_sent: integer
+    solution__int_account_daily_usage:
+      +column_types:
+        account_id: varchar
+        account_name: varchar
+        industry: varchar
+        segment: varchar
+        region: varchar
+        billing_country: varchar
+        usage_date: date
+        workspace_days_reporting: bigint
+        active_users: bigint
+        projects_run: bigint
+        api_calls: bigint
+        alerts_sent: bigint
+        max_storage_gb: double
+        avg_storage_gb: double
+    solution__int_account_engagement:
+      +column_types:
+        account_id: varchar
+        total_user_count: bigint
+        active_user_count: bigint
+        inactive_user_count: bigint
+        provisioned_user_count: bigint
+        latest_user_login_at: timestamp
+        workspace_count: bigint
+        active_workspace_count: bigint
+        sandbox_workspace_count: bigint
+        latest_usage_date: date
+        avg_active_users_7d: double
+        avg_active_users_30d: double
+        total_projects_run_30d: bigint
+        total_api_calls_30d: bigint
+        total_alerts_30d: bigint
+        peak_storage_gb_30d: double
+    solution__fct_daily_account_usage:
+      +column_types:
+        account_id: varchar
+        account_name: varchar
+        segment: varchar
+        region: varchar
+        industry: varchar
+        usage_date: date
+        workspace_days_reporting: bigint
+        active_users: bigint
+        projects_run: bigint
+        api_calls: bigint
+        alerts_sent: bigint
+        max_storage_gb: double
+        avg_storage_gb: double
     solution__mart_account_360:
       +column_types:
         account_id: varchar
@@ -50,3 +135,28 @@ seeds:
         open_ticket_count: bigint
         avg_csat_score: double
         avg_first_response_minutes: double
+    solution__mart_account_health:
+      +column_types:
+        account_id: varchar
+        account_name: varchar
+        segment: varchar
+        region: varchar
+        billing_country: varchar
+        account_status: varchar
+        plan_name: varchar
+        latest_subscription_status: varchar
+        latest_invoice_status: varchar
+        latest_payment_status: varchar
+        latest_outstanding_amount_usd: double
+        has_past_due_invoice: boolean
+        active_user_count: bigint
+        active_workspace_count: bigint
+        avg_active_users_7d: double
+        total_projects_run_30d: bigint
+        total_api_calls_30d: bigint
+        open_ticket_count: bigint
+        breached_sla_ticket_count: bigint
+        avg_csat_score: double
+        latest_month_recurring_revenue_usd: double
+        latest_month_total_revenue_usd: double
+        account_health_score: integer

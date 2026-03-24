@@ -2,6 +2,46 @@
 
 seeds:
   helixops_saas:
+    solution__stg_invoice_line_items:
+      +column_types:
+        line_item_id: varchar
+        invoice_id: varchar
+        line_type: varchar
+        description: varchar
+        quantity: integer
+        unit_price_usd: double
+        line_amount_usd: double
+        product_family: varchar
+        is_recurring_hint: boolean
+        is_recurring_line: boolean
+    solution__int_invoice_finance:
+      +column_types:
+        invoice_id: varchar
+        subscription_id: varchar
+        account_id: varchar
+        invoice_date: date
+        invoice_month: date
+        due_date: date
+        service_period_start: date
+        service_period_end: date
+        invoice_status: varchar
+        subtotal_usd: double
+        tax_usd: double
+        total_usd: double
+        line_item_count: bigint
+        recurring_revenue_usd: double
+        one_time_revenue_usd: double
+        base_subscription_revenue_usd: double
+        payment_attempt_count: bigint
+        successful_payment_count: bigint
+        failed_payment_count: bigint
+        amount_paid_usd: double
+        processor_fee_usd: double
+        latest_payment_status: varchar
+        latest_payment_method: varchar
+        latest_payment_date: date
+        outstanding_amount_usd: double
+        is_fully_paid: boolean
     solution__fct_monthly_revenue:
       +column_types:
         account_id: varchar

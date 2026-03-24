@@ -1,4 +1,4 @@
-{% set table_name = 'dim_accounts_v2' %}
+{% set table_name = 'int_account_billing_snapshot' %}
 
 
 

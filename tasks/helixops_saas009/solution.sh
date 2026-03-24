@@ -1,3 +1,3 @@
 #!/bin/bash
 patch -p1 < /sage/solutions/changes.patch
-dbt run --select dim_accounts_v2
+dbt run --select dim_accounts

@@ -2,6 +2,18 @@
 
 seeds:
   helixops_saas:
+    solution__stg_workspaces:
+      +column_types:
+        workspace_id: varchar
+        account_id: varchar
+        workspace_name: varchar
+        created_at: timestamp
+        workspace_status: varchar
+        deactivated_at: timestamp
+        environment_tier: varchar
+        is_primary: boolean
+        is_active_workspace: boolean
+        raw_load_epoch: varchar
     solution__int_account_workspaces:
       +column_types:
         account_id: varchar

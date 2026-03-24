@@ -13,6 +13,8 @@ tags:
   - helixops_saas
 test_setup: |-
   dbt run --select mart_account_360
+  dbt compile --select mart_account_360
+  grep -q 'effective_monthly_value_usd' /app/target/compiled/helixops_saas/models/marts/mart_account_360.sql || (echo "mart_account_360 must reference effective_monthly_value_usd" && exit 1)
 variants:
 - db_type: duckdb
   db_name: helixops_saas

@@ -2,6 +2,49 @@
 
 seeds:
   helixops_saas:
+    solution__dim_accounts:
+      +column_types:
+        account_id: varchar
+        account_name: varchar
+        industry: varchar
+        region: varchar
+        segment: varchar
+        billing_country: varchar
+        created_at: timestamp
+        customer_status: varchar
+        is_churned: boolean
+        employee_band: varchar
+        owner_team: varchar
+        workspace_count: bigint
+        active_workspace_count: bigint
+        prod_workspace_count: bigint
+        sandbox_workspace_count: bigint
+        primary_workspace_name: varchar
+        user_count: bigint
+        active_user_count: bigint
+        inactive_user_count: bigint
+        provisioned_user_count: bigint
+    solution__int_account_users:
+      +column_types:
+        user_id: varchar
+        account_id: varchar
+        account_name: varchar
+        industry: varchar
+        region: varchar
+        segment: varchar
+        billing_country: varchar
+        customer_status: varchar
+        owner_team: varchar
+        email: varchar
+        full_name: varchar
+        title: varchar
+        department: varchar
+        created_at: timestamp
+        last_login_at: timestamp
+        user_status: varchar
+        is_active_user: boolean
+        is_test_user: boolean
+        days_since_last_login: bigint
     solution__mart_account_360:
       +column_types:
         account_id: varchar
@@ -50,3 +93,28 @@ seeds:
         open_ticket_count: bigint
         avg_csat_score: double
         avg_first_response_minutes: double
+    solution__mart_account_health:
+      +column_types:
+        account_id: varchar
+        account_name: varchar
+        segment: varchar
+        region: varchar
+        billing_country: varchar
+        customer_status: varchar
+        plan_name: varchar
+        latest_subscription_status: varchar
+        latest_invoice_status: varchar
+        latest_payment_status: varchar
+        latest_outstanding_amount_usd: double
+        has_past_due_invoice: boolean
+        active_user_count: bigint
+        active_workspace_count: bigint
+        avg_active_users_7d: double
+        total_projects_run_30d: bigint
+        total_api_calls_30d: bigint
+        open_ticket_count: bigint
+        breached_sla_ticket_count: bigint
+        avg_csat_score: double
+        latest_month_recurring_revenue_usd: double
+        latest_month_total_revenue_usd: double
+        account_health_score: integer

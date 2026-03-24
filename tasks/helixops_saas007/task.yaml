@@ -4,7 +4,7 @@ description: Add a new derived concatenation column (region + segment) through t
 prompts:
   - key: base
     prompt: |-
-      Add region and segment to int_account_billing_snapshot as a single geo_segment column, and carry it through to the account 360 and account health marts.
+      Add region and segment to int_account_billing_snapshot as a single hyphen separated geo_segment column, and carry it through to the account 360 and account health marts.
 author_name: joel
 author_email: joel@example.com
 difficulty: medium
@@ -23,4 +23,6 @@ variants:
   project_type: dbt-fusion
   project_name: helixops_saas
 solution_seeds:
+  - table_name: int_account_billing_snapshot
   - table_name: mart_account_360
+  - table_name: mart_account_health

@@ -1,4 +1,18 @@
 --- /dev/null
++++ b/models/marts/_models.yml
+@@ -0,0 +1,11 @@
++models:
++  - name: dim_accounts
++    latest_version: 1
++    versions:
++      - v: 1
++      - v: 2
++        defined_in: dim_accounts_v2
++        columns:
++          - include: all
++            exclude: [account_status]
++          - name: customer_status
+--- /dev/null
 +++ b/models/marts/dim_accounts_v2.sql
 @@ -0,0 +1,22 @@
 +select

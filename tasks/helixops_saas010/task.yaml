@@ -23,4 +23,5 @@ variants:
   project_type: dbt-fusion
   project_name: helixops_saas
 solution_seeds:
+  - table_name: stg_workspaces
   - table_name: int_account_workspaces

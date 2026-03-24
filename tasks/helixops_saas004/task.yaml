@@ -4,6 +4,9 @@ description: Add department to int_workspace_roster — column already exists in
 prompts:
   - key: base
     prompt: |-
+      I need to be able to work out what departments users belong to across their workspace memberships. Please add a department column to int_workspace_roster — you can infer it from job title if needed.
+  - key: no_hint
+    prompt: |-
       I need to be able to work out what departments users belong to across their workspace memberships. Please add a department column — you can infer it from job title if needed.
 author_name: joel
 author_email: joel@example.com
