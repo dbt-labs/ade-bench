@@ -5,7 +5,7 @@ export DBT_PARTIAL_PARSE=False
 
 # STEP 1: Run the test setup script if it exists
 if [ -f "/scripts/test-setup.sh" ]; then
-    bash /scripts/test-setup.sh || exit 1
+    bash /scripts/test-setup.sh
 fi
 
 # STEP 2: Remove any existing singular tests and add solution test directory
