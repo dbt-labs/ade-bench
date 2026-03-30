@@ -1,0 +1,26 @@
+task_id: helixops_saas002
+status: ready
+description: Add owner_team to mart_account_360 — absent from direct parent dim_accounts and must be sourced from grandparent stg_accounts
+prompts:
+  - key: base
+    prompt: |-
+      Add the owning team to the account 360.
+author_name: joel
+author_email: joel@example.com
+difficulty: easy
+tags:
+  - dbt
+  - helixops_saas
+test_setup: |-
+  dbt run --select dim_accounts mart_account_360
+variants:
+- db_type: duckdb
+  db_name: helixops_saas
+  project_type: dbt
+  project_name: helixops_saas
+- db_type: duckdb
+  db_name: helixops_saas
+  project_type: dbt-fusion
+  project_name: helixops_saas
+solution_seeds:
+  - table_name: mart_account_360

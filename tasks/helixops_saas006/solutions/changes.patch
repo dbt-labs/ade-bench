@@ -1,0 +1,10 @@
+--- a/models/marts/mart_account_360.sql
++++ b/models/marts/mart_account_360.sql
+@@ -66,6 +66,7 @@
+     b.latest_payment_date,
+     b.latest_outstanding_amount_usd,
+     b.has_past_due_invoice,
++    b.effective_monthly_value_usd as net_mrr,
+     lr.invoice_month as latest_revenue_month,
+     lr.recurring_revenue_usd as latest_recurring_revenue_usd,
+     lr.one_time_revenue_usd as latest_one_time_revenue_usd,

@@ -1,0 +1,30 @@
+task_id: helixops_saas012
+status: ready
+description: Inline an intermediate model as a CTE and delete the original file — data output is unchanged but the model must be removed from the project
+prompts:
+  - key: base
+    prompt: |-
+      Please move the monthly revenue prep model into being a CTE for the main revenue model.
+  - key: hard
+    prompt: |-
+      Get rid of the monthly revenue prep model
+author_name: joel
+author_email: joel@example.com
+difficulty: medium
+tags:
+  - dbt
+  - helixops_saas
+test_setup: |-
+  dbt run-operation drop_relation --args '{schema: main, identifier: int_monthly_revenue_prep, type: view}' || true
+  dbt run --select fct_monthly_revenue
+variants:
+- db_type: duckdb
+  db_name: helixops_saas
+  project_type: dbt
+  project_name: helixops_saas
+- db_type: duckdb
+  db_name: helixops_saas
+  project_type: dbt-fusion
+  project_name: helixops_saas
+solution_seeds:
+  - table_name: fct_monthly_revenue

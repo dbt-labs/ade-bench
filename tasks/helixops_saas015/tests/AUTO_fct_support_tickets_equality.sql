@@ -1,0 +1,19 @@
+-- Define columns to compare
+{% set table_name = 'fct_support_tickets' %}
+{% set answer_keys = ['solution__fct_support_tickets'] %}
+
+{% set cols_to_include = [
+    
+] %}
+
+{% set cols_to_exclude = [
+    'ticket_age_days'
+] %}
+
+
+-------------------------------------
+---- DO NOT EDIT BELOW THIS LINE ----
+-- depends_on: {{ ref(table_name) }}
+-- depends_on: {{ ref('solution__fct_support_tickets') }}
+
+{{ ade_bench_equality_test(table_name=table_name, answer_keys=answer_keys, cols_to_exclude=cols_to_exclude) }}

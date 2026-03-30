@@ -1,0 +1,10 @@
+--- a/models/intermediate/int_account_billing_snapshot.sql
++++ b/models/intermediate/int_account_billing_snapshot.sql
+@@ -48,6 +48,7 @@
+     ls.contracted_seats,
+     ls.discount_pct,
+     ls.effective_monthly_value_usd,
++    ls.list_price_usd,
+     li.invoice_id as latest_invoice_id,
+     li.invoice_date as latest_invoice_date,
+     li.due_date as latest_invoice_due_date,

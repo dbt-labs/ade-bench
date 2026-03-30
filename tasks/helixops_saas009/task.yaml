@@ -1,0 +1,27 @@
+task_id: helixops_saas009
+status: ready
+description: Create a new dim_accounts_v2 model with a renamed column — the original dim_accounts must remain unchanged
+prompts:
+  - key: base
+    prompt: |-
+      Please create a v2 of dim_accounts with account_status renamed to customer_status — this will become the primary version in the future but not yet.
+author_name: joel
+author_email: joel@example.com
+difficulty: easy
+tags:
+  - dbt
+  - helixops_saas
+test_setup: |-
+  dbt run --select dim_accounts
+variants:
+- db_type: duckdb
+  db_name: helixops_saas
+  project_type: dbt
+  project_name: helixops_saas
+- db_type: duckdb
+  db_name: helixops_saas
+  project_type: dbt-fusion
+  project_name: helixops_saas
+solution_seeds:
+  - table_name: dim_accounts_v2
+    exclude_tests: [equality_test, existence_test]

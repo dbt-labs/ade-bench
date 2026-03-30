@@ -1,0 +1,108 @@
+
+
+seeds:
+  helixops_saas:
+    solution__int_account_billing_snapshot:
+      +column_types:
+        account_id: varchar
+        latest_subscription_id: varchar
+        plan_id: varchar
+        plan_name: varchar
+        plan_family: varchar
+        billing_cycle: varchar
+        support_tier: varchar
+        latest_subscription_status: varchar
+        latest_subscription_start_date: date
+        latest_subscription_end_date: date
+        contracted_seats: integer
+        discount_pct: double
+        effective_monthly_value_usd: double
+        geo_segment: varchar
+        latest_invoice_id: varchar
+        latest_invoice_date: date
+        latest_invoice_due_date: date
+        latest_invoice_status: varchar
+        latest_payment_status: varchar
+        latest_payment_method: varchar
+        latest_payment_date: date
+        latest_invoice_total_usd: double
+        latest_invoice_amount_paid_usd: double
+        latest_outstanding_amount_usd: double
+        past_due_invoice_count: bigint
+        open_invoice_count: bigint
+        has_past_due_invoice: boolean
+    solution__mart_account_360:
+      +column_types:
+        account_id: varchar
+        account_name: varchar
+        industry: varchar
+        region: varchar
+        segment: varchar
+        billing_country: varchar
+        account_status: varchar
+        is_churned: boolean
+        employee_band: varchar
+        owner_team: varchar
+        workspace_count: bigint
+        active_workspace_count: bigint
+        sandbox_workspace_count: bigint
+        primary_workspace_name: varchar
+        user_count: bigint
+        active_user_count: bigint
+        plan_name: varchar
+        plan_family: varchar
+        billing_cycle: varchar
+        support_tier: varchar
+        contracted_seats: integer
+        discount_pct: double
+        latest_invoice_status: varchar
+        latest_payment_status: varchar
+        latest_invoice_date: date
+        latest_payment_date: date
+        latest_outstanding_amount_usd: double
+        has_past_due_invoice: boolean
+        geo_segment: varchar
+        latest_revenue_month: date
+        latest_recurring_revenue_usd: double
+        latest_one_time_revenue_usd: double
+        latest_total_revenue_usd: double
+        latest_collected_revenue_usd: double
+        latest_usage_date: date
+        latest_daily_active_users: bigint
+        latest_daily_projects_run: bigint
+        latest_daily_api_calls: bigint
+        avg_active_users_7d: double
+        avg_active_users_30d: double
+        total_projects_run_30d: bigint
+        total_api_calls_30d: bigint
+        peak_storage_gb_30d: double
+        lifetime_ticket_count: bigint
+        open_ticket_count: bigint
+        avg_csat_score: double
+        avg_first_response_minutes: double
+    solution__mart_account_health:
+      +column_types:
+        account_id: varchar
+        account_name: varchar
+        segment: varchar
+        region: varchar
+        billing_country: varchar
+        account_status: varchar
+        plan_name: varchar
+        latest_subscription_status: varchar
+        latest_invoice_status: varchar
+        latest_payment_status: varchar
+        latest_outstanding_amount_usd: double
+        has_past_due_invoice: boolean
+        geo_segment: varchar
+        active_user_count: bigint
+        active_workspace_count: bigint
+        avg_active_users_7d: double
+        total_projects_run_30d: bigint
+        total_api_calls_30d: bigint
+        open_ticket_count: bigint
+        breached_sla_ticket_count: bigint
+        avg_csat_score: double
+        latest_month_recurring_revenue_usd: double
+        latest_month_total_revenue_usd: double
+        account_health_score: integer

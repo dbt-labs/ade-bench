@@ -1,0 +1,24 @@
+--- a/models/staging/stg_workspaces.sql
++++ b/models/staging/stg_workspaces.sql
+@@ -11,10 +11,7 @@
+         else 'active'
+     end as workspace_status,
+     {{ epoch_to_timestamp('deact_ts_epoch') }} as deactivated_at,
+-    case
+-        when lower(trim(env_tier)) in ('sandbox', 'sbx') then 'sandbox'
+-        else 'prod'
+-    end as environment_tier,
++    lower(trim(env_tier)) as environment_tier,
+     coalesce({{ bool_from_text('primary_ws_yn') }}, false) as is_primary,
+     case
+         when lower(trim(ws_stat_cd)) in ('arch', 'archived', 'disabled') then false
+--- a/models/intermediate/int_workspace_daily_metrics.sql
++++ b/models/intermediate/int_workspace_daily_metrics.sql
+@@ -17,7 +17,6 @@
+     a.region,
+     a.billing_country,
+     w.workspace_name,
+-    w.environment_tier,
+     w.workspace_status,
+     w.is_primary,
+     u.usage_date,

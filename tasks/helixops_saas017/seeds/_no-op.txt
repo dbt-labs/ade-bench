@@ -1,0 +1,29 @@
+
+
+seeds:
+  helixops_saas:
+    solution__int_workspace_roster:
+      +column_types:
+        membership_id: varchar
+        workspace_id: varchar
+        workspace_name: varchar
+        environment_tier: varchar
+        workspace_status: varchar
+        is_primary: boolean
+        account_id: varchar
+        account_name: varchar
+        segment: varchar
+        region: varchar
+        billing_country: varchar
+        user_id: varchar
+        email: varchar
+        full_name: varchar
+        title: varchar
+        department: varchar
+        user_status: varchar
+        is_active_user: boolean
+        role: varchar
+        invited_at: timestamp
+        joined_at: timestamp
+        membership_status: varchar
+        is_current_membership: boolean

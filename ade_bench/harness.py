@@ -1168,6 +1168,7 @@ class Harness:
                 import duckdb
 
                 con = duckdb.connect(temp_db_path)
+                con.execute("SET TimeZone = 'UTC';")
 
                 # Collect all schema information
                 all_schemas = []

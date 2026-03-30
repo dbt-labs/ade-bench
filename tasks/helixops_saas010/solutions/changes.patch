@@ -1,0 +1,8 @@
+--- a/models/intermediate/int_account_workspaces.sql
++++ b/models/intermediate/int_account_workspaces.sql
+@@ -12,4 +12,5 @@
+     min(created_at) as first_workspace_created_at,
+     max(created_at) as latest_workspace_created_at
+ from workspaces
++where workspace_status != 'archived'
+ group by 1

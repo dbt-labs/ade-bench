@@ -1,0 +1,64 @@
+--- a/models/staging/stg_accounts.sql
++++ b/models/staging/stg_accounts.sql
+@@ -17,7 +17,7 @@
+         when lower(trim(acct_stat)) in ('cust_active', 'active', '1', 'current') then 'active'
+         when lower(trim(acct_stat)) in ('churned', 'closed_lost', 'cancelled', 'closed') then 'churned'
+         else 'active'
+-    end as account_status,
++    end as customer_status,
+     trim(employee_band_txt) as employee_band,
+     trim(owner_team_txt) as owner_team,
+     {{ bool_from_text('is_deleted_flag') }} as is_deleted,
+--- a/models/intermediate/int_account_users.sql
++++ b/models/intermediate/int_account_users.sql
+@@ -12,7 +12,7 @@
+     a.region,
+     a.segment,
+     a.billing_country,
+-    a.account_status,
++    a.customer_status,
+     a.owner_team,
+     u.email,
+     u.full_name,
+--- a/models/marts/dim_accounts.sql
++++ b/models/marts/dim_accounts.sql
+@@ -22,7 +22,7 @@
+     a.segment,
+     a.billing_country,
+     a.created_at,
+-    a.account_status,
++    a.customer_status,
+     a.is_churned,
+     a.employee_band,
+     a.owner_team,
+--- a/models/marts/mart_account_360.sql
++++ b/models/marts/mart_account_360.sql
+@@ -44,7 +44,7 @@
+     a.region,
+     a.segment,
+     a.billing_country,
+-    a.account_status,
++    a.customer_status,
+     a.is_churned,
+     a.employee_band,
+     a.owner_team,
+--- a/models/marts/mart_account_health.sql
++++ b/models/marts/mart_account_health.sql
+@@ -33,7 +33,7 @@
+     a.segment,
+     a.region,
+     a.billing_country,
+-    a.account_status,
++    a.customer_status,
+     b.plan_name,
+     b.latest_subscription_status,
+     b.latest_invoice_status,
+@@ -55,7 +55,7 @@
+         - (case when b.has_past_due_invoice then 25 else 0 end)
+         - (case when coalesce(s.open_ticket_count, 0) >= 3 then 15 when coalesce(s.open_ticket_count, 0) > 0 then 5 else 0 end)
+         - (case when coalesce(e.avg_active_users_7d, 0) = 0 then 20 when coalesce(e.avg_active_users_7d, 0) < 3 then 10 else 0 end)
+-        - (case when a.account_status = 'churned' then 40 else 0 end)
++        - (case when a.customer_status = 'churned' then 40 else 0 end)
+     ) as account_health_score
+ from accounts a
+ left join billing b using (account_id)

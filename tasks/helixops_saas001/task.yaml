@@ -1,0 +1,26 @@
+task_id: helixops_saas001
+status: ready
+description: Add a missing column to dim_accounts that already exists in the parent stg_accounts model
+prompts:
+  - key: base
+    prompt: |-
+      Add billing_country to dim_accounts.
+author_name: joel
+author_email: joel@example.com
+difficulty: easy
+tags:
+  - dbt
+  - helixops_saas
+test_setup: |-
+  dbt run --select dim_accounts
+variants:
+- db_type: duckdb
+  db_name: helixops_saas
+  project_type: dbt
+  project_name: helixops_saas
+- db_type: duckdb
+  db_name: helixops_saas
+  project_type: dbt-fusion
+  project_name: helixops_saas
+solution_seeds:
+  - table_name: dim_accounts

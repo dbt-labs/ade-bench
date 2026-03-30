@@ -1,0 +1,10 @@
+--- a/models/intermediate/int_workspace_roster.sql
++++ b/models/intermediate/int_workspace_roster.sql
+@@ -26,6 +26,7 @@
+     u.email,
+     u.full_name,
+     u.title,
++    u.department,
+     u.user_status,
+     u.is_active_user,
+     m.role,

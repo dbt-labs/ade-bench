@@ -1,0 +1,29 @@
+task_id: helixops_saas011
+status: ready
+description: Fix a missing workspace by tracing the bug back to a staging CASE expression that does not handle the raw value 'sbx'
+prompts:
+  - key: base
+    prompt: |-
+      The Falcon Works sandbox isn't showing up in dim_accounts.
+  - key: hard
+    prompt: |-
+      dim_accounts is missing some of falcon works' data
+author_name: joel
+author_email: joel@example.com
+difficulty: medium
+tags:
+  - dbt
+  - helixops_saas
+test_setup: |-
+  dbt run --select stg_workspaces int_account_workspaces dim_accounts
+variants:
+- db_type: duckdb
+  db_name: helixops_saas
+  project_type: dbt
+  project_name: helixops_saas
+- db_type: duckdb
+  db_name: helixops_saas
+  project_type: dbt-fusion
+  project_name: helixops_saas
+solution_seeds:
+  - table_name: dim_accounts

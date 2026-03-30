@@ -1,0 +1,31 @@
+task_id: helixops_saas007
+status: ready
+description: Add a new derived concatenation column (region + segment) through the billing snapshot to two downstream marts
+prompts:
+  - key: base
+    prompt: |-
+      Add region and segment to int_account_billing_snapshot as a single hyphen separated geo_segment column, and carry it through to the account 360 and account health marts.
+  - key: no_location_hint
+    prompt: |-
+      Make it so the account 360 and account health marts have a geo_segment column like `APAC-enterprise`.
+author_name: joel
+author_email: joel@example.com
+difficulty: medium
+tags:
+  - dbt
+  - helixops_saas
+test_setup: |-
+  dbt run --select int_account_billing_snapshot mart_account_360 mart_account_health
+variants:
+- db_type: duckdb
+  db_name: helixops_saas
+  project_type: dbt
+  project_name: helixops_saas
+- db_type: duckdb
+  db_name: helixops_saas
+  project_type: dbt-fusion
+  project_name: helixops_saas
+solution_seeds:
+  - table_name: int_account_billing_snapshot
+  - table_name: mart_account_360
+  - table_name: mart_account_health

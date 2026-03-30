@@ -1,0 +1,22 @@
+name: 'helixops_saas'
+version: '1.0.0'
+config-version: 2
+
+profile: 'helixops_saas-duckdb'
+
+model-paths: ['models']
+macro-paths: ['macros']
+
+target-path: target
+clean-targets:
+  - target
+  - dbt_packages
+
+models:
+  helixops_saas:
+    staging:
+      +materialized: view
+    intermediate:
+      +materialized: view
+    marts:
+      +materialized: table

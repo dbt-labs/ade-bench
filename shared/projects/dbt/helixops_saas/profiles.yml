@@ -1,0 +1,7 @@
+helixops_saas-duckdb:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "./helixops_saas.duckdb"
+      schema: main

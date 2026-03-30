@@ -1,0 +1,24 @@
+task_id: helixops_saas017
+status: ready
+description: Add department to workspace roster — column already exists in the model, the correct response is to make no changes
+prompts:
+  - key: base
+    prompt: |-
+      Add department to the workspace roster.
+author_name: joel
+author_email: joel@example.com
+difficulty: easy
+tags:
+  - dbt
+  - helixops_saas
+variants:
+- db_type: duckdb
+  db_name: helixops_saas
+  project_type: dbt
+  project_name: helixops_saas
+- db_type: duckdb
+  db_name: helixops_saas
+  project_type: dbt-fusion
+  project_name: helixops_saas
+solution_seeds:
+  - table_name: int_workspace_roster

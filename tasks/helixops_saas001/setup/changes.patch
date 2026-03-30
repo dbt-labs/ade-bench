@@ -1,0 +1,10 @@
+--- a/models/marts/dim_accounts.sql
++++ b/models/marts/dim_accounts.sql
+@@ -20,7 +20,6 @@
+     a.industry,
+     a.region,
+     a.segment,
+-    a.billing_country,
+     a.created_at,
+     a.account_status,
+     a.is_churned,

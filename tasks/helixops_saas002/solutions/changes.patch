@@ -1,0 +1,20 @@
+--- a/models/marts/dim_accounts.sql
++++ b/models/marts/dim_accounts.sql
+@@ -25,6 +25,7 @@
+     a.account_status,
+     a.is_churned,
+     a.employee_band,
++    a.owner_team,
+     coalesce(w.workspace_count, 0) as workspace_count,
+     coalesce(w.active_workspace_count, 0) as active_workspace_count,
+     coalesce(w.prod_workspace_count, 0) as prod_workspace_count,
+--- a/models/marts/mart_account_360.sql
++++ b/models/marts/mart_account_360.sql
+@@ -47,6 +47,7 @@
+     a.account_status,
+     a.is_churned,
+     a.employee_band,
++    a.owner_team,
+     a.workspace_count,
+     a.active_workspace_count,
+     a.sandbox_workspace_count,
