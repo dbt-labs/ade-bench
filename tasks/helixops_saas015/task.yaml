@@ -18,8 +18,8 @@ test_setup: |-
   dbt seed && dbt run --select int_support_sla fct_support_tickets
   dbt compile --select int_support_sla
   COMPILED=/app/target/compiled/helixops_saas/models/intermediate/int_support_sla.sql
-  if ! grep -q "'low'" "$COMPILED" && grep -q "'standard'" "$COMPILED"; then
-    echo "select 1 -- FAIL: int_support_sla maps low priority to 'standard' instead of using the actual priority value directly" > /app/tests/sla_priority_direct.sql
+  if grep -rli "standard" /app/seeds/ 2>/dev/null | grep -qv "solution__" || grep -q "'standard'" "$COMPILED"; then
+    echo "select 1 -- FAIL: SLA config must use actual priority value 'low', not normalize to 'standard'" > /app/tests/sla_priority_direct.sql
   fi
 variants:
 - db_type: duckdb
