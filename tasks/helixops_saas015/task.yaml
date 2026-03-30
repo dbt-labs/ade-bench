@@ -16,6 +16,10 @@ tags:
   - helixops_saas
 test_setup: |-
   dbt seed && dbt run --select int_support_sla fct_support_tickets
+  dbt compile --select int_support_sla
+  if ! grep -q 'sla_response_targets' /app/target/compiled/helixops_saas/models/intermediate/int_support_sla.sql; then
+    echo "select 1 -- FAIL: int_support_sla must reference sla_response_targets seed, not a hardcoded CASE expression" > /app/tests/sla_targets_seed_reused.sql
+  fi
 variants:
 - db_type: duckdb
   db_name: helixops_saas

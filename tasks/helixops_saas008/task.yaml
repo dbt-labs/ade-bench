@@ -23,6 +23,7 @@ variants:
   project_type: dbt-fusion
   project_name: helixops_saas
 solution_seeds:
+  - table_name: stg_accounts
   - table_name: dim_accounts
   - table_name: int_account_users
     exclude_columns: [days_since_last_login]

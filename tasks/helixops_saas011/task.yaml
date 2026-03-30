@@ -5,6 +5,9 @@ prompts:
   - key: base
     prompt: |-
       The Falcon Works sandbox isn't showing up in dim_accounts.
+  - key: hard
+    prompt: |-
+      dim_accounts is missing some of falcon works' data
 author_name: joel
 author_email: joel@example.com
 difficulty: medium

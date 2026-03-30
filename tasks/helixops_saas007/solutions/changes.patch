@@ -4,7 +4,7 @@
      ls.contracted_seats,
      ls.discount_pct,
      ls.effective_monthly_value_usd,
-+    ls.region || ' / ' || ls.segment as geo_segment,
++    ls.region || '-' || ls.segment as geo_segment,
      li.invoice_id as latest_invoice_id,
      li.invoice_date as latest_invoice_date,
      li.due_date as latest_invoice_due_date,
