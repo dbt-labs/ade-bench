@@ -25,3 +25,78 @@ seeds:
         primary_workspace_name: varchar
         first_workspace_created_at: timestamp
         latest_workspace_created_at: timestamp
+    solution__int_workspace_roster:
+      +column_types:
+        membership_id: varchar
+        workspace_id: varchar
+        workspace_name: varchar
+        environment_tier: varchar
+        workspace_status: varchar
+        is_primary: boolean
+        account_id: varchar
+        account_name: varchar
+        segment: varchar
+        region: varchar
+        billing_country: varchar
+        user_id: varchar
+        email: varchar
+        full_name: varchar
+        title: varchar
+        department: varchar
+        user_status: varchar
+        is_active_user: boolean
+        role: varchar
+        invited_at: timestamp
+        joined_at: timestamp
+        membership_status: varchar
+        is_current_membership: boolean
+    solution__int_workspace_daily_metrics:
+      +column_types:
+        usage_id: varchar
+        workspace_id: varchar
+        account_id: varchar
+        account_name: varchar
+        industry: varchar
+        segment: varchar
+        region: varchar
+        billing_country: varchar
+        workspace_name: varchar
+        environment_tier: varchar
+        workspace_status: varchar
+        is_primary: boolean
+        usage_date: date
+        usage_week: date
+        weekday_num: bigint
+        is_weekend: boolean
+        active_users: integer
+        projects_run: integer
+        api_calls: integer
+        storage_gb: double
+        alerts_sent: integer
+    solution__int_support_sla:
+      +column_types:
+        ticket_id: varchar
+        account_id: varchar
+        account_name: varchar
+        segment: varchar
+        region: varchar
+        billing_country: varchar
+        workspace_id: varchar
+        workspace_name: varchar
+        environment_tier: varchar
+        opened_by_user_id: varchar
+        opened_at: timestamp
+        first_response_at: timestamp
+        resolved_at: timestamp
+        priority: varchar
+        category: varchar
+        ticket_status: varchar
+        csat_score: integer
+        first_response_minutes: bigint
+        resolution_minutes: bigint
+        response_sla_minutes: integer
+        met_response_sla: boolean
+        is_open_ticket: boolean
+        ticket_age_days: bigint
+        opened_month: date
+        resolved_month: date

@@ -2,6 +2,21 @@
 
 seeds:
   helixops_saas:
+    solution__stg_accounts:
+      +column_types:
+        account_id: varchar
+        account_name: varchar
+        industry: varchar
+        region: varchar
+        segment: varchar
+        billing_country: varchar
+        created_at: timestamp
+        customer_status: varchar
+        employee_band: varchar
+        owner_team: varchar
+        is_deleted: boolean
+        source_batch_id: varchar
+        is_churned: boolean
     solution__dim_accounts:
       +column_types:
         account_id: varchar

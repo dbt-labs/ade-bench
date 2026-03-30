@@ -1,91 +1,91 @@
 account_id,account_name,segment,region,billing_country,account_status,plan_name,latest_subscription_status,latest_invoice_status,latest_payment_status,latest_outstanding_amount_usd,has_past_due_invoice,geo_segment,active_user_count,active_workspace_count,avg_active_users_7d,total_projects_run_30d,total_api_calls_30d,open_ticket_count,breached_sla_ticket_count,avg_csat_score,latest_month_recurring_revenue_usd,latest_month_total_revenue_usd,account_health_score
-A1030,Northwind Analytics,enterprise,EMEA,UK,active,Enterprise Monthly,active,paid,paid,0.0,false,EMEA / enterprise,11,4,0.0,1853,112662,0,0,4.25,2470.0,2964.0,80
-A1039,Nova Group,smb,EMEA,FR,active,Starter Monthly,active,paid,paid,0.0,false,EMEA / smb,7,1,0.0,457,27512,0,1,5.0,500.0,600.0,80
-A1043,Lighthouse Works,enterprise,APAC,SG,active,Enterprise Monthly,active,paid,paid,0.0,false,APAC / enterprise,16,4,0.0,2105,114513,1,0,4.0,2600.0,2834.0,75
-A1045,Nova Holdings,enterprise,NA,CA,active,Enterprise Annual,active,paid,paid,0.0,false,NA / enterprise,14,4,0.0,2148,126398,0,0,4.2,25650.0,25650.0,80
-A1048,Orchid Capital,enterprise,APAC,NZ,active,Enterprise Annual,active,paid,paid,0.0,false,APAC / enterprise,14,3,0.0,1910,112002,3,0,4.0,24300.0,26730.0,65
-A1090,Vertex Labs,smb,NA,US,active,Starter Monthly,active,paid,paid,0.0,false,NA / smb,4,1,0.0,294,16801,1,0,4.0,500.0,500.0,75
-A1063,Maple Global,smb,NA,CA,active,Starter Monthly,active,open,,400.0,false,NA / smb,3,1,0.0,266,15675,1,0,4.0,400.0,400.0,75
-A1022,Summit Collective,smb,APAC,NZ,active,Growth Monthly,active,paid,paid,0.0,false,APAC / smb,3,2,0.0,374,17727,0,0,5.0,1500.0,1650.0,80
-A1068,Helio Health,enterprise,APAC,SG,active,Enterprise Monthly,active,open,,2834.0,false,APAC / enterprise,15,4,0.0,1892,98846,0,0,4.571428571428571,2600.0,2834.0,80
-A1083,Falcon Works,mid_market,NA,CA,active,Growth Monthly,active,paid,failed,0.0,false,NA / mid_market,5,2,0.0,618,30719,0,0,3.75,1200.0,1200.0,80
-A1002,Summit Foods,mid_market,NA,US,active,Growth Monthly,active,open,,1500.0,false,NA / mid_market,11,3,0.0,1104,59889,0,0,4.666666666666667,1500.0,1500.0,80
-A1005,Pacific Labs,enterprise,EMEA,UK,active,Enterprise Annual,active,paid,paid,0.0,false,EMEA / enterprise,12,3,0.0,1630,93530,1,0,3.8333333333333335,25650.0,33180.0,75
-A1011,Vertex Energy,smb,NA,CA,active,Growth Monthly,active,paid,paid,0.0,false,NA / smb,6,1,0.0,437,27390,1,0,5.0,1500.0,1500.0,75
-A1052,Sierra Labs,mid_market,APAC,NZ,active,Growth Monthly,active,paid,paid,0.0,false,APAC / mid_market,9,2,0.0,977,56984,1,0,4.75,1425.0,1567.5,75
-A1062,Delta Manufacturing,enterprise,EMEA,NL,active,Enterprise Monthly,active,paid,paid,0.0,false,EMEA / enterprise,14,3,0.0,1748,102875,0,0,4.666666666666667,2600.0,3120.0,80
-A1019,Sierra Systems,smb,APAC,JP,active,Starter Monthly,active,paid,paid,0.0,false,APAC / smb,3,2,0.0,340,16856,1,0,,400.0,440.0,75
-A1050,Cedar Energy,smb,APAC,JP,active,Starter Monthly,active,paid,paid,0.0,false,APAC / smb,4,2,0.0,387,19633,1,0,,500.0,550.0,75
-A1060,Cedar Foods,mid_market,NA,CA,active,Growth Monthly,active,past_due,failed,1500.0,true,NA / mid_market,11,2,0.0,891,49873,0,0,4.0,1500.0,1500.0,55
-A1070,Helio Manufacturing,smb,APAC,NZ,active,Starter Monthly,active,paid,paid,0.0,false,APAC / smb,6,1,0.0,424,24980,0,0,4.0,500.0,550.0,80
-A1020,Pioneer Network,smb,EMEA,FR,active,Growth Monthly,active,paid,paid,0.0,false,EMEA / smb,3,1,0.0,255,14423,0,0,5.0,1500.0,1800.0,80
-A1075,Cedar Labs,smb,EMEA,UK,active,Starter Monthly,active,paid,paid,0.0,false,EMEA / smb,8,1,0.0,520,31589,0,0,4.0,500.0,600.0,80
-A1016,BluePeak Capital,enterprise,EMEA,DE,active,Enterprise Annual,active,paid,paid,0.0,false,EMEA / enterprise,19,4,0.0,2320,136008,1,0,4.0,24300.0,31560.0,75
-A1053,Bright Health,mid_market,NA,CA,active,Growth Monthly,active,paid,paid,0.0,false,NA / mid_market,9,3,0.0,1076,62016,0,0,5.0,1500.0,1500.0,80
-A1081,River Collective,mid_market,NA,CA,active,Enterprise Monthly,active,paid,paid,0.0,false,NA / mid_market,7,3,0.0,1010,54352,1,0,4.0,2600.0,2600.0,75
-A1003,Nova Ventures,enterprise,NA,US,active,Enterprise Annual,active,paid,paid,0.0,false,NA / enterprise,15,2,0.0,1299,77795,0,0,4.8,25650.0,27650.0,80
-A1027,BluePeak Health,smb,APAC,SG,active,Starter Monthly,active,paid,paid,0.0,false,APAC / smb,5,2,0.0,520,32095,0,0,4.0,500.0,545.0,80
-A1034,Helio Partners,smb,NA,CA,active,Starter Monthly,active,paid,paid,0.0,false,NA / smb,7,2,0.0,507,26564,0,0,4.0,500.0,500.0,80
-A1040,Harbor Collective,mid_market,APAC,SG,active,Enterprise Monthly,active,paid,paid,0.0,false,APAC / mid_market,10,3,0.0,1066,56746,1,1,2.6666666666666665,2600.0,2834.0,75
-A1041,Cedar Logistics,mid_market,EMEA,NL,active,Growth Monthly,active,paid,paid,0.0,false,EMEA / mid_market,10,3,0.0,1147,61506,0,0,4.4,1500.0,1800.0,80
-A1065,Vertex Partners,mid_market,NA,US,active,Growth Monthly,active,paid,paid,0.0,false,NA / mid_market,9,2,0.0,937,57316,0,0,4.0,1500.0,1500.0,80
-A1088,Cedar Partners,smb,APAC,NZ,active,Starter Monthly,active,paid,paid,0.0,false,APAC / smb,5,1,0.0,388,23706,1,0,5.0,500.0,550.0,75
-A1049,Northwind Network,enterprise,NA,CA,active,Enterprise Annual,active,paid,paid,0.0,false,NA / enterprise,18,3,0.0,2058,127637,1,0,4.0,24300.0,25800.0,75
-A1026,Pioneer Capital,smb,NA,CA,active,Starter Monthly,active,paid,paid,0.0,false,NA / smb,8,1,0.0,507,30416,0,0,5.0,400.0,400.0,80
-A1037,Lighthouse Network,enterprise,EMEA,UK,active,Enterprise Monthly,active,paid,paid,0.0,false,EMEA / enterprise,15,4,0.0,1892,93362,1,0,4.333333333333333,2600.0,3120.0,75
-A1042,Northwind Labs,mid_market,APAC,AU,active,Growth Monthly,active,paid,paid,0.0,false,APAC / mid_market,10,3,0.0,1136,60586,0,2,4.2,1500.0,1650.0,80
-A1061,Atlas Capital,enterprise,EMEA,FR,active,Enterprise Monthly,active,paid,paid,0.0,false,EMEA / enterprise,16,3,0.0,1687,91764,1,0,5.0,2470.0,2964.0,75
-A1064,Atlas Health,smb,NA,US,active,Starter Monthly,active,paid,paid,0.0,false,NA / smb,4,1,0.0,306,18016,0,0,5.0,400.0,400.0,80
-A1006,Helio Works,mid_market,EMEA,UK,active,Growth Monthly,active,paid,paid,0.0,false,EMEA / mid_market,5,2,0.0,700,41229,0,0,4.0,1200.0,1440.0,80
-A1025,Bright Capital,smb,EMEA,UK,active,Starter Monthly,active,paid,paid,0.0,false,EMEA / smb,5,1,0.0,370,23365,0,0,5.0,400.0,480.0,80
-A1038,River Systems,smb,APAC,AU,active,Starter Monthly,active,paid,paid,0.0,false,APAC / smb,4,2,0.0,446,27242,1,0,4.0,500.0,550.0,75
-A1074,Granite Analytics,mid_market,NA,CA,active,Growth Monthly,active,paid,paid,0.0,false,NA / mid_market,11,3,0.0,1288,77923,1,0,3.75,1350.0,1350.0,75
-A1047,Orchid Global,enterprise,APAC,AU,active,Enterprise Annual,active,paid,paid,0.0,false,APAC / enterprise,19,3,0.0,1975,108624,1,0,4.5,25650.0,28215.0,75
-A1007,Silver Systems,smb,EMEA,FR,active,Starter Monthly,active,open,,600.0,false,EMEA / smb,3,1,0.0,242,14726,0,0,4.666666666666667,500.0,600.0,80
-A1012,Cedar Ventures,smb,APAC,JP,active,Starter Monthly,active,paid,failed,0.0,false,APAC / smb,6,2,0.0,530,29420,0,1,4.333333333333333,500.0,550.0,80
-A1013,River Foods,mid_market,NA,US,active,Growth Monthly,active,paid,paid,0.0,false,NA / mid_market,5,3,0.0,930,51065,0,1,5.0,1425.0,1425.0,80
-A1031,Helio Holdings,mid_market,APAC,AU,active,Growth Monthly,active,paid,paid,0.0,false,APAC / mid_market,10,3,0.0,1115,63242,1,0,3.0,1500.0,1650.0,75
-A1056,Delta Global,mid_market,APAC,AU,active,Growth Monthly,active,paid,paid,0.0,false,APAC / mid_market,10,3,0.0,1111,67843,0,0,3.75,1500.0,1650.0,80
-A1057,Harbor Partners,enterprise,APAC,NZ,active,Enterprise Annual,active,paid,paid,0.0,false,APAC / enterprise,12,4,0.0,1853,101155,2,0,3.4,21600.0,23760.0,75
-A1076,Atlas Solutions,mid_market,EMEA,UK,active,Growth Monthly,active,paid,paid,0.0,false,EMEA / mid_market,13,2,0.0,1181,72164,1,0,5.0,1500.0,1800.0,75
-A1008,Pacific Works,mid_market,EMEA,UK,active,Enterprise Monthly,active,paid,paid,0.0,false,EMEA / mid_market,11,3,0.0,1255,75716,0,0,3.6666666666666665,2470.0,2964.0,80
-A1055,Pioneer Systems,mid_market,EMEA,FR,active,Growth Monthly,active,past_due,failed,1800.0,true,EMEA / mid_market,12,2,0.0,797,38707,0,0,4.333333333333333,1500.0,1800.0,55
-A1069,Bright Foods,enterprise,NA,CA,active,Enterprise Annual,active,paid,paid,0.0,false,NA / enterprise,11,3,0.0,1634,96476,0,0,4.333333333333333,24300.0,24300.0,80
-A1078,Beacon Foods,mid_market,EMEA,FR,active,Growth Monthly,active,paid,paid,0.0,false,EMEA / mid_market,10,3,0.0,1081,63211,1,0,4.0,1425.0,1710.0,75
-A1084,Silver Foods,mid_market,NA,CA,active,Enterprise Monthly,active,paid,paid,0.0,false,NA / mid_market,9,2,0.0,970,59696,1,0,3.0,2600.0,2600.0,75
-A1085,Sierra Capital,smb,NA,US,active,Starter Monthly,active,paid,paid,0.0,false,NA / smb,4,1,0.0,335,20055,0,1,4.0,500.0,500.0,80
-A1089,Beacon Network,mid_market,NA,US,active,Growth Monthly,active,paid,paid,0.0,false,NA / mid_market,10,2,0.0,1041,63704,0,1,5.0,1500.0,1500.0,80
-A1001,Helio Systems,mid_market,EMEA,NL,active,Growth Monthly,active,paid,paid,0.0,false,EMEA / mid_market,7,3,0.0,947,54717,0,0,4.5,1500.0,1800.0,80
-A1028,Apex Energy,mid_market,APAC,SG,active,Enterprise Monthly,active,open,,2834.0,false,APAC / mid_market,10,2,0.0,792,40215,0,0,4.666666666666667,2600.0,2834.0,80
-A1054,Granite Labs,mid_market,APAC,NZ,active,Enterprise Monthly,active,paid,paid,0.0,false,APAC / mid_market,8,3,0.0,1221,71204,1,0,3.5,2470.0,2717.0,75
-A1059,Evergreen Partners,mid_market,NA,CA,active,Enterprise Monthly,active,paid,paid,0.0,false,NA / mid_market,10,2,0.0,749,39880,0,0,4.6,2080.0,2080.0,80
-A1066,Pacific Capital,mid_market,APAC,NZ,active,Enterprise Monthly,active,open,,2860.0,false,APAC / mid_market,10,2,0.0,983,58910,0,1,3.6666666666666665,2600.0,2860.0,80
-A1067,Maple Energy,mid_market,NA,CA,active,Growth Monthly,active,paid,paid,0.0,false,NA / mid_market,6,2,0.0,641,32283,1,0,4.25,1500.0,1500.0,75
-A1071,Evergreen Group,mid_market,NA,CA,active,Enterprise Monthly,active,open,,2080.0,false,NA / mid_market,12,3,0.0,1161,64088,0,0,3.5,2080.0,2080.0,80
-A1079,Nova Foods,enterprise,EMEA,FR,active,Enterprise Annual,active,paid,paid,0.0,false,EMEA / enterprise,14,4,0.0,2169,127089,0,0,3.4285714285714284,21600.0,25920.0,80
-A1017,Summit Analytics,mid_market,EMEA,UK,active,Growth Monthly,active,paid,paid,0.0,false,EMEA / mid_market,8,2,0.0,767,44175,0,0,4.5,1350.0,1620.0,80
-A1023,Atlas Systems,smb,NA,CA,active,Starter Monthly,active,past_due,failed,400.0,true,NA / smb,8,1,0.0,532,31779,1,0,4.5,400.0,400.0,50
-A1044,Summit Holdings,smb,EMEA,NL,active,Growth Monthly,active,paid,paid,0.0,false,EMEA / smb,5,1,0.0,391,24890,0,0,4.333333333333333,1500.0,1800.0,80
-A1073,Silver Holdings,mid_market,EMEA,DE,active,Enterprise Monthly,active,paid,paid,0.0,false,EMEA / mid_market,10,2,0.0,1075,63469,1,0,3.3333333333333335,2600.0,3120.0,75
-A1080,Beacon Global,mid_market,EMEA,NL,active,Growth Monthly,active,paid,paid,0.0,false,EMEA / mid_market,10,2,0.0,959,58564,2,0,4.0,1500.0,1800.0,75
-A1086,River Labs,smb,EMEA,FR,active,Starter Monthly,active,paid,paid,0.0,false,EMEA / smb,4,1,0.0,314,18915,1,0,3.0,500.0,600.0,75
-A1010,Orchid Foods,smb,NA,CA,active,Starter Monthly,active,paid,paid,0.0,false,NA / smb,7,1,0.0,478,29531,0,0,3.0,400.0,400.0,80
-A1033,Lighthouse Global,mid_market,NA,CA,active,Growth Monthly,active,paid,paid,0.0,false,NA / mid_market,12,2,0.0,1158,69619,0,0,4.5,1500.0,1500.0,80
-A1046,Pioneer Solutions,smb,NA,CA,active,Growth Monthly,active,paid,paid,0.0,false,NA / smb,4,1,0.0,349,21104,1,0,5.0,1200.0,1200.0,75
-A1051,Lighthouse Systems,smb,EMEA,UK,active,Growth Monthly,active,paid,paid,0.0,false,EMEA / smb,4,1,0.0,327,19800,0,0,3.6666666666666665,1500.0,1800.0,80
-A1021,Apex Logistics,smb,NA,US,active,Starter Monthly,active,paid,paid,0.0,false,NA / smb,7,1,0.0,469,27805,0,0,4.0,500.0,500.0,80
-A1072,Summit Ventures,enterprise,NA,US,active,Enterprise Annual,active,paid,paid,0.0,false,NA / enterprise,15,3,0.0,1733,94474,0,0,3.75,24300.0,26800.0,80
-A1077,Evergreen Foods,mid_market,NA,CA,active,Growth Monthly,active,paid,paid,0.0,false,NA / mid_market,7,3,0.0,1003,58101,0,0,4.0,1500.0,1500.0,80
-A1009,Summit Group,mid_market,NA,US,active,Enterprise Monthly,active,paid,paid,0.0,false,NA / mid_market,11,2,0.0,1001,61468,0,1,4.0,2340.0,2340.0,80
-A1024,Sierra Group,smb,NA,CA,active,Starter Monthly,active,paid,paid,0.0,false,NA / smb,4,2,0.0,490,28759,0,0,5.0,500.0,500.0,80
-A1035,Bright Retail,mid_market,EMEA,UK,active,Enterprise Monthly,active,paid,paid,0.0,false,EMEA / mid_market,11,3,0.0,1115,59544,0,0,4.4,2600.0,3120.0,80
-A1058,Evergreen Analytics,smb,EMEA,UK,active,Starter Monthly,active,paid,paid,0.0,false,EMEA / smb,5,2,0.0,594,36026,0,0,4.333333333333333,500.0,600.0,80
-A1004,Silver Solutions,enterprise,NA,US,churned,Starter Monthly,canceled,paid,paid,0.0,false,NA / enterprise,6,0,0.0,0,0,1,0,3.5,500.0,500.0,35
-A1029,Bright Labs,enterprise,APAC,NZ,churned,Starter Monthly,canceled,paid,paid,0.0,false,APAC / enterprise,3,0,0.0,0,0,3,0,3.5,475.0,522.5,25
-A1015,Delta Network,smb,NA,US,churned,Growth Monthly,canceled,paid,paid,0.0,false,NA / smb,0,0,0.0,0,0,0,0,4.25,1500.0,1500.0,40
-A1018,Harbor Manufacturing,smb,EMEA,UK,churned,Starter Monthly,canceled,paid,paid,0.0,false,EMEA / smb,2,0,0.0,0,0,0,0,3.0,500.0,600.0,40
-A1036,Granite Holdings,smb,NA,US,churned,Growth Monthly,canceled,paid,paid,0.0,false,NA / smb,0,0,0.0,0,0,0,0,4.666666666666667,1200.0,1200.0,40
-A1014,Evergreen Global,enterprise,APAC,SG,churned,Growth Monthly,canceled,paid,paid,0.0,false,APAC / enterprise,4,0,0.0,0,0,1,0,3.2,1500.0,1635.0,35
-A1032,Vertex Works,mid_market,EMEA,DE,churned,Growth Monthly,canceled,paid,paid,0.0,false,EMEA / mid_market,4,0,0.0,0,0,0,0,2.0,1500.0,1800.0,40
-A1082,Summit Manufacturing,mid_market,NA,US,churned,Starter Monthly,canceled,paid,failed,0.0,false,NA / mid_market,2,0,0.0,0,0,2,1,2.25,500.0,500.0,35
-A1087,Apex Capital,enterprise,NA,CA,churned,Growth Monthly,canceled,paid,paid,0.0,false,NA / enterprise,4,0,0.0,0,0,1,0,4.333333333333333,1500.0,1500.0,35
+A1030,Northwind Analytics,enterprise,EMEA,UK,active,Enterprise Monthly,active,paid,paid,0.0,false,EMEA-enterprise,11,4,0.0,1853,112662,0,0,4.25,2470.0,2964.0,80
+A1039,Nova Group,smb,EMEA,FR,active,Starter Monthly,active,paid,paid,0.0,false,EMEA-smb,7,1,0.0,457,27512,0,1,5.0,500.0,600.0,80
+A1043,Lighthouse Works,enterprise,APAC,SG,active,Enterprise Monthly,active,paid,paid,0.0,false,APAC-enterprise,16,4,0.0,2105,114513,1,0,4.0,2600.0,2834.0,75
+A1045,Nova Holdings,enterprise,NA,CA,active,Enterprise Annual,active,paid,paid,0.0,false,NA-enterprise,14,4,0.0,2148,126398,0,0,4.2,25650.0,25650.0,80
+A1048,Orchid Capital,enterprise,APAC,NZ,active,Enterprise Annual,active,paid,paid,0.0,false,APAC-enterprise,14,3,0.0,1910,112002,3,0,4.0,24300.0,26730.0,65
+A1090,Vertex Labs,smb,NA,US,active,Starter Monthly,active,paid,paid,0.0,false,NA-smb,4,1,0.0,294,16801,1,0,4.0,500.0,500.0,75
+A1063,Maple Global,smb,NA,CA,active,Starter Monthly,active,open,,400.0,false,NA-smb,3,1,0.0,266,15675,1,0,4.0,400.0,400.0,75
+A1002,Summit Foods,mid_market,NA,US,active,Growth Monthly,active,open,,1500.0,false,NA-mid_market,11,3,0.0,1104,59889,0,0,4.666666666666667,1500.0,1500.0,80
+A1005,Pacific Labs,enterprise,EMEA,UK,active,Enterprise Annual,active,paid,paid,0.0,false,EMEA-enterprise,12,3,0.0,1630,93530,1,0,3.8333333333333335,25650.0,33180.0,75
+A1011,Vertex Energy,smb,NA,CA,active,Growth Monthly,active,paid,paid,0.0,false,NA-smb,6,1,0.0,437,27390,1,0,5.0,1500.0,1500.0,75
+A1052,Sierra Labs,mid_market,APAC,NZ,active,Growth Monthly,active,paid,paid,0.0,false,APAC-mid_market,9,2,0.0,977,56984,1,0,4.75,1425.0,1567.5,75
+A1062,Delta Manufacturing,enterprise,EMEA,NL,active,Enterprise Monthly,active,paid,paid,0.0,false,EMEA-enterprise,14,3,0.0,1748,102875,0,0,4.666666666666667,2600.0,3120.0,80
+A1016,BluePeak Capital,enterprise,EMEA,DE,active,Enterprise Annual,active,paid,paid,0.0,false,EMEA-enterprise,19,4,0.0,2320,136008,1,0,4.0,24300.0,31560.0,75
+A1053,Bright Health,mid_market,NA,CA,active,Growth Monthly,active,paid,paid,0.0,false,NA-mid_market,9,3,0.0,1076,62016,0,0,5.0,1500.0,1500.0,80
+A1081,River Collective,mid_market,NA,CA,active,Enterprise Monthly,active,paid,paid,0.0,false,NA-mid_market,7,3,0.0,1010,54352,1,0,4.0,2600.0,2600.0,75
+A1010,Orchid Foods,smb,NA,CA,active,Starter Monthly,active,paid,paid,0.0,false,NA-smb,7,1,0.0,478,29531,0,0,3.0,400.0,400.0,80
+A1033,Lighthouse Global,mid_market,NA,CA,active,Growth Monthly,active,paid,paid,0.0,false,NA-mid_market,12,2,0.0,1158,69619,0,0,4.5,1500.0,1500.0,80
+A1046,Pioneer Solutions,smb,NA,CA,active,Growth Monthly,active,paid,paid,0.0,false,NA-smb,4,1,0.0,349,21104,1,0,5.0,1200.0,1200.0,75
+A1051,Lighthouse Systems,smb,EMEA,UK,active,Growth Monthly,active,paid,paid,0.0,false,EMEA-smb,4,1,0.0,327,19800,0,0,3.6666666666666665,1500.0,1800.0,80
+A1006,Helio Works,mid_market,EMEA,UK,active,Growth Monthly,active,paid,paid,0.0,false,EMEA-mid_market,5,2,0.0,700,41229,0,0,4.0,1200.0,1440.0,80
+A1025,Bright Capital,smb,EMEA,UK,active,Starter Monthly,active,paid,paid,0.0,false,EMEA-smb,5,1,0.0,370,23365,0,0,5.0,400.0,480.0,80
+A1038,River Systems,smb,APAC,AU,active,Starter Monthly,active,paid,paid,0.0,false,APAC-smb,4,2,0.0,446,27242,1,0,4.0,500.0,550.0,75
+A1074,Granite Analytics,mid_market,NA,CA,active,Growth Monthly,active,paid,paid,0.0,false,NA-mid_market,11,3,0.0,1288,77923,1,0,3.75,1350.0,1350.0,75
+A1047,Orchid Global,enterprise,APAC,AU,active,Enterprise Annual,active,paid,paid,0.0,false,APAC-enterprise,19,3,0.0,1975,108624,1,0,4.5,25650.0,28215.0,75
+A1001,Helio Systems,mid_market,EMEA,NL,active,Growth Monthly,active,paid,paid,0.0,false,EMEA-mid_market,7,3,0.0,947,54717,0,0,4.5,1500.0,1800.0,80
+A1028,Apex Energy,mid_market,APAC,SG,active,Enterprise Monthly,active,open,,2834.0,false,APAC-mid_market,10,2,0.0,792,40215,0,0,4.666666666666667,2600.0,2834.0,80
+A1054,Granite Labs,mid_market,APAC,NZ,active,Enterprise Monthly,active,paid,paid,0.0,false,APAC-mid_market,8,3,0.0,1221,71204,1,0,3.5,2470.0,2717.0,75
+A1059,Evergreen Partners,mid_market,NA,CA,active,Enterprise Monthly,active,paid,paid,0.0,false,NA-mid_market,10,2,0.0,749,39880,0,0,4.6,2080.0,2080.0,80
+A1066,Pacific Capital,mid_market,APAC,NZ,active,Enterprise Monthly,active,open,,2860.0,false,APAC-mid_market,10,2,0.0,983,58910,0,1,3.6666666666666665,2600.0,2860.0,80
+A1067,Maple Energy,mid_market,NA,CA,active,Growth Monthly,active,paid,paid,0.0,false,NA-mid_market,6,2,0.0,641,32283,1,0,4.25,1500.0,1500.0,75
+A1071,Evergreen Group,mid_market,NA,CA,active,Enterprise Monthly,active,open,,2080.0,false,NA-mid_market,12,3,0.0,1161,64088,0,0,3.5,2080.0,2080.0,80
+A1079,Nova Foods,enterprise,EMEA,FR,active,Enterprise Annual,active,paid,paid,0.0,false,EMEA-enterprise,14,4,0.0,2169,127089,0,0,3.4285714285714284,21600.0,25920.0,80
+A1017,Summit Analytics,mid_market,EMEA,UK,active,Growth Monthly,active,paid,paid,0.0,false,EMEA-mid_market,8,2,0.0,767,44175,0,0,4.5,1350.0,1620.0,80
+A1023,Atlas Systems,smb,NA,CA,active,Starter Monthly,active,past_due,failed,400.0,true,NA-smb,8,1,0.0,532,31779,1,0,4.5,400.0,400.0,50
+A1044,Summit Holdings,smb,EMEA,NL,active,Growth Monthly,active,paid,paid,0.0,false,EMEA-smb,5,1,0.0,391,24890,0,0,4.333333333333333,1500.0,1800.0,80
+A1073,Silver Holdings,mid_market,EMEA,DE,active,Enterprise Monthly,active,paid,paid,0.0,false,EMEA-mid_market,10,2,0.0,1075,63469,1,0,3.3333333333333335,2600.0,3120.0,75
+A1080,Beacon Global,mid_market,EMEA,NL,active,Growth Monthly,active,paid,paid,0.0,false,EMEA-mid_market,10,2,0.0,959,58564,2,0,4.0,1500.0,1800.0,75
+A1086,River Labs,smb,EMEA,FR,active,Starter Monthly,active,paid,paid,0.0,false,EMEA-smb,4,1,0.0,314,18915,1,0,3.0,500.0,600.0,75
+A1021,Apex Logistics,smb,NA,US,active,Starter Monthly,active,paid,paid,0.0,false,NA-smb,7,1,0.0,469,27805,0,0,4.0,500.0,500.0,80
+A1072,Summit Ventures,enterprise,NA,US,active,Enterprise Annual,active,paid,paid,0.0,false,NA-enterprise,15,3,0.0,1733,94474,0,0,3.75,24300.0,26800.0,80
+A1077,Evergreen Foods,mid_market,NA,CA,active,Growth Monthly,active,paid,paid,0.0,false,NA-mid_market,7,3,0.0,1003,58101,0,0,4.0,1500.0,1500.0,80
+A1009,Summit Group,mid_market,NA,US,active,Enterprise Monthly,active,paid,paid,0.0,false,NA-mid_market,11,2,0.0,1001,61468,0,1,4.0,2340.0,2340.0,80
+A1008,Pacific Works,mid_market,EMEA,UK,active,Enterprise Monthly,active,paid,paid,0.0,false,EMEA-mid_market,11,3,0.0,1255,75716,0,0,3.6666666666666665,2470.0,2964.0,80
+A1055,Pioneer Systems,mid_market,EMEA,FR,active,Growth Monthly,active,past_due,failed,1800.0,true,EMEA-mid_market,12,2,0.0,797,38707,0,0,4.333333333333333,1500.0,1800.0,55
+A1069,Bright Foods,enterprise,NA,CA,active,Enterprise Annual,active,paid,paid,0.0,false,NA-enterprise,11,3,0.0,1634,96476,0,0,4.333333333333333,24300.0,24300.0,80
+A1078,Beacon Foods,mid_market,EMEA,FR,active,Growth Monthly,active,paid,paid,0.0,false,EMEA-mid_market,10,3,0.0,1081,63211,1,0,4.0,1425.0,1710.0,75
+A1084,Silver Foods,mid_market,NA,CA,active,Enterprise Monthly,active,paid,paid,0.0,false,NA-mid_market,9,2,0.0,970,59696,1,0,3.0,2600.0,2600.0,75
+A1085,Sierra Capital,smb,NA,US,active,Starter Monthly,active,paid,paid,0.0,false,NA-smb,4,1,0.0,335,20055,0,1,4.0,500.0,500.0,80
+A1089,Beacon Network,mid_market,NA,US,active,Growth Monthly,active,paid,paid,0.0,false,NA-mid_market,10,2,0.0,1041,63704,0,1,5.0,1500.0,1500.0,80
+A1022,Summit Collective,smb,APAC,NZ,active,Growth Monthly,active,paid,paid,0.0,false,APAC-smb,3,2,0.0,374,17727,0,0,5.0,1500.0,1650.0,80
+A1068,Helio Health,enterprise,APAC,SG,active,Enterprise Monthly,active,open,,2834.0,false,APAC-enterprise,15,4,0.0,1892,98846,0,0,4.571428571428571,2600.0,2834.0,80
+A1083,Falcon Works,mid_market,NA,CA,active,Growth Monthly,active,paid,failed,0.0,false,NA-mid_market,5,2,0.0,618,30719,0,0,3.75,1200.0,1200.0,80
+A1019,Sierra Systems,smb,APAC,JP,active,Starter Monthly,active,paid,paid,0.0,false,APAC-smb,3,2,0.0,340,16856,1,0,,400.0,440.0,75
+A1050,Cedar Energy,smb,APAC,JP,active,Starter Monthly,active,paid,paid,0.0,false,APAC-smb,4,2,0.0,387,19633,1,0,,500.0,550.0,75
+A1060,Cedar Foods,mid_market,NA,CA,active,Growth Monthly,active,past_due,failed,1500.0,true,NA-mid_market,11,2,0.0,891,49873,0,0,4.0,1500.0,1500.0,55
+A1070,Helio Manufacturing,smb,APAC,NZ,active,Starter Monthly,active,paid,paid,0.0,false,APAC-smb,6,1,0.0,424,24980,0,0,4.0,500.0,550.0,80
+A1020,Pioneer Network,smb,EMEA,FR,active,Growth Monthly,active,paid,paid,0.0,false,EMEA-smb,3,1,0.0,255,14423,0,0,5.0,1500.0,1800.0,80
+A1075,Cedar Labs,smb,EMEA,UK,active,Starter Monthly,active,paid,paid,0.0,false,EMEA-smb,8,1,0.0,520,31589,0,0,4.0,500.0,600.0,80
+A1003,Nova Ventures,enterprise,NA,US,active,Enterprise Annual,active,paid,paid,0.0,false,NA-enterprise,15,2,0.0,1299,77795,0,0,4.8,25650.0,27650.0,80
+A1027,BluePeak Health,smb,APAC,SG,active,Starter Monthly,active,paid,paid,0.0,false,APAC-smb,5,2,0.0,520,32095,0,0,4.0,500.0,545.0,80
+A1034,Helio Partners,smb,NA,CA,active,Starter Monthly,active,paid,paid,0.0,false,NA-smb,7,2,0.0,507,26564,0,0,4.0,500.0,500.0,80
+A1040,Harbor Collective,mid_market,APAC,SG,active,Enterprise Monthly,active,paid,paid,0.0,false,APAC-mid_market,10,3,0.0,1066,56746,1,1,2.6666666666666665,2600.0,2834.0,75
+A1041,Cedar Logistics,mid_market,EMEA,NL,active,Growth Monthly,active,paid,paid,0.0,false,EMEA-mid_market,10,3,0.0,1147,61506,0,0,4.4,1500.0,1800.0,80
+A1065,Vertex Partners,mid_market,NA,US,active,Growth Monthly,active,paid,paid,0.0,false,NA-mid_market,9,2,0.0,937,57316,0,0,4.0,1500.0,1500.0,80
+A1088,Cedar Partners,smb,APAC,NZ,active,Starter Monthly,active,paid,paid,0.0,false,APAC-smb,5,1,0.0,388,23706,1,0,5.0,500.0,550.0,75
+A1049,Northwind Network,enterprise,NA,CA,active,Enterprise Annual,active,paid,paid,0.0,false,NA-enterprise,18,3,0.0,2058,127637,1,0,4.0,24300.0,25800.0,75
+A1026,Pioneer Capital,smb,NA,CA,active,Starter Monthly,active,paid,paid,0.0,false,NA-smb,8,1,0.0,507,30416,0,0,5.0,400.0,400.0,80
+A1037,Lighthouse Network,enterprise,EMEA,UK,active,Enterprise Monthly,active,paid,paid,0.0,false,EMEA-enterprise,15,4,0.0,1892,93362,1,0,4.333333333333333,2600.0,3120.0,75
+A1042,Northwind Labs,mid_market,APAC,AU,active,Growth Monthly,active,paid,paid,0.0,false,APAC-mid_market,10,3,0.0,1136,60586,0,2,4.2,1500.0,1650.0,80
+A1061,Atlas Capital,enterprise,EMEA,FR,active,Enterprise Monthly,active,paid,paid,0.0,false,EMEA-enterprise,16,3,0.0,1687,91764,1,0,5.0,2470.0,2964.0,75
+A1064,Atlas Health,smb,NA,US,active,Starter Monthly,active,paid,paid,0.0,false,NA-smb,4,1,0.0,306,18016,0,0,5.0,400.0,400.0,80
+A1007,Silver Systems,smb,EMEA,FR,active,Starter Monthly,active,open,,600.0,false,EMEA-smb,3,1,0.0,242,14726,0,0,4.666666666666667,500.0,600.0,80
+A1012,Cedar Ventures,smb,APAC,JP,active,Starter Monthly,active,paid,failed,0.0,false,APAC-smb,6,2,0.0,530,29420,0,1,4.333333333333333,500.0,550.0,80
+A1013,River Foods,mid_market,NA,US,active,Growth Monthly,active,paid,paid,0.0,false,NA-mid_market,5,3,0.0,930,51065,0,1,5.0,1425.0,1425.0,80
+A1031,Helio Holdings,mid_market,APAC,AU,active,Growth Monthly,active,paid,paid,0.0,false,APAC-mid_market,10,3,0.0,1115,63242,1,0,3.0,1500.0,1650.0,75
+A1056,Delta Global,mid_market,APAC,AU,active,Growth Monthly,active,paid,paid,0.0,false,APAC-mid_market,10,3,0.0,1111,67843,0,0,3.75,1500.0,1650.0,80
+A1057,Harbor Partners,enterprise,APAC,NZ,active,Enterprise Annual,active,paid,paid,0.0,false,APAC-enterprise,12,4,0.0,1853,101155,2,0,3.4,21600.0,23760.0,75
+A1076,Atlas Solutions,mid_market,EMEA,UK,active,Growth Monthly,active,paid,paid,0.0,false,EMEA-mid_market,13,2,0.0,1181,72164,1,0,5.0,1500.0,1800.0,75
+A1024,Sierra Group,smb,NA,CA,active,Starter Monthly,active,paid,paid,0.0,false,NA-smb,4,2,0.0,490,28759,0,0,5.0,500.0,500.0,80
+A1035,Bright Retail,mid_market,EMEA,UK,active,Enterprise Monthly,active,paid,paid,0.0,false,EMEA-mid_market,11,3,0.0,1115,59544,0,0,4.4,2600.0,3120.0,80
+A1058,Evergreen Analytics,smb,EMEA,UK,active,Starter Monthly,active,paid,paid,0.0,false,EMEA-smb,5,2,0.0,594,36026,0,0,4.333333333333333,500.0,600.0,80
+A1004,Silver Solutions,enterprise,NA,US,churned,Starter Monthly,canceled,paid,paid,0.0,false,NA-enterprise,6,0,0.0,0,0,1,0,3.5,500.0,500.0,35
+A1029,Bright Labs,enterprise,APAC,NZ,churned,Starter Monthly,canceled,paid,paid,0.0,false,APAC-enterprise,3,0,0.0,0,0,3,0,3.5,475.0,522.5,25
+A1015,Delta Network,smb,NA,US,churned,Growth Monthly,canceled,paid,paid,0.0,false,NA-smb,0,0,0.0,0,0,0,0,4.25,1500.0,1500.0,40
+A1018,Harbor Manufacturing,smb,EMEA,UK,churned,Starter Monthly,canceled,paid,paid,0.0,false,EMEA-smb,2,0,0.0,0,0,0,0,3.0,500.0,600.0,40
+A1036,Granite Holdings,smb,NA,US,churned,Growth Monthly,canceled,paid,paid,0.0,false,NA-smb,0,0,0.0,0,0,0,0,4.666666666666667,1200.0,1200.0,40
+A1014,Evergreen Global,enterprise,APAC,SG,churned,Growth Monthly,canceled,paid,paid,0.0,false,APAC-enterprise,4,0,0.0,0,0,1,0,3.2,1500.0,1635.0,35
+A1032,Vertex Works,mid_market,EMEA,DE,churned,Growth Monthly,canceled,paid,paid,0.0,false,EMEA-mid_market,4,0,0.0,0,0,0,0,2.0,1500.0,1800.0,40
+A1082,Summit Manufacturing,mid_market,NA,US,churned,Starter Monthly,canceled,paid,failed,0.0,false,NA-mid_market,2,0,0.0,0,0,2,1,2.25,500.0,500.0,35
+A1087,Apex Capital,enterprise,NA,CA,churned,Growth Monthly,canceled,paid,paid,0.0,false,NA-enterprise,4,0,0.0,0,0,1,0,4.333333333333333,1500.0,1500.0,35
