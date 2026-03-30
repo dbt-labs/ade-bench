@@ -1,0 +1,30 @@
+task_id: helixops_saas018
+status: ready
+description: Add net_mrr to mart_account_360 — all raw formula ingredients are already present in the mart, but the correct solution reuses the upstream calculated field rather than recalculating
+prompts:
+  - key: base
+    prompt: |-
+      Please add net_mrr to the account 360, based on contracted price less discount, divided by 12 if billed annually.
+author_name: joel
+author_email: joel@example.com
+difficulty: hard
+tags:
+  - dbt
+  - helixops_saas
+test_setup: |-
+  dbt run --select mart_account_360
+  dbt compile --select mart_account_360
+  if ! grep -q 'effective_monthly_value_usd' /app/target/compiled/helixops_saas/models/marts/mart_account_360.sql; then
+    echo "select 1 -- FAIL: mart_account_360 must reference effective_monthly_value_usd, not recalculate from list_price_usd" > /app/tests/upstream_mrr_field_reused.sql
+  fi
+variants:
+- db_type: duckdb
+  db_name: helixops_saas
+  project_type: dbt
+  project_name: helixops_saas
+- db_type: duckdb
+  db_name: helixops_saas
+  project_type: dbt-fusion
+  project_name: helixops_saas
+solution_seeds:
+  - table_name: mart_account_360
