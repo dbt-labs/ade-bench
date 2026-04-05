@@ -4,9 +4,7 @@ description: Recreate a missing custom dbt macro for unnesting JSON arrays
 notes: |-
   The setup script removes macros/unnest_array.sql, so the agent must recreate it from scratch.
   Only the DuckDB adapter variant is exercised by the current test (the only variant configured is DuckDB).
-  The equality test is sensitive to column types: the correct DuckDB implementation uses from_json(..., '["JSON"]') which produces JSON-typed columns for reaction_name, reaction_user, etc.
-  Agents that use plain unnest() will produce VARCHAR columns and fail the equality check even if the data values match.
-  This is the same type-sensitivity documented in slack_analytics001.
+  The equality test casts all columns to VARCHAR before comparison so agents are not penalised for producing VARCHAR instead of JSON-typed columns from unnesting.
 prompts:
   - key: base
     prompt: |-

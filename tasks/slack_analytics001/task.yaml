@@ -3,8 +3,7 @@ status: ready
 description: Create a fact table for slack analytics
 notes: |-
   The existing fact folder gets deleted in the setup script, so the llm needs to create the folder and table from scratch.
-  The equality test expects reaction_name, reaction_name_normalised, and reaction_user to be JSON-typed columns (produced by the project's unnest_array macro using from_json). 
-  Agents that use a different unnesting approach producing VARCHAR will fail the equality test even if the data is correct.
+  The equality test casts all columns to VARCHAR before comparison so agents are not penalised for producing VARCHAR instead of JSON-typed columns from unnesting.
 prompts:
   - key: base
     prompt: |-

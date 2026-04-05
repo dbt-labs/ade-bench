@@ -32,10 +32,11 @@
                         {% set seed_set = seed_col_names | sort %}
 
                         {% if actual_set == seed_set %}
+                            {# Cast to varchar so type differences (e.g. JSON vs VARCHAR) don't cause false negatives #}
                             {%- set compare_cols = [] -%}
                             {%- for col in actual_columns -%}
                                 {%- if col.name | lower not in exclude_lower -%}
-                                    {%- do compare_cols.append(col.quoted) -%}
+                                    {%- do compare_cols.append('cast(' ~ col.quoted ~ ' as varchar)') -%}
                                 {%- endif -%}
                             {%- endfor -%}
                             {% set compare_cols_csv = compare_cols | join(', ') %}
