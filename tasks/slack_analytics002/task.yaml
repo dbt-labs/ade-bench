@@ -1,0 +1,47 @@
+task_id: slack_analytics002
+status: ready
+description: Recreate a missing custom dbt macro for unnesting JSON arrays
+notes: |-
+  The setup script removes macros/unnest_array.sql, so the agent must recreate it from scratch.
+  Only the DuckDB adapter variant is exercised by the current test (the only variant configured is DuckDB).
+  The equality test is sensitive to column types: the correct DuckDB implementation uses from_json(..., '["JSON"]') which produces JSON-typed columns for reaction_name, reaction_user, etc.
+  Agents that use plain unnest() will produce VARCHAR columns and fail the equality check even if the data values match.
+  This is the same type-sensitivity documented in slack_analytics001.
+prompts:
+  - key: base
+    prompt: |-
+      The `macros/unnest_array.sql` file has been deleted from the project. This macro is used by `fct_slack_message_reactions.sql` to unnest JSON array columns into individual rows.
+
+      Please recreate the macro with the following requirements:
+      - A dispatch macro called `unnest_array` that accepts two arguments: `array_column` (the column containing the JSON array) and `alias` (the name for the unnested output column).
+      - It should use `adapter.dispatch('unnest_array', 'slack_analytics')` to dispatch to adapter-specific implementations.
+      - The DuckDB implementation should use `unnest(from_json(column, '["JSON"]'))` with the `as t(alias)` syntax to produce JSON-typed output.
+      - Include Snowflake (`lateral flatten`) and Databricks (`lateral view explode`) implementations as well.
+  - key: medium
+    prompt: |-
+      A macro file is missing from the `macros/` folder which is causing the project build to fail. The macro is called `unnest_array` and is used to expand JSON array columns into individual rows.
+
+      Please recreate it using dbt's adapter dispatch pattern so it works with the DuckDB adapter. You can look at how it's called in `fct_slack_message_reactions.sql` to understand the expected interface.
+  - key: hard
+    prompt: |-
+      The dbt project is broken. Please fix it.
+author_name: test
+author_email: test
+difficulty: medium
+tags:
+  - dbt
+  - macro-creation
+  - jinja
+
+test_setup: |-
+  dbt deps
+  dbt run --select fct_slack_message_reactions
+
+solution_seeds:
+  - table_name: fct_slack_message_reactions
+
+variants:
+- db_type: duckdb
+  db_name: slack_analytics
+  project_type: dbt
+  project_name: slack_analytics
