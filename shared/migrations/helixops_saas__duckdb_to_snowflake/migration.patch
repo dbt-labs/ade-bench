@@ -1,0 +1,102 @@
+diff --git a/dbt_project.yml b/dbt_project.yml
+index 0bec111..f42d70a 100644
+--- a/dbt_project.yml
++++ b/dbt_project.yml
+@@ -2,7 +2,7 @@ name: 'helixops_saas'
+ version: '1.0.0'
+ config-version: 2
+ 
+-profile: 'helixops_saas-duckdb'
++profile: 'helixops_saas-snowflake'
+ 
+ model-paths: ['models']
+ macro-paths: ['macros']
+diff --git a/macros/clean_helpers.sql b/macros/clean_helpers.sql
+index 7a1b0ee..52f2140 100644
+--- a/macros/clean_helpers.sql
++++ b/macros/clean_helpers.sql
+@@ -1,5 +1,5 @@
+ {% macro strip_numeric(col) -%}
+-regexp_replace(cast({{ col }} as varchar), '[^0-9\.-]', '', 'g')
++regexp_replace(cast({{ col }} as varchar), '[^0-9\.-]', '')
+ {%- endmacro %}
+ 
+ {% macro integer_from_text(col) -%}
+@@ -7,7 +7,7 @@ try_cast(nullif({{ strip_numeric(col) }}, '') as integer)
+ {%- endmacro %}
+ 
+ {% macro numeric_from_text(col) -%}
+-try_cast(nullif({{ strip_numeric(col) }}, '') as double)
++try_cast(nullif({{ strip_numeric(col) }}, '') as float)
+ {%- endmacro %}
+ 
+ {% macro epoch_to_timestamp(col) -%}
+diff --git a/models/intermediate/int_account_engagement.sql b/models/intermediate/int_account_engagement.sql
+index eaade35..d07b8a1 100644
+--- a/models/intermediate/int_account_engagement.sql
++++ b/models/intermediate/int_account_engagement.sql
+@@ -22,7 +22,7 @@ usage_rollup as (
+     select
+         account_id,
+         max(usage_date) as latest_usage_date,
+-        avg(case when usage_date >= cast(now() as date) - interval 6 day then active_users end) as avg_active_users_7d,
++        avg(case when usage_date >= current_date - 6 then active_users end) as avg_active_users_7d,
+         avg(active_users) as avg_active_users_30d,
+         sum(projects_run) as total_projects_run_30d,
+         sum(api_calls) as total_api_calls_30d,
+diff --git a/models/intermediate/int_account_users.sql b/models/intermediate/int_account_users.sql
+index f5a78f2..604ddae 100644
+--- a/models/intermediate/int_account_users.sql
++++ b/models/intermediate/int_account_users.sql
+@@ -23,6 +23,6 @@ select
+     u.user_status,
+     u.is_active_user,
+     u.is_test_user,
+-    date_diff('day', cast(u.last_login_at as date), cast(now() as date)) as days_since_last_login
++    datediff('day', cast(u.last_login_at as date), cast(now() as date)) as days_since_last_login
+ from users u
+ left join accounts a using (account_id)
+diff --git a/models/intermediate/int_support_sla.sql b/models/intermediate/int_support_sla.sql
+index 7c6374d..4904add 100644
+--- a/models/intermediate/int_support_sla.sql
++++ b/models/intermediate/int_support_sla.sql
+@@ -41,8 +41,8 @@ select
+     end >= t.first_response_minutes as met_response_sla,
+     t.is_open_ticket,
+     case
+-        when t.resolved_at is not null then date_diff('day', cast(t.opened_at as date), cast(t.resolved_at as date))
+-        else date_diff('day', cast(t.opened_at as date), cast(now() as date))
++        when t.resolved_at is not null then datediff('day', cast(t.opened_at as date), cast(t.resolved_at as date))
++        else datediff('day', cast(t.opened_at as date), cast(now() as date))
+     end as ticket_age_days,
+     cast(date_trunc('month', cast(t.opened_at as date)) as date) as opened_month,
+     cast(date_trunc('month', cast(t.resolved_at as date)) as date) as resolved_month
+diff --git a/models/sources.yml b/models/sources.yml
+index 800aeaf..a618360 100644
+--- a/models/sources.yml
++++ b/models/sources.yml
+@@ -2,7 +2,7 @@ version: 2
+ 
+ sources:
+   - name: helixops_saas
+-    schema: main
++    schema: public
+     tables:
+       - name: raw_accounts
+       - name: raw_workspaces
+diff --git a/models/staging/stg_support_tickets.sql b/models/staging/stg_support_tickets.sql
+index 6a61fd8..dfddae1 100644
+--- a/models/staging/stg_support_tickets.sql
++++ b/models/staging/stg_support_tickets.sql
+@@ -22,9 +22,9 @@ select
+         else 'open'
+     end as ticket_status,
+     {{ integer_from_text('csat_txt') }} as csat_score,
+-    date_diff('minute', {{ epoch_to_timestamp('opened_ts_epoch') }}, {{ epoch_to_timestamp('first_rsp_ts_epoch') }}) as first_response_minutes,
++    datediff('minute', {{ epoch_to_timestamp('opened_ts_epoch') }}, {{ epoch_to_timestamp('first_rsp_ts_epoch') }}) as first_response_minutes,
+     case
+-        when {{ epoch_to_timestamp('resolved_ts_epoch') }} is not null then date_diff('minute', {{ epoch_to_timestamp('opened_ts_epoch') }}, {{ epoch_to_timestamp('resolved_ts_epoch') }})
++        when {{ epoch_to_timestamp('resolved_ts_epoch') }} is not null then datediff('minute', {{ epoch_to_timestamp('opened_ts_epoch') }}, {{ epoch_to_timestamp('resolved_ts_epoch') }})
+         else null
+     end as resolution_minutes,
+     case when {{ epoch_to_timestamp('resolved_ts_epoch') }} is null then true else false end as is_open_ticket
