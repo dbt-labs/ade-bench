@@ -1,0 +1,11 @@
+--- a/dbt_project.yml
++++ b/dbt_project.yml
+@@ -11,7 +11,7 @@
+ models:
+   +materialized: table
+ vars:
+-  quickbooks_schema: main
++  quickbooks_schema: "public"
+   quickbooks_source:
+     quickbooks_account_identifier: "account_data"
+     quickbooks_address_identifier: "address_data"

@@ -1,4 +1,2 @@
 #!/bin/bash
-
-# Update source schema in the dbt_project.yml file
-yq -i '.vars.intercom_schema = "public"' dbt_project.yml
+patch -p1 < "$(dirname "$(readlink -f "${BASH_SOURCE}")")/migration.patch"

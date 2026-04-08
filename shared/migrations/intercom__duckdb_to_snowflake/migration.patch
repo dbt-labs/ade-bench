@@ -1,0 +1,11 @@
+--- a/dbt_project.yml
++++ b/dbt_project.yml
+@@ -9,7 +9,7 @@
+ profile: 'intercom-duckdb'
+
+ vars:
+-  intercom_schema: main
++  intercom_schema: public
+   intercom_source:
+     intercom_admin_identifier: "admin_data"
+     intercom_company_history_identifier: "company_history_data"

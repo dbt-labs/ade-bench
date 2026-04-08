@@ -1,7 +1,5 @@
 #!/bin/bash
-
-# Update primary schema in dbt_project.yml file
-yq -i '.vars.quickbooks_schema = "public"' dbt_project.yml
+patch -p1 < "$(dirname "$(readlink -f "${BASH_SOURCE}")")/migration.patch"
 
 # Copy Snowflake-specific solution models that handle epoch-to-timestamp conversion
 MIGRATION_DIR="$(dirname "$(readlink -f "${BASH_SOURCE}")")"

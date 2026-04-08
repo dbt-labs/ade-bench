@@ -1,0 +1,11 @@
+--- a/dbt_project.yml
++++ b/dbt_project.yml
+@@ -11,7 +11,7 @@
+ models:
+   +materialized: table  # workday_history 模型也存为 'table'
+
+ vars:
+-  workday_schema: main
++  workday_schema: public
+   workday:
+     workday_job_profile_identifier: "workday_job_profile_data"
