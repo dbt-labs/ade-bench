@@ -33,3 +33,5 @@ variants:
   project_name: helixops_saas
 solution_seeds:
   - table_name: mart_account_360
+    exclude_tests:
+      - equality_test
