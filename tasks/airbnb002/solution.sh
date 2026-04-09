@@ -1,5 +1,7 @@
 #!/bin/bash
 
 ## Replace all surrogate_key functions with generate_surrogate_key
-## and add the global variable to the dbt_project.yml file
 patch -p1 < /sage/solutions/changes.patch
+
+## Add the backwards-compatibility variable to dbt_project.yml
+yq -i '.vars.surrogate_key_treat_nulls_as_empty_strings = true' dbt_project.yml

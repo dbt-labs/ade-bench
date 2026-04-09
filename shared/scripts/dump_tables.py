@@ -80,7 +80,7 @@ def dump_tables_snowflake(
     relations: list[str],
     output_dir: str,
     limit: int = -1,
-    profiles_path: str = "~/.dbt/profiles.yml",
+    profiles_path: str = "/app/profiles.yml",
 ) -> dict:
     """Dump tables from Snowflake to parquet + CSV.
 
@@ -137,7 +137,7 @@ def dump_tables_snowflake(
         try:
             limit_clause = f"LIMIT {limit}" if limit >= 0 else ""
             cursor = sf_con.cursor()
-            cursor.execute(f'SELECT * FROM "{relation}" {limit_clause}')
+            cursor.execute(f'SELECT * FROM {relation} {limit_clause}')
             df = cursor.fetch_pandas_all()
             cursor.close()
 
@@ -168,7 +168,7 @@ def main():
     parser.add_argument("--db-type", choices=["duckdb", "snowflake"], default="duckdb")
     parser.add_argument("--db-path", help="Path to DuckDB file (for duckdb type)")
     parser.add_argument("--limit", type=int, default=-1, help="Max rows per table (-1=unlimited)")
-    parser.add_argument("--profiles", default="~/.dbt/profiles.yml", help="Path to profiles.yml")
+    parser.add_argument("--profiles", default="/app/profiles.yml", help="Path to profiles.yml")
     args = parser.parse_args()
 
     if args.db_type == "duckdb":

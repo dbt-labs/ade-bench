@@ -1,14 +1,3 @@
---- a/dbt_project.yml
-+++ b/dbt_project.yml
-@@ -2,7 +2,7 @@ name: 'helixops_saas'
- version: '1.0.0'
- config-version: 2
- 
--profile: 'helixops_saas-duckdb'
-+profile: 'helixops_saas-snowflake'
- 
- model-paths: ['models']
- macro-paths: ['macros']
 --- a/macros/clean_helpers.sql
 +++ b/macros/clean_helpers.sql
 @@ -1,5 +1,5 @@
@@ -18,7 +7,7 @@
  {%- endmacro %}
  
  {% macro integer_from_text(col) -%}
-@@ -7,7 +7,7 @@ try_cast(nullif({{ strip_numeric(col) }}, '') as integer)
+@@ -7,14 +7,14 @@
  {%- endmacro %}
  
  {% macro numeric_from_text(col) -%}
@@ -27,6 +16,15 @@
  {%- endmacro %}
  
  {% macro epoch_to_timestamp(col) -%}
+ case
+   when {{ col }} is null then null
+-  when lower(trim(cast({{ col }} as varchar))) in ('', 'null', 'n/a', 'na') then null
+-  else to_timestamp(try_cast(regexp_replace(trim(cast({{ col }} as varchar)), '\.[0-9]+$', '') as bigint))::timestamp
++  when trim(cast({{ col }} as varchar)) in ('', 'null', 'n/a', 'na') then null
++  else to_timestamp_ntz(floor(try_to_number(trim(cast({{ col }} as varchar)))))
+ end
+ {%- endmacro %}
+ 
 --- a/models/intermediate/int_account_engagement.sql
 +++ b/models/intermediate/int_account_engagement.sql
 @@ -22,7 +22,7 @@ usage_rollup as (
@@ -45,7 +43,7 @@
      u.is_active_user,
      u.is_test_user,
 -    date_diff('day', cast(u.last_login_at as date), cast(now() as date)) as days_since_last_login
-+    datediff('day', cast(u.last_login_at as date), cast(now() as date)) as days_since_last_login
++    datediff('day', cast(u.last_login_at as date), current_date) as days_since_last_login
  from users u
  left join accounts a using (account_id)
 --- a/models/intermediate/int_support_sla.sql
@@ -57,10 +55,15 @@
 -        when t.resolved_at is not null then date_diff('day', cast(t.opened_at as date), cast(t.resolved_at as date))
 -        else date_diff('day', cast(t.opened_at as date), cast(now() as date))
 +        when t.resolved_at is not null then datediff('day', cast(t.opened_at as date), cast(t.resolved_at as date))
-+        else datediff('day', cast(t.opened_at as date), cast(now() as date))
++        else datediff('day', cast(t.opened_at as date), current_date)
      end as ticket_age_days,
      cast(date_trunc('month', cast(t.opened_at as date)) as date) as opened_month,
      cast(date_trunc('month', cast(t.resolved_at as date)) as date) as resolved_month
+--- a/models/staging/stg_workspace_usage_daily.sql
++++ b/models/staging/stg_workspace_usage_daily.sql
+@@ -15 +15 @@
+-    extract('dow' from cast(nullif(trim(usage_dt_txt), '') as date)) as weekday_num
++    DAYOFWEEK(cast(nullif(trim(usage_dt_txt), '') as date)) as weekday_num
 --- a/models/sources.yml
 +++ b/models/sources.yml
 @@ -2,7 +2,7 @@ version: 2
@@ -86,3 +89,4 @@
          else null
      end as resolution_minutes,
      case when {{ epoch_to_timestamp('resolved_ts_epoch') }} is null then true else false end as is_open_ticket
+ 

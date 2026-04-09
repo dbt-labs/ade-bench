@@ -1,2 +1,3 @@
 #!/bin/bash
-patch -p1 < "$(dirname "$(readlink -f "${BASH_SOURCE}")")/migration.patch"
+patch -p1 < "/app/migrations/migration.patch"
+dbt run --full-refresh

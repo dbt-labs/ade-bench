@@ -21,7 +21,9 @@ RUN pip install --no-cache-dir \
     snowflake-connector-python==3.13.1 \
     duckdb \
     pyyaml>=6.0 \
-    uv>=0.7
+    uv>=0.7 \
+    pandas \
+    pyarrow
 
 # Pre-install dbt-mcp to speed up MCP setup
 RUN uv tool install dbt-mcp

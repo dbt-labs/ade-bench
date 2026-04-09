@@ -1,11 +1,5 @@
 --- a/dbt_project.yml
 +++ b/dbt_project.yml
-@@ -9,7 +9,7 @@
- profile: 'asana-duckdb'
-
- vars:
+@@ -11 +11 @@
 -  asana_schema: main
 +  asana_schema: public
-   asana_source:
-     asana_user_identifier: "user_data"
-     asana_project_identifier: "project_data"
