@@ -64,37 +64,32 @@
  }}
 --- a/models/dim/dim_dates.sql
 +++ b/models/dim/dim_dates.sql
-@@ -2,55 +2,65 @@
+@@ -2,55 +2,54 @@
  	config(
  		materialized="table" ,
  		alias="dim_dates" ,
 -		schema="main" ,
--		unique_key="DATE_ID"
 +		schema="public" ,
-+		unique_key="date_id"
+ 		unique_key="DATE_ID"
  	)
  }}
- 
--SELECT 
+
+ SELECT
 -    STRFTIME('%Y%m%d', DATUM)::INT AS DATE_ID,
--    DATUM AS DATE_ACTUAL,
++    TO_CHAR(DATUM, 'YYYYMMDD')::INTEGER AS DATE_ID,
+     DATUM AS DATE_ACTUAL,
 -    EXTRACT(EPOCH FROM DATUM) AS EPOCH,
 -    STRFTIME('%d', DATUM) || CASE
 -        WHEN STRFTIME('%d', DATUM) = '01' THEN 'st'
 -        WHEN STRFTIME('%d', DATUM) = '02' THEN 'nd'
 -        WHEN STRFTIME('%d', DATUM) = '03' THEN 'rd'
-+SELECT
-+    TO_CHAR(datum, 'YYYYMMDD')::INTEGER                                   AS date_id,
-+    datum                                                                 AS date_actual,
-+    DATEDIFF('second', TO_TIMESTAMP_NTZ('1970-01-01'), datum::timestamp)  AS epoch,
-+
-+    TO_CHAR(datum, 'DD') ||
-+      CASE TO_CHAR(datum, 'DD')
++    DATEDIFF('second', TO_TIMESTAMP_NTZ('1970-01-01'), DATUM::timestamp) AS EPOCH,
++    TO_CHAR(DATUM, 'DD') || CASE TO_CHAR(DATUM, 'DD')
 +        WHEN '01' THEN 'st'
 +        WHEN '02' THEN 'nd'
 +        WHEN '03' THEN 'rd'
          ELSE 'th'
--    END AS DAY_SUFFIX,
+     END AS DAY_SUFFIX,
 -    STRFTIME('%A', DATUM) AS DAY_NAME,
 -    EXTRACT(ISODOW FROM DATUM) AS DAY_OF_WEEK,
 -    EXTRACT(DAY FROM DATUM) AS DAY_OF_MONTH,
@@ -107,12 +102,28 @@
 -    STRFTIME('%B', DATUM) AS MONTH_NAME,
 -    STRFTIME('%b', DATUM) AS MONTH_NAME_ABBREVIATED,
 -    EXTRACT(QUARTER FROM DATUM) AS QUARTER_ACTUAL,
--    CASE
++    TRIM(TO_CHAR(DATUM, 'Day')) AS DAY_NAME,
++    DAYOFWEEKISO(DATUM) AS DAY_OF_WEEK,
++    DATE_PART('day', DATUM) AS DAY_OF_MONTH,
++    DATEDIFF('day', DATE_TRUNC('quarter', DATUM), DATUM) + 1 AS DAY_OF_QUARTER,
++    DATE_PART('doy', DATUM) AS DAY_OF_YEAR,
++    (DATE_PART('WEEK', DATUM) - DATE_PART('WEEK', DATE_TRUNC('MONTH', DATUM)) + 1) AS WEEK_OF_MONTH,
++    WEEKOFYEAR(DATUM) AS WEEK_OF_YEAR,
++    TO_CHAR(DATUM, 'YYYY') || '-W' || LPAD(WEEKOFYEAR(DATUM),2,'0') || '-' || DAYOFWEEKISO(DATUM) AS WEEK_OF_YEAR_ISO,
++    DATE_PART('month', DATUM) AS MONTH_ACTUAL,
++    TRIM(TO_CHAR(DATUM, 'Month')) AS MONTH_NAME,
++    TRIM(TO_CHAR(DATUM, 'Mon')) AS MONTH_NAME_ABBREVIATED,
++    DATE_PART('quarter', DATUM) AS QUARTER_ACTUAL,
+     CASE
 -        WHEN EXTRACT(QUARTER FROM DATUM) = 1 THEN 'First'
 -        WHEN EXTRACT(QUARTER FROM DATUM) = 2 THEN 'Second'
 -        WHEN EXTRACT(QUARTER FROM DATUM) = 3 THEN 'Third'
 -        WHEN EXTRACT(QUARTER FROM DATUM) = 4 THEN 'Fourth'
--    END AS QUARTER_NAME,
++        WHEN DATE_PART('quarter', DATUM) = 1 THEN 'First'
++        WHEN DATE_PART('quarter', DATUM) = 2 THEN 'Second'
++        WHEN DATE_PART('quarter', DATUM) = 3 THEN 'Third'
++        WHEN DATE_PART('quarter', DATUM) = 4 THEN 'Fourth'
+     END AS QUARTER_NAME,
 -    EXTRACT(YEAR FROM DATUM) AS year_actual,
 -    DATUM + INTERVAL '1 day' * (1 - EXTRACT(ISODOW FROM DATUM)) AS FIRST_DAY_OF_WEEK,
 -    DATUM + INTERVAL '1 day' * (7 - EXTRACT(ISODOW FROM DATUM)) AS LAST_DAY_OF_WEEK,
@@ -122,59 +133,27 @@
 -    STRFTIME('%Y-12-31', DATUM)::DATE AS LAST_DAY_OF_YEAR,
 -    STRFTIME('%m%Y', DATUM) AS MMYYYY,
 -    STRFTIME('%m%d%Y', DATUM) AS MMDDYYYY,
--    CASE
++    DATE_PART('year', DATUM) AS year_actual,
++    DATEADD(day, 1 - DAYOFWEEKISO(DATUM), DATUM) AS FIRST_DAY_OF_WEEK,
++    DATEADD(day, 7 - DAYOFWEEKISO(DATUM), DATUM) AS LAST_DAY_OF_WEEK,
++    DATE_TRUNC('month', DATUM) AS FIRST_DAY_OF_MONTH,
++    LAST_DAY(DATUM, 'month') AS LAST_DAY_OF_MONTH,
++    DATE_TRUNC('year', DATUM) AS FIRST_DAY_OF_YEAR,
++    LAST_DAY(DATUM, 'year') AS LAST_DAY_OF_YEAR,
++    TO_CHAR(DATUM, 'MMYYYY') AS MMYYYY,
++    TO_CHAR(DATUM, 'MMDDYYYY') AS MMDDYYYY,
+     CASE
 -        WHEN EXTRACT(ISODOW FROM DATUM) IN (6, 7) THEN TRUE
--        ELSE FALSE
--    END AS WEEKEND_INDR
-+      END                                                                 AS day_suffix,
-+
-+    TRIM(TO_CHAR(datum, 'Day'))                                           AS day_name,
-+    DAYOFWEEKISO(datum)                                                   AS day_of_week,
-+    DATE_PART('day', datum)                                               AS day_of_month,
-+    DATEDIFF('day', DATE_TRUNC('quarter', datum), datum) + 1              AS day_of_quarter,
-+    DATE_PART('doy', datum)                                               AS day_of_year,
-+    (DATE_PART('WEEK', datum) - DATE_PART('WEEK', DATE_TRUNC('MONTH', datum)) + 1)
-+                                                                          AS week_of_month,
-+
-+    WEEKOFYEAR(datum)                                                     AS week_of_year,
-+    TO_CHAR(datum, 'YYYY') || '-W' || LPAD(WEEKOFYEAR(datum),2,'0') || '-' ||
-+      DAYOFWEEKISO(datum)                                                 AS week_of_year_iso,
-+
-+    DATE_PART('month', datum)                                             AS month_actual,
-+    TRIM(TO_CHAR(datum, 'Month'))                                         AS month_name,
-+    TRIM(TO_CHAR(datum, 'Mon'))                                           AS month_name_abbreviated,
-+
-+    DATE_PART('quarter', datum)                                           AS quarter_actual,
-+    CASE DATE_PART('quarter', datum)
-+      WHEN 1 THEN 'First'
-+      WHEN 2 THEN 'Second'
-+      WHEN 3 THEN 'Third'
-+      WHEN 4 THEN 'Fourth'
-+    END                                                                   AS quarter_name,
-+
-+    DATE_PART('year', datum)                                              AS year_actual,
-+
-+    DATEADD(day, 1 - DAYOFWEEKISO(datum), datum)                          AS first_day_of_week,
-+    DATEADD(day, 7 - DAYOFWEEKISO(datum), datum)                          AS last_day_of_week,
-+
-+    DATE_TRUNC('month', datum)                                            AS first_day_of_month,
-+    LAST_DAY(datum, 'month')                                              AS last_day_of_month,
-+
-+    DATE_TRUNC('year', datum)                                             AS first_day_of_year,
-+    LAST_DAY(datum, 'year')                                               AS last_day_of_year,
-+
-+    TO_CHAR(datum, 'MMYYYY')                                              AS mmyyyy,
-+    TO_CHAR(datum, 'MMDDYYYY')                                            AS mmddyyyy,
-+
-+    CASE WHEN DAYOFWEEKISO(datum) IN (6, 7) THEN TRUE ELSE FALSE END      AS weekend_indr
++        WHEN DAYOFWEEKISO(DATUM) IN (6, 7) THEN TRUE
+         ELSE FALSE
+     END AS WEEKEND_INDR
  FROM (
 -    SELECT '1970-01-01'::DATE + SEQUENCE.DAY * INTERVAL '1 day' AS DATUM
 -    FROM GENERATE_SERIES(0, 29219) AS SEQUENCE (DAY)
 -    GROUP BY SEQUENCE.DAY
--) DQ
-+  SELECT DATEADD(day, SEQ4(), DATE '1970-01-01') AS datum
-+  FROM TABLE(GENERATOR(ROWCOUNT => 29220))
-+) dq
++    SELECT DATEADD(day, SEQ4(), DATE '1970-01-01') AS DATUM
++    FROM TABLE(GENERATOR(ROWCOUNT => 29220))
+ ) DQ
  ORDER BY 1
 --- a/models/dim/dim_hosts.sql
 +++ b/models/dim/dim_hosts.sql
