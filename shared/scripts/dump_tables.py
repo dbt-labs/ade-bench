@@ -137,7 +137,7 @@ def dump_tables_snowflake(
         try:
             limit_clause = f"LIMIT {limit}" if limit >= 0 else ""
             cursor = sf_con.cursor()
-            cursor.execute(f'SELECT * FROM {relation} {limit_clause}')
+            cursor.execute(f"SELECT * FROM {relation} {limit_clause}")
             df = cursor.fetch_pandas_all()
             cursor.close()
 
