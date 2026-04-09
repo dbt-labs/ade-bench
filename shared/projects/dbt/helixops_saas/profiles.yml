@@ -5,3 +5,17 @@ helixops_saas-duckdb:
       type: duckdb
       path: "./helixops_saas.duckdb"
       schema: main
+
+helixops_saas-snowflake:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      ## Added by when task is created
+      account: <account>
+      user: <user>
+      password: <password>
+      role: <role>
+      database: <database>
+      schema: <schema>
+      warehouse: <warehouse>

@@ -8,19 +8,13 @@
 +low,enterprise,900,2025-06-16 08:00:00,9999-12-31 00:00:00
 --- a/models/intermediate/int_support_sla.sql
 +++ b/models/intermediate/int_support_sla.sql
-@@ -6,6 +6,9 @@
- ),
- workspaces as (
+@@ -8,2 +8,5 @@
      select * from {{ ref('stg_workspaces') }}
 +),
 +enterprise_sla as (
 +    select * from {{ ref('sla_enterprise_targets') }}
  )
- select
-     t.ticket_id,
-@@ -27,18 +30,24 @@
-     t.csat_score,
-     t.first_response_minutes,
+@@ -29,14 +32,20 @@
      t.resolution_minutes,
 -    case
 -        when t.priority = 'urgent' then 30
@@ -53,11 +47,7 @@
 +        end
 +    ) >= t.first_response_minutes as met_response_sla,
      t.is_open_ticket,
-     case
-         when t.resolved_at is not null then date_diff('day', cast(t.opened_at as date), cast(t.resolved_at as date))
-@@ -49,3 +58,8 @@
- from tickets t
- left join accounts a using (account_id)
+@@ -51 +60,6 @@
  left join workspaces w on t.workspace_id = w.workspace_id
 +left join enterprise_sla es
 +    on t.priority = es.priority
