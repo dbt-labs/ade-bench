@@ -1,9 +1,6 @@
 --- a/models/warehouse/fact_inventory.sql
 +++ b/models/warehouse/fact_inventory.sql
-@@ -11,7 +11,7 @@
-         transaction_type,
-         CAST(STRPTIME(transaction_created_date, '%m/%d/%Y %H:%M:%S') AS DATE) AS transaction_created_date,
-         transaction_modified_date,
+@@ -14,4 +14,4 @@
 -        product_id,
 +        product_id::varchar AS product_id,
          quantity,
