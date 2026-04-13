@@ -1,4 +1,2 @@
 #!/bin/bash
-
-# Update primary schema in dbt_project.yml file
-yq -i '.vars.asana_schema = "public"' dbt_project.yml
+patch -p1 < "/app/migrations/migration.patch"

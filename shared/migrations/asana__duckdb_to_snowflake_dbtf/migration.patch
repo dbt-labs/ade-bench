@@ -1,0 +1,5 @@
+--- a/dbt_project.yml
++++ b/dbt_project.yml
+@@ -11 +11 @@
+-  asana_schema: main
++  asana_schema: public

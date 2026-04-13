@@ -1,0 +1,234 @@
+--- a/models/sources.yml
++++ b/models/sources.yml
+@@ -2,7 +2,7 @@
+ 
+ sources:
+   - name: airbnb
+-    schema: main
++    schema: public
+     tables:
+       - name: hosts
+         identifier: raw_hosts
+--- a/models/agg/daily_agg_reviews.sql
++++ b/models/agg/daily_agg_reviews.sql
+@@ -2,7 +2,7 @@
+ 	config(
+ 		materialized="incremental" ,
+ 		alias="daily_agg_reviews" ,
+-		schema="main",
++		schema="public",
+ 		unique_key="DATE_SENTIMENT_ID"
+ 	)
+ }}
+--- a/models/agg/mom_agg_reviews.sql
++++ b/models/agg/mom_agg_reviews.sql
+@@ -2,7 +2,7 @@
+ 	config(
+ 		materialized="incremental" ,
+ 		alias="mom_agg_reviews" ,
+-		schema="main",
++		schema="public",
+ 		unique_key="DATE_SENTIMENT_ID"
+ 	)
+ }}
+--- a/models/agg/monthly_agg_reviews.sql
++++ b/models/agg/monthly_agg_reviews.sql
+@@ -2,7 +2,7 @@
+ 	config(
+ 		materialized="incremental",
+ 		alias="monthly_agg_reviews",
+-		schema="main",
++		schema="public",
+ 		unique_key="DATE_SENTIMENT_ID"
+ 	)
+ }}
+@@ -15,7 +15,7 @@
+ SELECT
+ 	COUNT(*) AS REVIEW_TOTALS,
+ 	REVIEW_SENTIMENT,
+-	STRFTIME('%m-%Y', REVIEW_DATE) AS MONTH_YEAR,
++	TO_CHAR(REVIEW_DATE, 'MM-YYYY') AS MONTH_YEAR,
+ 	EXTRACT(MONTH FROM REVIEW_DATE) AS MONTH,
+ 	EXTRACT(YEAR FROM REVIEW_DATE) AS YEAR,
+ 	{{dbt_utils.generate_surrogate_key(['CAST(EXTRACT(MONTH FROM REVIEW_DATE) AS TEXT)',
+--- a/models/agg/wow_agg_reviews.sql
++++ b/models/agg/wow_agg_reviews.sql
+@@ -2,7 +2,7 @@
+ 	config(
+ 		materialized="incremental" ,
+ 		alias="wow_agg_reviews" ,
+-		schema="main",
++		schema="public",
+ 		unique_key="DATE_SENTIMENT_ID"
+ 	)
+ }}
+--- a/models/dim/dim_dates.sql
++++ b/models/dim/dim_dates.sql
+@@ -2,55 +2,54 @@
+ 	config(
+ 		materialized="table" ,
+ 		alias="dim_dates" ,
+-		schema="main" ,
++		schema="public" ,
+ 		unique_key="DATE_ID"
+ 	)
+ }}
+
+ SELECT
+-    STRFTIME('%Y%m%d', DATUM)::INT AS DATE_ID,
++    TO_CHAR(DATUM, 'YYYYMMDD')::INTEGER AS DATE_ID,
+     DATUM AS DATE_ACTUAL,
+-    EXTRACT(EPOCH FROM DATUM) AS EPOCH,
+-    STRFTIME('%d', DATUM) || CASE
+-        WHEN STRFTIME('%d', DATUM) = '01' THEN 'st'
+-        WHEN STRFTIME('%d', DATUM) = '02' THEN 'nd'
+-        WHEN STRFTIME('%d', DATUM) = '03' THEN 'rd'
++    DATEDIFF('second', TO_TIMESTAMP_NTZ('1970-01-01'), DATUM::timestamp) AS EPOCH,
++    TO_CHAR(DATUM, 'DD') || CASE TO_CHAR(DATUM, 'DD')
++        WHEN '01' THEN 'st'
++        WHEN '02' THEN 'nd'
++        WHEN '03' THEN 'rd'
+         ELSE 'th'
+     END AS DAY_SUFFIX,
+-    STRFTIME('%A', DATUM) AS DAY_NAME,
+-    EXTRACT(ISODOW FROM DATUM) AS DAY_OF_WEEK,
+-    EXTRACT(DAY FROM DATUM) AS DAY_OF_MONTH,
+-    (DATUM - DATE_TRUNC('quarter', DATUM)::DATE + INTERVAL '1 day') AS DAY_OF_QUARTER,
+-    EXTRACT(DOY FROM DATUM) AS DAY_OF_YEAR,
+-    STRFTIME('%W', DATUM)::INT AS WEEK_OF_MONTH,
+-    EXTRACT(WEEK FROM DATUM) AS WEEK_OF_YEAR,
+-    EXTRACT(ISOYEAR FROM DATUM) || '-W' || STRFTIME('%V', DATUM) || '-' || EXTRACT(ISODOW FROM DATUM) AS WEEK_OF_YEAR_ISO,
+-    EXTRACT(MONTH FROM DATUM) AS MONTH_ACTUAL,
+-    STRFTIME('%B', DATUM) AS MONTH_NAME,
+-    STRFTIME('%b', DATUM) AS MONTH_NAME_ABBREVIATED,
+-    EXTRACT(QUARTER FROM DATUM) AS QUARTER_ACTUAL,
++    TRIM(TO_CHAR(DATUM, 'Day')) AS DAY_NAME,
++    DAYOFWEEKISO(DATUM) AS DAY_OF_WEEK,
++    DATE_PART('day', DATUM) AS DAY_OF_MONTH,
++    DATEDIFF('day', DATE_TRUNC('quarter', DATUM), DATUM) + 1 AS DAY_OF_QUARTER,
++    DATE_PART('doy', DATUM) AS DAY_OF_YEAR,
++    (DATE_PART('WEEK', DATUM) - DATE_PART('WEEK', DATE_TRUNC('MONTH', DATUM)) + 1) AS WEEK_OF_MONTH,
++    WEEKOFYEAR(DATUM) AS WEEK_OF_YEAR,
++    TO_CHAR(DATUM, 'YYYY') || '-W' || LPAD(WEEKOFYEAR(DATUM),2,'0') || '-' || DAYOFWEEKISO(DATUM) AS WEEK_OF_YEAR_ISO,
++    DATE_PART('month', DATUM) AS MONTH_ACTUAL,
++    TRIM(TO_CHAR(DATUM, 'Month')) AS MONTH_NAME,
++    TRIM(TO_CHAR(DATUM, 'Mon')) AS MONTH_NAME_ABBREVIATED,
++    DATE_PART('quarter', DATUM) AS QUARTER_ACTUAL,
+     CASE
+-        WHEN EXTRACT(QUARTER FROM DATUM) = 1 THEN 'First'
+-        WHEN EXTRACT(QUARTER FROM DATUM) = 2 THEN 'Second'
+-        WHEN EXTRACT(QUARTER FROM DATUM) = 3 THEN 'Third'
+-        WHEN EXTRACT(QUARTER FROM DATUM) = 4 THEN 'Fourth'
++        WHEN DATE_PART('quarter', DATUM) = 1 THEN 'First'
++        WHEN DATE_PART('quarter', DATUM) = 2 THEN 'Second'
++        WHEN DATE_PART('quarter', DATUM) = 3 THEN 'Third'
++        WHEN DATE_PART('quarter', DATUM) = 4 THEN 'Fourth'
+     END AS QUARTER_NAME,
+-    EXTRACT(YEAR FROM DATUM) AS year_actual,
+-    DATUM + INTERVAL '1 day' * (1 - EXTRACT(ISODOW FROM DATUM)) AS FIRST_DAY_OF_WEEK,
+-    DATUM + INTERVAL '1 day' * (7 - EXTRACT(ISODOW FROM DATUM)) AS LAST_DAY_OF_WEEK,
+-    DATUM + INTERVAL '1 day' * (1 - EXTRACT(DAY FROM DATUM)) AS FIRST_DAY_OF_MONTH,
+-    (DATE_TRUNC('MONTH', DATUM) + INTERVAL '1 MONTH' - INTERVAL '1 day')::DATE AS LAST_DAY_OF_MONTH,
+-    STRFTIME('%Y-01-01', DATUM)::DATE AS FIRST_DAY_OF_YEAR,
+-    STRFTIME('%Y-12-31', DATUM)::DATE AS LAST_DAY_OF_YEAR,
+-    STRFTIME('%m%Y', DATUM) AS MMYYYY,
+-    STRFTIME('%m%d%Y', DATUM) AS MMDDYYYY,
++    DATE_PART('year', DATUM) AS year_actual,
++    DATEADD(day, 1 - DAYOFWEEKISO(DATUM), DATUM) AS FIRST_DAY_OF_WEEK,
++    DATEADD(day, 7 - DAYOFWEEKISO(DATUM), DATUM) AS LAST_DAY_OF_WEEK,
++    DATE_TRUNC('month', DATUM) AS FIRST_DAY_OF_MONTH,
++    LAST_DAY(DATUM, 'month') AS LAST_DAY_OF_MONTH,
++    DATE_TRUNC('year', DATUM) AS FIRST_DAY_OF_YEAR,
++    LAST_DAY(DATUM, 'year') AS LAST_DAY_OF_YEAR,
++    TO_CHAR(DATUM, 'MMYYYY') AS MMYYYY,
++    TO_CHAR(DATUM, 'MMDDYYYY') AS MMDDYYYY,
+     CASE
+-        WHEN EXTRACT(ISODOW FROM DATUM) IN (6, 7) THEN TRUE
++        WHEN DAYOFWEEKISO(DATUM) IN (6, 7) THEN TRUE
+         ELSE FALSE
+     END AS WEEKEND_INDR
+ FROM (
+-    SELECT '1970-01-01'::DATE + SEQUENCE.DAY * INTERVAL '1 day' AS DATUM
+-    FROM GENERATE_SERIES(0, 29219) AS SEQUENCE (DAY)
+-    GROUP BY SEQUENCE.DAY
++    SELECT DATEADD(day, SEQ4(), DATE '1970-01-01') AS DATUM
++    FROM TABLE(GENERATOR(ROWCOUNT => 29220))
+ ) DQ
+ ORDER BY 1
+--- a/models/dim/dim_hosts.sql
++++ b/models/dim/dim_hosts.sql
+@@ -2,7 +2,7 @@
+ 	config(
+ 		materialized="incremental" ,
+ 		alias="dim_hosts" ,
+-		schema="main" ,
++		schema="public" ,
+ 		unique_key="HOST_ID"
+ 	)
+ }}
+--- a/models/dim/dim_listings.sql
++++ b/models/dim/dim_listings.sql
+@@ -2,7 +2,7 @@
+ 	config(
+ 		materialized="incremental" ,
+ 		alias="dim_listings" ,
+-		schema="main" ,
++		schema="public" ,
+ 		unique_key="LISTING_ID"
+ 	)
+ }}
+--- a/models/dim/dim_listings_hosts.sql
++++ b/models/dim/dim_listings_hosts.sql
+@@ -2,7 +2,7 @@
+ 	config(
+ 		materialized="incremental" ,
+ 		alias="dim_listings_hosts" ,
+-		schema="main" ,
++		schema="public" ,
+ 		unique_key="LISTING_HOST_ID"
+ 	)
+ }}
+--- a/models/fact/fct_reviews.sql
++++ b/models/fact/fct_reviews.sql
+@@ -2,7 +2,7 @@
+ 	config(
+ 		materialized="incremental" ,
+ 		alias="fct_reviews" ,
+-		schema="main"
++		schema="public"
+ 	)
+ }}
+ 
+--- a/models/source/src_hosts.sql
++++ b/models/source/src_hosts.sql
+@@ -2,7 +2,7 @@
+ 	config(
+ 		materialized="table" ,
+ 		alias="src_hosts" ,
+-		schema="main" ,
++		schema="public" ,
+ 		unique_key="HOST_ID"
+ 	)
+ }}
+--- a/models/source/src_listings.sql
++++ b/models/source/src_listings.sql
+@@ -2,7 +2,7 @@
+ 	config(
+ 		materialized="table" ,
+ 		alias="src_listings" ,
+-		schema="main" ,
++		schema="public" ,
+ 		unique_key="LISTING_ID"
+ 	)
+ }}
+--- a/models/source/src_reviews.sql
++++ b/models/source/src_reviews.sql
+@@ -2,7 +2,7 @@
+ 	config(
+ 		materialized="table" ,
+ 		alias="src_reviews" ,
+-		schema="main" ,
++		schema="public" ,
+ 		unique_key="LISTING_ID"
+ 	)
+ }}

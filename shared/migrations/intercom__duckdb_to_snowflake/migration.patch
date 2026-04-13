@@ -1,0 +1,5 @@
+--- a/dbt_project.yml
++++ b/dbt_project.yml
+@@ -12 +12 @@
+-  intercom_schema: main
++  intercom_schema: public

@@ -1,0 +1,5 @@
+--- a/dbt_project.yml
++++ b/dbt_project.yml
+@@ -14 +14 @@
+-  quickbooks_schema: main
++  quickbooks_schema: "public"

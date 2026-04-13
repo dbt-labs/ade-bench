@@ -1,45 +1,33 @@
 --- a/models/source/src_hosts.sql
 +++ b/models/source/src_hosts.sql
-@@ -1,3 +1,12 @@
-+{{
-+	config(
-+		materialized="view" ,
-+		alias="src_hosts" ,
+@@ -3,7 +3,7 @@
+ 	config(
+ 		materialized="view" ,
+ 		alias="src_hosts" ,
+-		schema="main" ,
 +		schema="public" ,
-+		unique_key="HOST_ID"
-+	)
-+}}
-+
- WITH RAW_HOSTS AS (
- 	SELECT *
- 	FROM {{source('airbnb','hosts')}}
+ 		unique_key="HOST_ID"
+ 	)
+ }}
 --- a/models/source/src_listings.sql
 +++ b/models/source/src_listings.sql
-@@ -1,3 +1,12 @@
-+{{
-+	config(
-+		materialized="view" ,
-+		alias="src_listings" ,
+@@ -3,7 +3,7 @@
+ 	config(
+ 		materialized="view" ,
+ 		alias="src_listings" ,
+-		schema="main" ,
 +		schema="public" ,
-+		unique_key="LISTING_ID"
-+	)
-+}}
-+
- WITH RAW_LISTINGS AS (
- 	SELECT *
- 	FROM {{source('airbnb','listings')}}
+ 		unique_key="LISTING_ID"
+ 	)
+ }}
 --- a/models/source/src_reviews.sql
 +++ b/models/source/src_reviews.sql
-@@ -1,3 +1,12 @@
-+{{
-+	config(
-+		materialized="view" ,
-+		alias="src_reviews" ,
+@@ -3,7 +3,7 @@
+ 	config(
+ 		materialized="view" ,
+ 		alias="src_reviews" ,
+-		schema="main" ,
 +		schema="public" ,
-+		unique_key="LISTING_ID"
-+	)
-+}}
-+
- WITH RAW_REVIEWS AS (
- 	SELECT * 
- 	FROM {{source('airbnb','reviews')}}
+ 		unique_key="LISTING_ID"
+ 	)
+ }}

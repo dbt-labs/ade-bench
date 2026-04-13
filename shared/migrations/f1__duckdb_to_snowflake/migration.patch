@@ -1,0 +1,11 @@
+--- a/models/core/f1_dataset.yml
++++ b/models/core/f1_dataset.yml
+@@ -2,7 +2,7 @@
+
+ sources:
+   - name: f1_dataset
+-    schema: main
++    schema: public
+     tables:
+       - name: circuits
+       - name: constructors

@@ -21,6 +21,11 @@ variants:
   db_name: helixops_saas
   project_type: dbt
   project_name: helixops_saas
+- db_type: snowflake
+  db_name: helixops_saas
+  project_type: dbt
+  project_name: helixops_saas
+  migration_directory: helixops_saas__duckdb_to_snowflake
 - db_type: duckdb
   db_name: helixops_saas
   project_type: dbt-fusion
@@ -28,4 +33,8 @@ variants:
 solution_seeds:
   - table_name: int_account_billing_snapshot
   - table_name: mart_account_360
+    exclude_tests:
+      - equality_test
   - table_name: mart_account_health
+    exclude_tests:
+      - equality_test

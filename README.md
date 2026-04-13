@@ -574,7 +574,7 @@ ade migrate duckdb-to-snowflake --exclude bar
 ## Tips! Tricks! Other things we recommend!
 
 - **Disable diffs to speed things up.** If you're trying to run a bunch of tasks, or testing something where you don't care about looking at diffs, use the `--no-diffs` flag. Diffs can be slow, and ADE-bench will run faster if they're turned off.
-- **View all the tasks.** Running `ade view tasks` will print a summary table of all the tasks in ADE-bench. You can also run ``ade view tasks --copy` to copy a more detailed summary of the tasks to your clipboard.
+- **View all the tasks.** Running `ade view tasks` will print a summary table of all the tasks in ADE-bench. You can also run `ade view tasks --copy` to copy a more detailed summary of the tasks to your clipboard.
 
 ---
 

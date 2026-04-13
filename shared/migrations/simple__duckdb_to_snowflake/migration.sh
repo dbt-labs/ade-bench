@@ -1,4 +1,2 @@
 #!/bin/bash
-
-# Update source schema in sources.yml file
-yq -i '.sources[].schema = "public"' models/staging/source.yml
+patch -p1 < "/app/migrations/migration.patch"

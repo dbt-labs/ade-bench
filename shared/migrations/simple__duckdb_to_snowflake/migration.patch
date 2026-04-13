@@ -1,0 +1,10 @@
+--- a/models/staging/source.yml
++++ b/models/staging/source.yml
+@@ -1,6 +1,6 @@
+ version: 1
+ sources:
+   - name: simple
+-    schema: main
++    schema: public
+     tables:
+       - name: customer

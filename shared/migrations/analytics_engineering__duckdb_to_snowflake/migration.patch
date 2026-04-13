@@ -1,0 +1,77 @@
+--- a/models/staging/source.yml
++++ b/models/staging/source.yml
+@@ -1,7 +1,7 @@
+ version: 2
+ sources:
+   - name: northwind
+-    schema: main
++    schema: public
+     tables:
+       - name: customer
+       - name: employee_privileges
+--- a/models/warehouse/fact_inventory.sql
++++ b/models/warehouse/fact_inventory.sql
+@@ -9,7 +9,7 @@
+     SELECT
+         id AS inventory_id,
+         transaction_type,
+-        CAST(STRPTIME(transaction_created_date, '%m/%d/%Y %H:%M:%S') AS DATE) AS transaction_created_date,
++        TO_DATE(TO_TIMESTAMP(transaction_created_date, 'MM/DD/YYYY HH24:MI:SS')) AS transaction_created_date,
+         transaction_modified_date,
+         product_id,
+         quantity,
+--- a/models/warehouse/fact_sales.sql
++++ b/models/warehouse/fact_sales.sql
+@@ -19,7 +19,7 @@
+         od.date_allocated,
+         od.purchase_order_id,
+         od.inventory_id,
+-        CAST(STRPTIME(o.order_date, '%m/%d/%Y %H:%M:%S') AS DATE) AS order_date,
++        TO_DATE(TO_TIMESTAMP(o.order_date, 'MM/DD/YYYY HH24:MI:SS')) AS order_date,
+         o.shipped_date,
+         o.paid_date
+     FROM {{ ref('stg_orders') }} o
+--- a/models/warehouse/dim_date.sql
++++ b/models/warehouse/dim_date.sql
+@@ -1,19 +1,23 @@
+-SELECT
+-    STRFTIME('%Y-%m-%d', d) AS id,         -- Format date as 'YYYY-MM-DD'
+-    d                          AS full_date,     -- Full date
+-    EXTRACT(YEAR FROM d)        AS year,         -- Extract year
+-    EXTRACT(WEEK FROM d)        AS year_week,    -- Extract week of the year
+-    EXTRACT(DAY FROM d)         AS year_day,     -- Extract day of the year
+-    EXTRACT(YEAR FROM d)        AS fiscal_year,  -- Set fiscal year as the same as year
+-    ((EXTRACT(MONTH FROM d) - 1) / 3 + 1) AS fiscal_qtr, -- Calculate fiscal quarter
+-    EXTRACT(MONTH FROM d)       AS month,        -- Extract month
+-    STRFTIME('%B', d)           AS month_name,   -- Format month name
+-    STRFTIME('%w', d)           AS week_day,     -- Format day of the week (0-6, Sunday is 0)
+-    STRFTIME('%A', d)           AS day_name,     -- Format day name (e.g., Monday)
+-    (CASE WHEN STRFTIME('%w', d) IN ('0', '6') THEN 0 ELSE 1 END) AS day_is_weekday -- Check if it's a weekday
+-FROM (
++WITH date_series AS (
+     SELECT
+-        CAST(generate_series AS DATE) AS d  -- Cast timestamp to date
+-    FROM
+-        generate_series(TIMESTAMP '2014-01-01', TIMESTAMP '2050-01-01', INTERVAL 1 DAY) -- Generate date series
+-) AS foo
++        DATEADD(
++            day,
++            ROW_NUMBER() OVER (ORDER BY SEQ4()) - 1,
++            DATE('2014-01-01')
++        ) AS d
++    FROM TABLE(GENERATOR(ROWCOUNT => 13500))  -- enough rows to reach 2050-01-01
++)
++SELECT
++    TO_CHAR(d, 'YYYY-MM-DD') AS id,            -- Format date as 'YYYY-MM-DD'
++    d AS full_date,                            -- Full date
++    EXTRACT(YEAR FROM d) AS year,              -- Year
++    EXTRACT(WEEK FROM d) AS year_week,         -- Week of year (1–53)
++    DAYOFYEAR(d) AS year_day,                  -- Day of year (1–366)
++    EXTRACT(YEAR FROM d) AS fiscal_year,       -- Fiscal year (same as year here)
++    CEIL(EXTRACT(MONTH FROM d) / 3) AS fiscal_qtr, -- Fiscal quarter
++    EXTRACT(MONTH FROM d) AS month,            -- Month number
++    TO_CHAR(d, 'MMMM') AS month_name,          -- Month name
++    DAYOFWEEK(d) AS week_day,                  -- Day of week (1=Sunday)
++    DAYNAME(d) AS day_name,                    -- Day name
++    CASE WHEN DAYOFWEEK(d) IN (0,6) THEN 0 ELSE 1 END AS day_is_weekday -- 0=weekend, 1=weekday
++FROM date_series

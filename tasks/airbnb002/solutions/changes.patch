@@ -54,14 +54,3 @@
 -	ON listings_cte.HOST_ID = hosts_cte.HOST_ID
 \ No newline at end of file
 +	ON listings_cte.HOST_ID = hosts_cte.HOST_ID
---- a/dbt_project.yml
-+++ b/dbt_project.yml
-@@ -37,4 +37,6 @@
-       +column_types:
-         PRICE: "STRING"
- flags:
--  require_generic_test_arguments_property: true
-\ No newline at end of file
-+  require_generic_test_arguments_property: true
-+vars:
-+  surrogate_key_treat_nulls_as_empty_strings: true

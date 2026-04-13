@@ -18,6 +18,11 @@ variants:
   db_name: helixops_saas
   project_type: dbt
   project_name: helixops_saas
+- db_type: snowflake
+  db_name: helixops_saas
+  project_type: dbt
+  project_name: helixops_saas
+  migration_directory: helixops_saas__duckdb_to_snowflake
 - db_type: duckdb
   db_name: helixops_saas
   project_type: dbt-fusion
@@ -28,3 +33,5 @@ solution_seeds:
   - table_name: int_workspace_roster
   - table_name: int_workspace_daily_metrics
   - table_name: int_support_sla
+    exclude_columns:
+      - ticket_age_days

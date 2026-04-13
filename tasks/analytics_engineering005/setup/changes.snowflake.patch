@@ -1,14 +1,5 @@
 --- a/models/warehouse/fact_inventory.sql
 +++ b/models/warehouse/fact_inventory.sql
-@@ -9,7 +9,7 @@
-     SELECT
-         id AS inventory_id,
-         transaction_type,
--        CAST(STRPTIME(transaction_created_date, '%m/%d/%Y %H:%M:%S') AS DATE) AS transaction_created_date,
-+        TO_DATE(TO_TIMESTAMP(transaction_created_date, 'MM/DD/YYYY HH24:MI:SS')) AS transaction_created_date,
-         transaction_modified_date,
-         product_id,
-         quantity,
 @@ -17,24 +17,7 @@
          customer_order_id,
          comments
