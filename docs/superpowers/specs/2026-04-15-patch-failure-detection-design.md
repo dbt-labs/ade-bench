@@ -106,7 +106,7 @@ The redundant `.duckdb.patch` and `.snowflake.patch` files are deleted.
 **Modified Python:**
 - `ade_bench/setup/base_setup.py` — use `run_script_checked`, raise on failure
 - `ade_bench/setup/migration_setup.py` — use `run_script_checked`, raise on failure
-- `ade_bench/agents/sage_agent.py` — use `run_script_checked`, return INFRA_FAILURE
+- `ade_bench/agents/sage_agent.py` — use `run_script_checked`, return `AgentResult(failure_mode=FailureMode.UNKNOWN_AGENT_ERROR)`
 
 **Modified shell scripts:**
 - All `tasks/*/setup.sh` — add `set -euo pipefail`
@@ -126,4 +126,4 @@ The redundant `.duckdb.patch` and `.snowflake.patch` files are deleted.
 - All `setup.sh`, `migration.sh`, and `solution.sh` files start with `set -euo pipefail`
 - `dbt run || true` is used only when the task's broken initial state causes a compile/runtime error
 - `patch ... || true` is used only for patches that are genuinely optional (e.g. conditionally skipped by a later migration step)
-- Any bare `patch` without `|| true` must succeed or the trial is marked INFRA_FAILURE
+- Any bare `patch` without `|| true` must succeed or the trial is marked `SETUP_FAILED`
