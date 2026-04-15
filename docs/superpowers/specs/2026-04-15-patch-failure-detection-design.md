@@ -100,8 +100,8 @@ The redundant `.duckdb.patch` and `.snowflake.patch` files are deleted.
 
 ## File change summary
 
-**New file:**
-- `ade_bench/setup/utils.py` — `run_script_checked` helper
+**New function in existing file:**
+- `ade_bench/setup/setup_utils.py` — `run_script_checked` helper added to bottom
 
 **Modified Python:**
 - `ade_bench/setup/base_setup.py` — use `run_script_checked`, raise on failure
@@ -125,5 +125,5 @@ The redundant `.duckdb.patch` and `.snowflake.patch` files are deleted.
 
 - All `setup.sh`, `migration.sh`, and `solution.sh` files start with `set -euo pipefail`
 - `dbt run || true` is used only when the task's broken initial state causes a compile/runtime error
-- `patch ... || true` is used only for patches that are genuinely optional (e.g. conditionally skipped by a later migration step)
+- `patch ... || true` is used only for patches that are expected to fail (e.g. will be replaced by a more precise patch later)
 - Any bare `patch` without `|| true` must succeed or the trial is marked `SETUP_FAILED`

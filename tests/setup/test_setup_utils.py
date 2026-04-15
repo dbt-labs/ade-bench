@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, call
+from unittest.mock import MagicMock
 from ade_bench.setup.setup_utils import run_script_checked
 
 
