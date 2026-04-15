@@ -40,3 +40,14 @@ def test_run_script_checked_passes_max_timeout():
         block=True,
         max_timeout_sec=float("inf"),
     )
+
+
+def test_run_script_checked_returns_one_when_exit_code_file_absent():
+    """If the shell crashes before writing the exit code file, treat as failure."""
+    session = MagicMock()
+    container = MagicMock()
+    container.exec_run.return_value = MagicMock(output=b"")
+
+    result = run_script_checked(session, container, "bash /app/test.sh")
+
+    assert result == 1

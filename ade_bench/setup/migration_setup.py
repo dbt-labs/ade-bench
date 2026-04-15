@@ -17,6 +17,11 @@ def setup_migration(terminal, session, variant: Dict[str, Any], trial_handler) -
     migration_dir_path = trial_handler.get_migration_path(migration_directory)
     migration_script_path = trial_handler.get_migration_script_path(migration_directory)
 
+    if session is None:
+        raise RuntimeError(
+            f"Cannot run migration '{migration_directory}': no tmux session available"
+        )
+
     if migration_dir_path.exists():
         terminal.copy_to_container(
             paths=migration_script_path,

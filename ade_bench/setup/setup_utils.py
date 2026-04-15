@@ -65,4 +65,5 @@ def run_script_checked(session, container, command: str, max_timeout_sec: float 
     checked = f"{command}; echo $? > /tmp/.ade_exit_code"
     session.send_keys([checked, "Enter"], block=True, max_timeout_sec=max_timeout_sec)
     result = container.exec_run(["cat", "/tmp/.ade_exit_code"])
-    return int(result.output.decode().strip())
+    output = result.output.decode().strip()
+    return int(output) if output else 1
