@@ -7,6 +7,8 @@ if [[ "$*" == *"--db-type=snowflake"* ]]; then
     patch -p1 < /sage/solutions/changes.snowflake.patch
 fi
 
+set +euo pipefail
+
 mkdir -p snapshots
 
 # Run snapshot then models

@@ -6,5 +6,7 @@ if [[ "$*" == *"--db-type=snowflake"* ]]; then
     patch -p1 --batch --forward < /app/setup/changes.snowflake.patch
 fi
 
+set +euo pipefail
+
 dbt deps
 dbt run
