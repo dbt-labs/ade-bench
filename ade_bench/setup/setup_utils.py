@@ -53,3 +53,17 @@ def update_file_in_container(container, file_path: str, update_func, *args, **kw
 
         finally:
             os.unlink(temp_path)
+
+
+def run_script_checked(session, container, command: str, max_timeout_sec: float = 180.0) -> int:
+    """Run a shell command via tmux and return its exit code.
+
+    Appends an exit-code capture to the command before signalling tmux done,
+    then reads the captured value back via exec_run. This is necessary because
+    send_keys only waits for the tmux signal and never sees the command's exit code.
+    """
+    checked = f"{command}; echo $? > /tmp/.ade_exit_code"
+    session.send_keys([checked, "Enter"], block=True, max_timeout_sec=max_timeout_sec)
+    result = container.exec_run(["cat", "/tmp/.ade_exit_code"])
+    output = result.output.decode().strip()
+    return int(output) if output else 1

@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # Remove all intermediate models
 rm -r models/intermediate

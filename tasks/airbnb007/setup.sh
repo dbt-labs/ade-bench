@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 ## remove old models
 rm -r models/agg

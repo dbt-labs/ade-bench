@@ -30,3 +30,4 @@ SQL
 
 dbt deps
 dbt run
+exit 0

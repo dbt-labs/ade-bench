@@ -27,3 +27,4 @@ SQL
 ## Run the dbt project.
 dbt deps
 dbt run
+exit 0

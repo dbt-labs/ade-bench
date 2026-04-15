@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 if [[ "$*" == *"--db-type=duckdb"* ]]; then
     schema='main'

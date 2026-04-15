@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # 1. Normal dbt setup
 dbt deps
