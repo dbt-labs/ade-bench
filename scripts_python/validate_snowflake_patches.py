@@ -129,11 +129,13 @@ def validate_migration_patches(
         project_dir = PROJECTS_DIR / project_name
 
         if not project_dir.exists():
-            results.append({
-                "name": f"migration/{migration_dir_name}",
-                "status": "ERROR",
-                "detail": f"Project directory not found: {project_dir.relative_to(REPO_ROOT)}",
-            })
+            results.append(
+                {
+                    "name": f"migration/{migration_dir_name}",
+                    "status": "ERROR",
+                    "detail": f"Project directory not found: {project_dir.relative_to(REPO_ROOT)}",
+                }
+            )
             continue
 
         with tempfile.TemporaryDirectory() as tmp:
@@ -141,11 +143,13 @@ def validate_migration_patches(
             shutil.copytree(project_dir, tmp_project, symlinks=True)
             success, output = apply_patch(tmp_project, patch_file)
 
-        results.append({
-            "name": f"migration/{migration_dir_name}",
-            "status": "PASS" if success else "FAIL",
-            "detail": output,
-        })
+        results.append(
+            {
+                "name": f"migration/{migration_dir_name}",
+                "status": "PASS" if success else "FAIL",
+                "detail": output,
+            }
+        )
 
     return results, validated
 
@@ -181,17 +185,21 @@ def _validate_patch_sequence(
         success, output = apply_patch(tmp_project, base_patch)
         optional = patch_is_optional(script_path, base_patch.name)
         if not success and not optional:
-            results.append({
-                "name": f"{label_prefix}/{base_patch.name}",
-                "status": "FAIL",
-                "detail": output,
-            })
+            results.append(
+                {
+                    "name": f"{label_prefix}/{base_patch.name}",
+                    "status": "FAIL",
+                    "detail": output,
+                }
+            )
         else:
-            results.append({
-                "name": f"{label_prefix}/{base_patch.name}",
-                "status": "PASS",
-                "detail": output,
-            })
+            results.append(
+                {
+                    "name": f"{label_prefix}/{base_patch.name}",
+                    "status": "PASS",
+                    "detail": output,
+                }
+            )
 
     if snowflake_patch and snowflake_patch.exists():
         validated.add(snowflake_patch.resolve())
@@ -201,11 +209,13 @@ def _validate_patch_sequence(
                 if target.exists():
                     target.unlink()
         success, output = apply_patch(tmp_project, snowflake_patch, extra_flags=["--forward"])
-        results.append({
-            "name": f"{label_prefix}/{snowflake_patch.name}",
-            "status": "PASS" if success else "FAIL",
-            "detail": output,
-        })
+        results.append(
+            {
+                "name": f"{label_prefix}/{snowflake_patch.name}",
+                "status": "PASS" if success else "FAIL",
+                "detail": output,
+            }
+        )
 
     return results, validated
 
@@ -311,11 +321,13 @@ def validate_coverage(
             continue
 
         if patch_file.resolve() not in validated_patches:
-            results.append({
-                "name": f"coverage/{patch_file.relative_to(REPO_ROOT)}",
-                "status": "FAIL",
-                "detail": "Patch file exists but was not exercised by this script",
-            })
+            results.append(
+                {
+                    "name": f"coverage/{patch_file.relative_to(REPO_ROOT)}",
+                    "status": "FAIL",
+                    "detail": "Patch file exists but was not exercised by this script",
+                }
+            )
 
     return results
 
