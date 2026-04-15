@@ -1,10 +1,3 @@
-{{ config(
-    partition_by={
-        "field": "transaction_created_date",
-        "data_type": "date"
-    }
-) }}
-
 WITH source AS (
     SELECT
         id AS inventory_id,
