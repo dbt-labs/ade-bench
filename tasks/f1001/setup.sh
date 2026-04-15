@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 ## Remove sources
 rm models/core/*.sql

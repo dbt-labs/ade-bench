@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 ## Introduce an error by changing the data type of the underlying table.
 

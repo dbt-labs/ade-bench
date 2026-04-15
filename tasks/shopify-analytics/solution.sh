@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 # Create the product_performance and daily_shop_performance models
 patch -p1 < /sage/solutions/changes.patch
 

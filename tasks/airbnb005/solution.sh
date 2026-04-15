@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 ## Copy solution files
 patch -p1 < /sage/solutions/changes.patch
 

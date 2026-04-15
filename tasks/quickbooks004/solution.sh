@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 ## Add using_exchange_rate variable and wrap exchange rate columns
 patch -p1 < /sage/solutions/changes.patch
 

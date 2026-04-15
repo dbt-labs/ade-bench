@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 # Create the foo model
 patch -p1 < /sage/solutions/changes.patch
 

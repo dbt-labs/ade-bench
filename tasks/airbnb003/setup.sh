@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 patch -p1 --batch < /app/setup/changes.patch || true
 
 if [[ "$*" == *"--db-type=snowflake"* ]]; then

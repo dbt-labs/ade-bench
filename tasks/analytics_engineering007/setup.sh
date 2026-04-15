@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # Update the "products" source table to change the id field to a string, and add several new rows that have ids as hashes.
 ## Get the schema based on the database type.

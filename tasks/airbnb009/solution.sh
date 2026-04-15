@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 ## Fix the dates_cte filter in mom_agg_reviews
 patch -p1 < /sage/solutions/changes.patch
 

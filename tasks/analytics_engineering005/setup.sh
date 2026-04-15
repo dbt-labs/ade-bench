@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 ## Create duplicates in the inventory table
 ## Get the schema based on the database type.

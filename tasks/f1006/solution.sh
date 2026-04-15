@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 ## Change sum back to max in constructor_points and driver_points
 patch -p1 < /sage/solutions/changes.patch
 

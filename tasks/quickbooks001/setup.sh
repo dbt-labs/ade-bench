@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 ## Introduce an error by converting date columns to unix epoch integers.
 

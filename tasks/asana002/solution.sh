@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 ## Fix the error by changing the data type of the underlying table.
 
