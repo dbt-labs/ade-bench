@@ -52,6 +52,23 @@ def patch_is_optional(script_path: Path, patch_filename: str) -> bool:
     )
 
 
+def files_created_by_patch(patch_file: Path) -> list[str]:
+    """Return relative paths of files that this patch creates (source is /dev/null).
+
+    Used to pre-delete files from the project before applying solution patches —
+    setup.sh may remove these files via shell commands (not patches) to create the
+    puzzle state, but our simulation only applies patches.
+    """
+    created = []
+    lines = patch_file.read_text().splitlines()
+    for i, line in enumerate(lines):
+        if line.startswith("--- /dev/null") and i + 1 < len(lines):
+            next_line = lines[i + 1]
+            if next_line.startswith("+++ b/"):
+                created.append(next_line[6:])  # strip "+++ b/"
+    return created
+
+
 def apply_patch(
     project_dir: Path,
     patch_file: Path,
@@ -139,17 +156,28 @@ def _validate_patch_sequence(
     snowflake_patch: Path | None,
     script_path: Path,
     label_prefix: str,
+    pre_delete_created_files: bool = False,
 ) -> tuple[list[dict], set[Path]]:
     """Apply base patch then snowflake delta. Returns (results, validated_paths).
 
     Base patch failure is OK if the script applies it with '|| true'.
     Snowflake patch uses --forward to skip already-applied hunks (mirrors setup.sh behavior).
+
+    pre_delete_created_files: if True, delete any files the patches would CREATE before
+    applying them. Set this for solution patches — setup.sh may remove these files via
+    shell commands (not patches) to create the puzzle, so our patch-only simulation needs
+    to do the same.
     """
     results: list[dict] = []
     validated: set[Path] = set()
 
     if base_patch and base_patch.exists():
         validated.add(base_patch.resolve())
+        if pre_delete_created_files:
+            for rel_path in files_created_by_patch(base_patch):
+                target = tmp_project / rel_path
+                if target.exists():
+                    target.unlink()
         success, output = apply_patch(tmp_project, base_patch)
         optional = patch_is_optional(script_path, base_patch.name)
         if not success and not optional:
@@ -167,6 +195,11 @@ def _validate_patch_sequence(
 
     if snowflake_patch and snowflake_patch.exists():
         validated.add(snowflake_patch.resolve())
+        if pre_delete_created_files:
+            for rel_path in files_created_by_patch(snowflake_patch):
+                target = tmp_project / rel_path
+                if target.exists():
+                    target.unlink()
         success, output = apply_patch(tmp_project, snowflake_patch, extra_flags=["--forward"])
         results.append({
             "name": f"{label_prefix}/{snowflake_patch.name}",
@@ -229,13 +262,16 @@ def validate_task_patches(
                 all_results.extend(setup_results)
                 all_validated.update(setup_validated)
 
-                # Stage 3: solution patches (applied on top of setup state)
+                # Stage 3: solution patches (applied on top of setup state).
+                # Pre-delete files the patches will create: setup.sh may remove them
+                # via shell commands (not patches) to produce the puzzle state.
                 sol_results, sol_validated = _validate_patch_sequence(
                     tmp_project,
                     sol_base,
                     sol_snow,
                     task_dir / "solution.sh",
                     f"{label}/solutions",
+                    pre_delete_created_files=True,
                 )
                 all_results.extend(sol_results)
                 all_validated.update(sol_validated)
