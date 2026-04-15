@@ -7,3 +7,4 @@ set +euo pipefail
 
 # Run dbt to create the models
 dbt run --select foo
+exit 0

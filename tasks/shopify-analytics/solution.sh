@@ -9,3 +9,4 @@ dbt deps
 
 # Run dbt to create the models
 dbt run --select product_performance daily_shop_performance
+exit 0

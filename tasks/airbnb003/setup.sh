@@ -10,3 +10,4 @@ set +euo pipefail
 
 dbt deps
 dbt run
+exit 0

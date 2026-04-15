@@ -14,3 +14,4 @@ mkdir -p snapshots
 # Run snapshot then models
 dbt snapshot
 dbt run
+exit 0

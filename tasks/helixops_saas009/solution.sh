@@ -4,3 +4,4 @@ patch -p1 < /sage/solutions/changes.patch
 
 set +euo pipefail
 dbt run --select dim_accounts
+exit 0

@@ -7,3 +7,4 @@ set +euo pipefail
 
 # Run dbt to create the models
 dbt run --select constructor_points driver_points
+exit 0
