@@ -225,24 +225,45 @@ class AbstractInstalledAgent(BaseAgent, ABC):
         # Create a log file for agent output
         agent_output_file = "/tmp/agent_output.log"
 
-        run_agent_commands = self._run_agent_commands(task_prompt)
-        for command in run_agent_commands:
+        try:
+            run_agent_commands = self._run_agent_commands(task_prompt)
+            for command in run_agent_commands:
+                log_harness_info(
+                    logger,
+                    task_name,
+                    "agent",
+                    f"Calling agent: {task_prompt.replace(chr(10), ' ').replace(chr(13), '')[:100]}",
+                )
+
+                # Redirect output to log file
+                modified_command = TerminalCommand(
+                    command=f"{command.command} 2>&1 | tee {agent_output_file}",
+                    min_timeout_sec=command.min_timeout_sec,
+                    max_timeout_sec=command.max_timeout_sec,
+                    block=command.block,
+                    append_enter=command.append_enter,
+                )
+                session.send_command(modified_command)
+        except TimeoutError:
+            # _send_blocking_keys raises the builtin TimeoutError (a subclass of OSError),
+            # not asyncio.TimeoutError. Without catching it here, it propagates to the
+            # harness's generic `except Exception` handler and gets misclassified as
+            # UNKNOWN_AGENT_ERROR instead of a proper timeout.
             log_harness_info(
                 logger,
                 task_name,
                 "agent",
-                f"Calling agent: {task_prompt.replace(chr(10), ' ').replace(chr(13), '')[:100]}",
+                "Agent execution timed out during task execution phase",
             )
-
-            # Redirect output to log file
-            modified_command = TerminalCommand(
-                command=f"{command.command} 2>&1 | tee {agent_output_file}",
-                min_timeout_sec=command.min_timeout_sec,
-                max_timeout_sec=command.max_timeout_sec,
-                block=command.block,
-                append_enter=command.append_enter,
+            return AgentResult(
+                input_tokens=0,
+                output_tokens=0,
+                cache_tokens=0,
+                num_turns=0,
+                runtime_ms=0,
+                cost_usd=0.0,
+                failure_mode=FailureMode.AGENT_TIMEOUT,
             )
-            session.send_command(modified_command)
 
         log_harness_info(logger, task_name, "agent", "Agent returned response")
 

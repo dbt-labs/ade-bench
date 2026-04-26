@@ -1,0 +1,45 @@
+task_id: slack_analytics003
+status: ready
+description: Fix a type mismatch bug in the unnest_array macro that causes the fact model build to fail
+notes: |-
+  The setup script introduces a subtle bug in macros/unnest_array.sql: it changes the DuckDB from_json format string from '["JSON"]' to '["VARCHAR"]'.
+  This causes unnest to produce VARCHAR elements instead of JSON, so field access (reaction.name, reaction.users) in fct_slack_message_reactions.sql fails.
+  The error message points at the fact model, not at the macro — the agent must trace through adapter.dispatch to find the root cause.
+  The fix is a single-character-class change in the macro's DuckDB implementation.
+prompts:
+  - key: base
+    prompt: |-
+      The `fct_slack_message_reactions` model fails to build with a type error when accessing fields from unnested JSON arrays.
+
+      The issue is in how the `unnest_array` macro produces its output — the DuckDB implementation is using the wrong type format string in `from_json()`, causing the unnested elements to come out as the wrong type.
+
+      Find and fix the bug so that `dbt run --select fct_slack_message_reactions` succeeds.
+  - key: medium
+    prompt: |-
+      The `fct_slack_message_reactions` model fails to build. The error is related to accessing fields on unnested array elements.
+
+      Investigate the macros used by this model and fix the underlying issue.
+  - key: hard
+    prompt: |-
+      The dbt project is broken. Please fix it.
+author_name: test
+author_email: test
+difficulty: hard
+tags:
+  - dbt
+  - debugging
+  - macro-fix
+  - jinja
+
+test_setup: |-
+  dbt deps
+  dbt run --select fct_slack_message_reactions
+
+solution_seeds:
+  - table_name: fct_slack_message_reactions
+
+variants:
+- db_type: duckdb
+  db_name: slack_analytics
+  project_type: dbt
+  project_name: slack_analytics

@@ -1,0 +1,15 @@
+
+
+seeds:
+  slack_analytics:
+    solution__mart_channel_engagement:
+      +column_types:
+        channel_name: varchar
+        total_messages: bigint
+        total_reactions: bigint
+        distinct_reaction_types: bigint
+        distinct_reactors: bigint
+        avg_reactions_per_message: double
+        total_replies: bigint
+        total_reply_users: bigint
+        most_common_reaction: json
