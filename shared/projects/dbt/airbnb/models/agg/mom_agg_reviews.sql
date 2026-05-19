@@ -1,6 +1,6 @@
 {{
 	config(
-		materialized="incremental" ,
+		materialized="table" ,
 		alias="mom_agg_reviews" ,
 		schema="main",
 		unique_key="DATE_SENTIMENT_ID"
