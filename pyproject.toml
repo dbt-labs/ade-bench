@@ -58,6 +58,7 @@ packages = ["ade_bench"]
 [tool.hatch.build.targets.wheel.force-include]
 "shared" = "shared"
 "docker" = "docker"
+"tasks" = "tasks"
 
 [tool.ruff]
 line-length = 100
