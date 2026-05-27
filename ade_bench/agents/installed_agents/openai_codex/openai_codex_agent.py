@@ -17,6 +17,10 @@ class OpenAICodexAgent(AbstractInstalledAgent):
     # Codex doesn't seem to have an allowed tools option, but I didn't fully check.
     # ALLOWED_TOOLS = ["Bash", "Edit", "Write", "NotebookEdit", "WebFetch"]
 
+    # gpt-5 family default; lowering matches what the dbt Cloud studio dev
+    # agent uses by default so eval comparisons aren't confounded by effort.
+    _REASONING_EFFORT_ENV_VAR = "OPENAI_CODEX_REASONING_EFFORT"
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._codex_parser = CodexParser()
@@ -39,10 +43,17 @@ class OpenAICodexAgent(AbstractInstalledAgent):
         else:
             model_command = ""
 
+        # Optional override of codex's default reasoning effort. Set via env var
+        # rather than a constructor kwarg so the existing harness/factory plumbing
+        # doesn't need to change to thread it through.
+        effort_command = ""
+        if effort := os.environ.get(self._REASONING_EFFORT_ENV_VAR):
+            effort_command = f" -c {shlex.quote(f'model_reasoning_effort={effort}')}"
+
         command = (
             f"echo 'AGENT RESPONSE: ' && "
             f"printenv OPENAI_API_KEY | codex login --with-api-key && "
-            f"codex --ask-for-approval never {model_command} "
+            f"codex --ask-for-approval never{model_command}{effort_command} "
             f"exec "
             f"--json --sandbox danger-full-access --skip-git-repo-check "
             f"{escaped_prompt}"
