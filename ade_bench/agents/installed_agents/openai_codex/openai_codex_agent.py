@@ -17,8 +17,8 @@ class OpenAICodexAgent(AbstractInstalledAgent):
     # Codex doesn't seem to have an allowed tools option, but I didn't fully check.
     # ALLOWED_TOOLS = ["Bash", "Edit", "Write", "NotebookEdit", "WebFetch"]
 
-    # gpt-5 family default; lowering matches what the dbt Cloud studio dev
-    # agent uses by default so eval comparisons aren't confounded by effort.
+    # Optional env-var override for codex's reasoning effort, useful when
+    # comparing codex against another agent at a matched effort level.
     _REASONING_EFFORT_ENV_VAR = "OPENAI_CODEX_REASONING_EFFORT"
 
     def __init__(self, **kwargs):
