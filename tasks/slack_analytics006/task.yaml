@@ -1,0 +1,54 @@
+task_id: slack_analytics006
+status: ready
+description: Build a channel engagement summary mart model from dim_slack_messages and fct_slack_message_reactions
+notes: |-
+  This task requires the agent to create a new marts layer model from scratch.
+  The main challenges are:
+  - Correct join grain (pre-aggregate before joining to avoid fan-out)
+  - Handling channels with zero reactions (LEFT JOIN)
+  - Computing most_common_reaction using a window function or subquery
+  - Creating the directory, SQL file, and schema YAML
+prompts:
+  - key: base
+    prompt: |-
+      Create a `marts` folder and a model called `mart_channel_engagement` that summarises each channel's messaging and reaction activity.
+      The model should produce one row per channel with the following columns:
+
+      - `channel_name`: The channel name (primary key).
+      - `total_messages`: Count of distinct messages in the channel (from `dim_slack_messages`).
+      - `total_reactions`: Count of reactions in the channel (from `fct_slack_message_reactions`). 0 if no reactions.
+      - `distinct_reaction_types`: Count of distinct normalised reaction types used in the channel. 0 if no reactions.
+      - `distinct_reactors`: Count of distinct users who reacted in the channel. 0 if no reactions.
+      - `avg_reactions_per_message`: Average reactions per message (`total_reactions / total_messages`), rounded to 2 decimal places.
+      - `total_replies`: Sum of `reply_count` from `dim_slack_messages`.
+      - `total_reply_users`: Sum of `reply_users_count` from `dim_slack_messages`.
+      - `most_common_reaction`: The most frequently used normalised reaction name in the channel (by count of individual reaction rows). NULL if no reactions.
+
+      Also create an accompanying `_models.yml` schema file for the model with a `unique` and `not_null` test on `channel_name`.
+  - key: hard
+    prompt: |-
+      Create a mart model called `mart_channel_engagement` that summarises each channel's messaging and reaction activity.
+      Include message counts, reaction metrics, reply metrics, and the most popular reaction per channel.
+      Place it in a new `marts` folder with a schema YAML file.
+author_name: test
+author_email: test
+difficulty: hard
+tags:
+  - dbt
+  - model-creation
+  - aggregation
+  - window-function
+  - joins
+
+test_setup: |-
+  dbt deps
+  dbt run --select mart_channel_engagement
+
+solution_seeds:
+  - table_name: mart_channel_engagement
+
+variants:
+- db_type: duckdb
+  db_name: slack_analytics
+  project_type: dbt
+  project_name: slack_analytics

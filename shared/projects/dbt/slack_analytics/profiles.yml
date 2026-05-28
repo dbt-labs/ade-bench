@@ -1,0 +1,7 @@
+slack-analytics-duckdb:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "./slack_analytics.duckdb"
+      schema: main

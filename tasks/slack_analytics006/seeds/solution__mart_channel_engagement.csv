@@ -1,0 +1,7 @@
+channel_name,total_messages,total_reactions,distinct_reaction_types,distinct_reactors,avg_reactions_per_message,total_replies,total_reply_users,most_common_reaction
+marketing,15,59,9,42,3.93,389,214,"""approved"""
+random,24,71,9,51,2.96,593,345,"""raised_hands"""
+general,17,57,9,42,3.35,477,201,"""point_up"""
+engineering,15,27,9,27,1.8,362,204,"""this"""
+cats,16,53,9,42,3.31,479,218,"""ty"""
+social,13,28,8,25,2.15,257,148,"""approved"""

@@ -1,0 +1,15 @@
+
+
+seeds:
+  slack_analytics:
+    solution__fct_slack_message_reactions:
+      +column_types:
+        message_reaction_id: varchar
+        message_id: varchar
+        message_date: date
+        message_datetime: timestamp
+        channel_name: varchar
+        reaction_name: json
+        reaction_name_normalised: json
+        reaction_user: json
+        extracted_datetime: timestamp

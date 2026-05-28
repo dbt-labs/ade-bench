@@ -1,0 +1,44 @@
+task_id: slack_analytics004
+status: ready
+description: Fix a wrong CTE reference in the fct_slack_message_reactions model
+notes: |-
+  The setup script rewrites fct_slack_message_reactions.sql so the dimension CTE references semi_expanded_reactions instead of expanded_reactions.
+  The column reaction_user only exists after the second unnest (in expanded_reactions), so the model fails with a "column not found" error.
+  The agent must trace the CTE flow to understand the two-stage unnest pattern (reactions → users) and fix the FROM clause in the dimension CTE.
+  Medium difficulty — the error message is fairly direct but the agent still needs to understand the CTE dependency chain.
+prompts:
+  - key: base
+    prompt: |-
+      The `fct_slack_message_reactions` model fails to build with a "column not found" error for `reaction_user`.
+
+      The issue is in the `dimension` CTE — it references the wrong upstream CTE. The model uses a two-stage unnest pattern: first unnesting reactions, then unnesting the users within each reaction. The `dimension` CTE needs to read from the CTE that has completed both unnest stages.
+
+      Find and fix the bug so that `dbt run --select fct_slack_message_reactions` succeeds.
+  - key: medium
+    prompt: |-
+      The `fct_slack_message_reactions` model fails to build. The error mentions a missing column.
+
+      Investigate the CTE flow in the model and fix the issue.
+  - key: hard
+    prompt: |-
+      The dbt project is broken. Please fix it.
+author_name: test
+author_email: test
+difficulty: medium
+tags:
+  - dbt
+  - debugging
+  - sql
+
+test_setup: |-
+  dbt deps
+  dbt run --select fct_slack_message_reactions
+
+solution_seeds:
+  - table_name: fct_slack_message_reactions
+
+variants:
+- db_type: duckdb
+  db_name: slack_analytics
+  project_type: dbt
+  project_name: slack_analytics

@@ -1,0 +1,45 @@
+task_id: slack_analytics005
+status: ready
+description: Fix a deduplication bug in dim_slack_messages that keeps stale data when a message appears in multiple extractions
+notes: |-
+  The setup script inserts a duplicate extraction of an existing message (same message_id, newer extracted_datetime, updated reply_count)
+  and then breaks the qualify row_number() ordering from DESC to ASC so the model picks the oldest extraction instead of the latest.
+  The bug is silent — the model builds successfully and still has unique message_ids — but the data is wrong.
+  The agent must trace the issue to the window function ordering in the qualify clause.
+prompts:
+  - key: base
+    prompt: |-
+      The `dim_slack_messages` model is supposed to keep only the latest extraction of each message (based on `extracted_datetime`),
+      but it is currently returning stale data. When a message appears in multiple extractions, the model picks the wrong row.
+
+      The issue is in the deduplication logic — specifically the ordering in the `qualify` window function.
+
+      Find and fix the bug so that the model correctly keeps the most recent extraction of each message.
+  - key: hard
+    prompt: |-
+      The dim_slack_messages model has stale data. Fix it.
+author_name: test
+author_email: test
+difficulty: hard
+tags:
+  - dbt
+  - debugging
+  - data-inspection
+  - incremental
+  - window-function
+
+test_setup: |-
+  dbt deps
+  dbt run --select dim_slack_messages
+
+solution_seeds:
+  - table_name: dim_slack_messages
+    exclude_columns:
+      - reply_users
+      - reactions
+
+variants:
+- db_type: duckdb
+  db_name: slack_analytics
+  project_type: dbt
+  project_name: slack_analytics
