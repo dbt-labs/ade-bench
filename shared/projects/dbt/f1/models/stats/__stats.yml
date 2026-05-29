@@ -122,7 +122,7 @@ models:
         description: "The number of fastest laps recorded by the driver."
 
   - name: most_podiums
-    description: "This model ranks the top 20 drivers based on the number of podium finishes achieved, including a breakdown of 1st, 2nd, and 3rd place finishes."
+    description: "This model ranks the top 20 drivers based on the number of podium finishes achieved."
 
     columns:
       - name: rank
@@ -133,15 +133,6 @@ models:
 
       - name: podiums
         description: "The number of podium finishes achieved by the driver."
-
-      - name: p1
-        description: "The number of times the driver finished in 1st place."
-
-      - name: p2
-        description: "The number of times the driver finished in 2nd place."
-
-      - name: p3
-        description: "The number of times the driver finished in 3rd place."
 
   - name: most_pole_positions
     description: "This model ranks the top 20 drivers based on the number of pole positions achieved in their Formula 1 career."
