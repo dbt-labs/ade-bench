@@ -5,6 +5,7 @@ from ade_bench.agents.agent_name import AgentName
 from ade_bench.agents.base_agent import AgentResult, BaseAgent
 from ade_bench.handlers.trial_handler import TrialHandler
 from ade_bench.harness_models import FailureMode, TerminalCommand
+from ade_bench.setup.setup_utils import run_script_checked
 from ade_bench.terminal.tmux_session import TmuxSession
 from ade_bench.utils.dataset import Dataset
 from ade_bench.utils.logger import logger
@@ -102,11 +103,17 @@ class SageAgent(BaseAgent):
                 if project_type:
                     command += f" --project-type={project_type}"
 
-            session.send_keys(
-                [command, "Enter"],
-                max_timeout_sec=float("inf"),
-                block=True,
+            exit_code = run_script_checked(
+                session, session.container, command, max_timeout_sec=float("inf")
             )
+            if exit_code != 0:
+                return AgentResult(
+                    input_tokens=0,
+                    output_tokens=0,
+                    cache_tokens=0,
+                    num_turns=0,
+                    failure_mode=FailureMode.UNKNOWN_AGENT_ERROR,
+                )
         else:
             for command in solution["commands"]:
                 session.send_command(command)

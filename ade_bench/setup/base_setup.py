@@ -5,6 +5,7 @@ Base setup functions for copying files and running scripts.
 from typing import Dict, Any
 from ..utils.logger import logger
 from ..terminal.docker_compose_manager import DockerComposeManager
+from .setup_utils import run_script_checked
 
 
 def setup_base_files(
@@ -57,7 +58,11 @@ def setup_base_files(
 
         # Check if we have a session or just direct container access
         if session is not None:
-            session.send_keys([command, "Enter"], block=True)
+            exit_code = run_script_checked(session, session.container, command)
+            if exit_code != 0:
+                raise RuntimeError(
+                    f"setup.sh failed with exit code {exit_code} for command: {command}"
+                )
             container = session.container
         else:
             # For interactive mode, execute the command directly on the container

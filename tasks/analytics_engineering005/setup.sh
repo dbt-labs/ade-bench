@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 ## Create duplicates in the inventory table
 ## Get the schema based on the database type.
@@ -18,11 +19,10 @@ SQL
 
 
 ## Replace the fact_inventory model with a version that doesn't handle duplicates
-if [[ "$*" == *"--db-type=snowflake"* ]]; then
-    patch -p1 < /app/setup/changes.snowflake.patch
-else
-    patch -p1 < /app/setup/changes.duckdb.patch
-fi
+patch -p1 < /app/setup/changes.patch
+
+set +euo pipefail
 
 dbt deps
 dbt run
+exit 0

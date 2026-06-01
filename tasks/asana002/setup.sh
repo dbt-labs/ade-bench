@@ -27,3 +27,4 @@ SQL
 ## Run the dbt project.
 dbt deps
 DBT_STATIC_ANALYSIS=off dbt run
+exit 0

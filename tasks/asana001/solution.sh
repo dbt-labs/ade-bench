@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 ## Fix casting error caused by fivetran package version mismatch
 if [[ "$OSTYPE" == "darwin"* ]]; then

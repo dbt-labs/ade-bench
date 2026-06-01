@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 ## Solution: Override Fivetran staging models to handle unix epoch timestamps.
 ## Instead of modifying the underlying data, we create custom versions of the

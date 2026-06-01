@@ -771,6 +771,9 @@ class Harness:
             #########################################################
             #########################################################
 
+            pre_agent_pane = session.capture_pane(capture_entire=True)
+            trial_handler.pre_agent_pane_path.write_text(pre_agent_pane)
+
             # If setup failed with timeout, stop the task immediately
             if setup_failure_mode == FailureMode.SETUP_TIMEOUT:
                 results.failure_mode = setup_failure_mode
@@ -780,9 +783,6 @@ class Harness:
                 results.failure_mode = setup_failure_mode
                 self._logger.warning(f"Setup failed for task {trial_handler.task_id}, halting task")
                 return results
-
-            pre_agent_pane = session.capture_pane(capture_entire=True)
-            trial_handler.pre_agent_pane_path.write_text(pre_agent_pane)
 
             # Inject delimiter to mark the end of pre-agent phase
             session.send_keys(["echo '=== ADE_BENCH_PHASE_DELIMITER_AGENT_START ==='", "Enter"])

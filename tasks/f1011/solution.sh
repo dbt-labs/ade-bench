@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 file="analysis__answer.sql"
 
