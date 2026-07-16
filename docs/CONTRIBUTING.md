@@ -100,7 +100,7 @@ The script automatically:
 
 ### dbt tests
 
-For an overview of how dbt tests are used to evaulate trials, see the [README](README.md#how-trials-are-evaluated). This section describes advanced ways to configure tests.
+For an overview of how dbt tests are used to evaluate trials, see the [README](README.md#how-trials-are-evaluated). This section describes advanced ways to configure tests.
 
 #### Configuring different environments
 

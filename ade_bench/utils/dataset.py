@@ -16,7 +16,7 @@ class Dataset:
         """Initialize the dataset.
 
         Args:
-            dataset_path: Path to the dataset directorygs
+            dataset_path: Path to the dataset directory
             task_ids: Optional list of specific task IDs to load
             excluded_task_ids: Optional set of task IDs to exclude
         """
