@@ -21,6 +21,11 @@ class ClaudeCodeAgent(AbstractInstalledAgent):
         self._claude_parser = ClaudeParser()
         self._log_formatter = ClaudeCodeLogFormatter()
 
+    # Optional env-var override for Claude Code's effort level, useful when
+    # comparing model/effort configurations at a matched cost budget.
+    # Mirrors OPENAI_CODEX_REASONING_EFFORT on the Codex agent.
+    _EFFORT_ENV_VAR = "CLAUDE_CODE_EFFORT"
+
     @property
     def _env(self) -> dict[str, str]:
         return {
@@ -38,6 +43,12 @@ class ClaudeCodeAgent(AbstractInstalledAgent):
 
         if self._model_name:
             command += f" --model {self._model_name}"
+
+        # Optional override of Claude Code's default effort level. Set via env
+        # var rather than a constructor kwarg so the existing harness/factory
+        # plumbing doesn't need to change to thread it through.
+        if effort := os.environ.get(self._EFFORT_ENV_VAR):
+            command += f" --effort {shlex.quote(effort)}"
 
         if self._allowed_tools:
             command += f" --allowedTools {' '.join(self._allowed_tools)}"
