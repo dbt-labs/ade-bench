@@ -137,10 +137,16 @@ def check_macro_key():
 @environmentapp.command("anthropic")
 def check_anthropic_key():
     """
-    Check ANTHROPIC_API_KEY.
+    Check ANTHROPIC_API_KEY (a CLAUDE_CODE_OAUTH_TOKEN also satisfies this).
     """
     global anthropic_available
-    if check_provider_key("ANTHROPIC_API_KEY"):
+    # A subscription OAuth token (from `claude setup-token`) is an alternative
+    # credential for the Claude Code agent; accept it before requiring a key
+    # so OAuth-only environments don't report a spurious failure.
+    if (os.getenv("CLAUDE_CODE_OAUTH_TOKEN") or "").strip():
+        add_success("CLAUDE_CODE_OAUTH_TOKEN is set.")
+        anthropic_available = True
+    elif check_provider_key("ANTHROPIC_API_KEY"):
         anthropic_available = True
 
 
