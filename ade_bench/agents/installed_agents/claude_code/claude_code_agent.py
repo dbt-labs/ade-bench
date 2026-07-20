@@ -28,6 +28,11 @@ class ClaudeCodeAgent(AbstractInstalledAgent):
 
     @property
     def _env(self) -> dict[str, str]:
+        # Prefer a Claude subscription OAuth token (from `claude setup-token`)
+        # when provided; otherwise fall back to an API key. strip() matches the
+        # `ab check` preflight so a whitespace-only token counts as unset here too.
+        if oauth_token := (os.environ.get("CLAUDE_CODE_OAUTH_TOKEN") or "").strip():
+            return {"CLAUDE_CODE_OAUTH_TOKEN": oauth_token}
         return {
             "ANTHROPIC_API_KEY": os.environ["ANTHROPIC_API_KEY"],
         }

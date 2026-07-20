@@ -34,3 +34,32 @@ class TestEffortEnvVar:
         # The whole value is one shell-quoted token, so `rm -rf /` is part of
         # the quoted argument — never a second command.
         assert "--effort 'low; rm -rf /'" in commands[0].command
+
+
+class TestAuthEnv:
+    def test_api_key_default(self):
+        env = {"ANTHROPIC_API_KEY": "key"}
+        with patch.dict("os.environ", env, clear=True):
+            agent = ClaudeCodeAgent()
+            assert agent._env == {"ANTHROPIC_API_KEY": "key"}
+
+    def test_oauth_token_preferred(self):
+        """A subscription OAuth token takes precedence over an API key."""
+        env = {"ANTHROPIC_API_KEY": "key", "CLAUDE_CODE_OAUTH_TOKEN": "oat"}
+        with patch.dict("os.environ", env, clear=True):
+            agent = ClaudeCodeAgent()
+            assert agent._env == {"CLAUDE_CODE_OAUTH_TOKEN": "oat"}
+
+    def test_whitespace_oauth_token_treated_as_unset(self):
+        """A whitespace-only token must not shadow a valid API key."""
+        env = {"ANTHROPIC_API_KEY": "key", "CLAUDE_CODE_OAUTH_TOKEN": "  "}
+        with patch.dict("os.environ", env, clear=True):
+            agent = ClaudeCodeAgent()
+            assert agent._env == {"ANTHROPIC_API_KEY": "key"}
+
+    def test_oauth_token_without_api_key(self):
+        """OAuth-only environments must not require ANTHROPIC_API_KEY."""
+        env = {"CLAUDE_CODE_OAUTH_TOKEN": "oat"}
+        with patch.dict("os.environ", env, clear=True):
+            agent = ClaudeCodeAgent()
+            assert agent._env == {"CLAUDE_CODE_OAUTH_TOKEN": "oat"}
