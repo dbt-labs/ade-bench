@@ -43,3 +43,29 @@ def test_perform_task_runs_dcode_headlessly_with_model_and_reasoning_effort():
     assert "--no-mcp" in command
     assert result.model_name == "gpt-5.4"
     assert result.runtime_ms == 500
+
+
+def test_perform_task_captures_dcode_usage_stats():
+    session = MagicMock()
+    session.container.exec_run.return_value = MagicMock(
+        exit_code=0,
+        output=b"""Task completed
+
+Usage Stats
+Provider  Model        Reqs  InputTok  OutputTok
+openai    gpt-5.6-sol     9    158.3K        903
+
+Agent active  18.7s
+""",
+    )
+    agent = NamedAgentFactory(AgentName.DEEP_AGENTS_CODE).get_agent(
+        model_name="gpt-5.6-sol",
+    )
+
+    with patch.dict("os.environ", {"OPENAI_API_KEY": "test-key"}, clear=True):
+        result = agent.perform_task("fix the model", session)
+
+    assert result.input_tokens == 158_300
+    assert result.output_tokens == 903
+    assert result.num_turns == 9
+    assert result.model_name == "gpt-5.6-sol"

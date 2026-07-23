@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import shlex
 from pathlib import Path
 from typing import Any
@@ -22,6 +23,11 @@ class DeepAgentsCodeAgent(AbstractInstalledAgent):
         "GOOGLE_API_KEY",
         "GOOGLE_CLOUD_PROJECT",
         "OPENAI_API_KEY",
+    )
+    _USAGE_ROW = re.compile(
+        r"^\s*\S+\s+\S+\s+(?P<requests>\d+)\s+"
+        r"(?P<input>[\d.]+[KMB]?)\s+(?P<output>[\d.]+[KMB]?)\s*$",
+        re.MULTILINE,
     )
 
     @property
@@ -62,15 +68,33 @@ class DeepAgentsCodeAgent(AbstractInstalledAgent):
         ]
 
     def _parse_agent_output(self, output: str) -> dict[str, Any]:
-        # dcode's non-interactive mode currently emits the final response rather
-        # than structured usage. ADE-Bench still captures measured runtime and
-        # the full transcript while leaving unavailable usage fields at zero.
+        # dcode prints a human-readable Usage Stats table after successful
+        # non-interactive runs. Its compact K/M/B values are rounded by dcode,
+        # so the parsed token counts are approximate rather than exact.
+        usage_output = output.partition("Usage Stats")[2]
+        usage_match = self._USAGE_ROW.search(usage_output)
+        input_tokens = 0
+        output_tokens = 0
+        num_turns = 0
+        if usage_match:
+            input_tokens = self._parse_compact_token_count(usage_match["input"])
+            output_tokens = self._parse_compact_token_count(usage_match["output"])
+            num_turns = int(usage_match["requests"])
+
         return {
-            "input_tokens": 0,
-            "output_tokens": 0,
+            "input_tokens": input_tokens,
+            "output_tokens": output_tokens,
             "cache_tokens": 0,
-            "num_turns": 0,
+            "num_turns": num_turns,
             "runtime_ms": 0,
             "cost_usd": 0.0,
             "model_name": self._model_name,
         }
+
+    @staticmethod
+    def _parse_compact_token_count(value: str) -> int:
+        multiplier = {"K": 1_000, "M": 1_000_000, "B": 1_000_000_000}
+        suffix = value[-1]
+        if suffix in multiplier:
+            return round(float(value[:-1]) * multiplier[suffix])
+        return int(value)
