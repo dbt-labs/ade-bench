@@ -6,6 +6,9 @@ from ade_bench.agents.base_agent import BaseAgent
 from ade_bench.agents.installed_agents.claude_code.claude_code_agent import (
     ClaudeCodeAgent,
 )
+from ade_bench.agents.installed_agents.deep_agents_code.deep_agents_code_agent import (
+    DeepAgentsCodeAgent,
+)
 from ade_bench.agents.installed_agents.gemini_cli.gemini_cli_agent import (
     GeminiCLIAgent,
 )
@@ -35,6 +38,7 @@ class NamedAgentFactory(AgentFactory):
         NoneAgent.NAME: NoneAgent,
         SageAgent.NAME: SageAgent,
         ClaudeCodeAgent.NAME: ClaudeCodeAgent,
+        DeepAgentsCodeAgent.NAME: DeepAgentsCodeAgent,
         OpenAICodexAgent.NAME: OpenAICodexAgent,
         GeminiCLIAgent.NAME: GeminiCLIAgent,
         MacroAgent.NAME: MacroAgent,

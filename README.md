@@ -375,6 +375,7 @@ This will open a local HTML page that includes much more detail, including detai
 ADE-bench currently supports the following agents:
 
 - Claude Code - `--agent claude`
+- Deep Agents Code - `--agent dcode`
 - OpenAI Codex - `--agent codex`
 - Gemini CLI - `--agent gemini`
 
@@ -391,11 +392,15 @@ claude --output-format json -p {task_prompt} --model {model-id} \
 printenv OPENAI_API_KEY | codex login --with-api-key && \
 codex --ask-for-approval never --model {model-id} exec --sandbox workspace-write --skip-git-repo-check {task_prompt}
 
+# DEEP AGENTS CODE
+dcode --no-mcp --no-stream --shell-allow-list all \
+  --model {model-id} --non-interactive {task_prompt}
+
 # GEMINI
 gemini --output-format json --yolo --prompt {task_prompt} --model {model-id}
 ```
 
-Configuration files for each agent are found in the `/shared/config` directory. You can use `CLAUDE.md` to configure Claude Code, `AGENTS.md` to configure Codex, and `GEMINI.md` to configure Gemini.
+Configuration files for each agent are found in the `/shared/config` directory. You can use `CLAUDE.md` to configure Claude Code, `AGENTS.md` to configure Codex and Deep Agents Code, and `GEMINI.md` to configure Gemini.
 
 ### Plugin sets
 
