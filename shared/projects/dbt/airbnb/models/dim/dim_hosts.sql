@@ -7,7 +7,7 @@
 	)
 }}
 
-WITH src_listings_cte AS (
+WITH src_hosts_cte AS (
 	SELECT *
 	FROM {{ref('src_hosts')}}
 )
@@ -19,6 +19,6 @@ SELECT
 	CREATED_AT ,
 	UPDATED_AT
 FROM
-	src_listings_cte
+	src_hosts_cte
 
 	
