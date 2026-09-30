@@ -11,21 +11,36 @@ class DbtParser(BaseParser):
         r"\d+\s+of\s+\d+\s+(PASS|FAIL|ERROR)(?:\s+\d+)?\s+(\S+)\s+\.+\s+\[(PASS|FAIL|ERROR)"
     )
 
-    # Pattern to match individual test result lines for dbt-fusion
-    # Examples:
-    # "Passed [  1.66s] test  PUBLIC_dbt_test__audit.columns_in_project_snowflake"
-    # "Failed [  0.50s] test  PUBLIC_dbt_test__audit.some_failing_test"
-    DBT_FUSION_TEST_RESULT_PATTERN = r"(Passed|Failed)\s+\[\s*([\d.]+)s\]\s+test\s+(\S+)"
+    # Pattern to match individual test result lines for dbt-fusion.
+    # The timing block moved from before the node to after it in dbt Fusion 2.x, so both
+    # shapes are accepted. Examples:
+    #   Fusion 1.x: "Passed [  1.66s] test  PUBLIC_dbt_test__audit.columns_in_project_snowflake"
+    #               "Failed [  0.50s] test  PUBLIC_dbt_test__audit.some_failing_test"
+    #   Fusion 2.x: "Passed test  AUTO_dim_hosts_equality [2 of 10 in 0.04s]"
+    #               "Failed test  AUTO_asana__task_equality (tests/AUTO_asana__task_equality.sql) [4 of 6 in 0.02s]"
+    # A test that errors (e.g. a database error) is also reported as "Failed" by Fusion.
+    DBT_FUSION_TEST_RESULT_PATTERN = r"(Passed|Failed)\s+(?:\[\s*(?:[\d.]+)s\]\s+)?test\s+(\S+)"
 
     # Pattern to match the summary line for standard dbt
     # Handles both formats: with and without NO-OP field
     DBT_LEGACY_TEST_SUMMARY_PATTERN = r"Done\.\s+PASS=(\d+)\s+WARN=(\d+)\s+ERROR=(\d+)\s+SKIP=(\d+)(?:\s+NO-OP=(\d+))?\s+TOTAL=(\d+)"
 
-    # Pattern to match the summary line for dbt-fusion
+    # Pattern to match the summary line for dbt-fusion 1.x
     # Examples:
     # "Finished 'test' target 'dev' with 2 warnings in 7s 625ms"
     # "Finished 'test' target 'dev' with 1 error and 2 warnings in 6s 233ms"
     DBT_FUSION_SUMMARY_PATTERN = r"Finished\s+'test'\s+target\s+'(\w+)'\s+with\s+(?:(?:(\d+)\s+errors?(?:\s+and\s+(\d+)\s+warnings?)?)|(?:(\d+)\s+warnings?))\s+in\s+(\d+)s\s+(\d+)ms"
+
+    # Pattern to match the summary line for dbt-fusion 2.x. The "Finished 'test'" line no
+    # longer carries counts; they are on a "Summary:" line a few lines below it, e.g.
+    #   "Finished 'test' with 4 warnings and 2 errors for target 'dev' [1.2s]"
+    #   "Processed: 2 tests"
+    #   "Summary: 2 total | 2 error"
+    #   "Summary: 10 total | 8 success | 1 error | 1 warn"
+    # Every dbt command prints a Summary line, so this is only searched in the text after
+    # the last "Finished 'test'" marker to avoid picking up the preceding `dbt seed`.
+    DBT_FUSION_V2_SUMMARY_PATTERN = r"Summary:\s*(\d+)\s+total((?:\s*\|\s*\d+\s+[\w-]+)*)"
+    DBT_FUSION_V2_TEST_FINISHED_MARKER = "Finished 'test'"
 
     # Pattern to match the expected test count line from run-dbt-test.sh
     # Example: "[ade-bench] expected_test_count=2"
@@ -195,7 +210,15 @@ class DbtParser(BaseParser):
             or re.search(self.DBT_LEGACY_TEST_SUMMARY_PATTERN, content)
             or re.search(self.DBT_FUSION_TEST_RESULT_PATTERN, content)
             or re.search(self.DBT_FUSION_SUMMARY_PATTERN, content)
+            or self._fusion_v2_summary(content)
         )
+
+    def _fusion_v2_summary(self, content: str) -> re.Match | None:
+        """Find the dbt-fusion 2.x "Summary:" line belonging to the last `dbt test` run."""
+        start = content.rfind(self.DBT_FUSION_V2_TEST_FINISHED_MARKER)
+        if start < 0:
+            return None
+        return re.search(self.DBT_FUSION_V2_SUMMARY_PATTERN, content[start:])
 
     def _get_expected_test_count(self, content: str) -> int | None:
         """Get the expected test count from the '[ade-bench] expected_test_count=N' line."""
@@ -245,21 +268,31 @@ class DbtParser(BaseParser):
                 }
 
         elif self.parser_type == "dbt-fusion":
-            # Parse dbt-fusion test results
+            # Parse dbt-fusion test results (Fusion 1.x and 2.x line shapes)
             for match in re.finditer(self.DBT_FUSION_TEST_RESULT_PATTERN, content):
                 status = match.group(1)  # Passed or Failed
-                test_name = match.group(3)  # test name
+                test_name = match.group(2)  # test name
 
                 if status == "Passed":
                     results[test_name] = UnitTestStatus.PASSED
                 elif status == "Failed":
                     results[test_name] = UnitTestStatus.FAILED
 
-            # Parse dbt-fusion summary
-            summary_matches = list(re.finditer(self.DBT_FUSION_SUMMARY_PATTERN, content))
+            # Parse dbt-fusion summary: 2.x "Summary:" line, else the 1.x "Finished" line
             summary_data = None
-            if summary_matches:
-                summary_match = summary_matches[-1]
+            v2_match = self._fusion_v2_summary(content)
+            if v2_match:
+                # Group 1: total; Group 2: the "| N success | N error | ..." tail
+                counts = {
+                    label: int(num)
+                    for num, label in re.findall(r"(\d+)\s+([\w-]+)", v2_match.group(2))
+                }
+                summary_data = {
+                    "fail": counts.get("error", 0),  # Map errors to fail for consistency
+                    "warn": counts.get("warn", 0),
+                }
+            elif v1_matches := list(re.finditer(self.DBT_FUSION_SUMMARY_PATTERN, content)):
+                summary_match = v1_matches[-1]
                 # Group 2: errors (if present)
                 # Group 3: warnings (if errors are present)
                 # Group 4: warnings only (if no errors)
