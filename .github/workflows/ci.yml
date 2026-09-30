@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - "ade_bench/**"
+      - "tests/**"
       - "tasks/**"
       - "shared/**"
       - "docker/**"
@@ -46,6 +47,9 @@ jobs:
 
       - name: Run black check
         run: uv run black --check .
+
+      - name: Run unit tests
+        run: uv run pytest
 
   check-regressions:
     name: "${{ matrix.project_type }} / ${{ matrix.agent == 'sage' && 'Sage agent always passes' || 'None agent always fails' }}"
