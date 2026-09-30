@@ -11,6 +11,7 @@ agent's inability to perform the task (e.g. volume constraints, broken networkin
 """
 
 import shlex
+import time
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any
@@ -226,6 +227,7 @@ class AbstractInstalledAgent(BaseAgent, ABC):
         agent_output_file = "/tmp/agent_output.log"
 
         run_agent_commands = self._run_agent_commands(task_prompt)
+        agent_started_at = time.monotonic()
         for command in run_agent_commands:
             log_harness_info(
                 logger,
@@ -251,6 +253,8 @@ class AbstractInstalledAgent(BaseAgent, ABC):
 
         # Try to extract just the JSON part from the output
         parsed_metrics = self._parse_agent_output(output)
+        if not parsed_metrics.get("runtime_ms"):
+            parsed_metrics["runtime_ms"] = round((time.monotonic() - agent_started_at) * 1000)
 
         # Log the agent response metrics if we have a task name
         if parsed_metrics:

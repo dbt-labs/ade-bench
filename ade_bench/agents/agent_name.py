@@ -10,6 +10,7 @@ class AgentName(Enum):
     SAGE = "sage"
     CLAUDE_CODE = "claude"
     OPENAI_CODEX = "codex"
+    DEEP_AGENTS_CODE = "dcode"
     GEMINI_CLI = "gemini"
     MACRO = "macro"
 
