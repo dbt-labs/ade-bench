@@ -16,3 +16,23 @@
  WHERE REVIEW_TEXT IS NOT NULL
  
  {% if is_incremental() %}
+--- a/models/dim/dim_hosts.sql
++++ b/models/dim/dim_hosts.sql
+@@ -7,7 +7,7 @@
+ 	)
+ }}
+ 
+-WITH src_hosts_cte AS (
++WITH src_listings_cte AS (
+ 	SELECT *
+ 	FROM {{ref('src_hosts')}}
+ )
+@@ -19,6 +19,6 @@
+ 	CREATED_AT ,
+ 	UPDATED_AT
+ FROM
+-	src_hosts_cte
++	src_listings_cte
+ 
+ 	
+\ No newline at end of file
