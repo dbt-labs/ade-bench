@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 # Update source models to be views
 patch -p1 < /sage/solutions/changes.patch
 

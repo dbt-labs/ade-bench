@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 ## Fix the left join
 SOLUTIONS_DIR="$(dirname "$(readlink -f "${BASH_SOURCE}")")/solutions"
 

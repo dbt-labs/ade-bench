@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 ## Remove tmp models
 rm -rf dbt_packages/asana_source/models/tmp
 

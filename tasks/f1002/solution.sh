@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 # Create src files
 files=(
   "finishes_by_driver.sql"

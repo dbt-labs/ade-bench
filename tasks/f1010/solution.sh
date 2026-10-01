@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 s1="analysis__lap_times.sql"
 s2="analysis__lap_times_exclude_pit_stops.sql"

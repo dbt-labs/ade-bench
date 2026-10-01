@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # Remove the models that need to be created.
 rm models/analytics_obt/obt_product_inventory.sql

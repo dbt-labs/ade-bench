@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 SETUP_DIR="$(dirname "$(readlink -f "${BASH_SOURCE}")")/setup"
 

@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 SOLUTIONS_DIR="$(dirname "$(readlink -f "${BASH_SOURCE}")")/solutions"
 
 if [[ "$*" == *"--project-type=dbt-fusion"* ]]; then
