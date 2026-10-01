@@ -4,7 +4,7 @@ description: Creates a new model that does a simple join that combines two exist
 prompts:
   - key: base
     prompt: |-
-      Create a model called "obt_product_inventory" that adds product details to every item in our inventory.
+      Create a model called "obt_product_inventory" that adds product details to every item in our inventory (alias the duplicate product_id as ipd). Do not include the attachments column.
 author_name: test
 author_email: test
 difficulty: medium
