@@ -1,0 +1,16 @@
+
+
+seeds:
+  slack_analytics:
+    solution__dim_slack_messages:
+      +column_types:
+        message_id: varchar
+        user_id: varchar
+        channel_name: varchar
+        reply_count: integer
+        reply_users_count: integer
+        reply_users: json
+        reactions: json
+        message_date: date
+        message_datetime: timestamp
+        extracted_datetime: timestamp

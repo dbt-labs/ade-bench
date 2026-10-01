@@ -98,16 +98,17 @@ def _compare_tables_inner(
         return result
 
     # Exact row matching via EXCEPT
-    shared_cols_quoted = ", ".join(f'"{c}"' for c in shared)
+    # Cast to varchar so type differences (e.g. JSON vs VARCHAR) don't crash the comparison
+    shared_cols_cast = ", ".join(f'CAST("{c}" AS VARCHAR)' for c in shared)
 
     # Rows in expected not in actual (with synthetic row ID for fuzzy matching)
     con.execute(f"""
         CREATE TABLE missing_from_actual AS
         SELECT ROW_NUMBER() OVER () AS __ade_rn, *
         FROM (
-            SELECT {shared_cols_quoted} FROM expected
+            SELECT {shared_cols_cast} FROM expected
             EXCEPT ALL
-            SELECT {shared_cols_quoted} FROM actual
+            SELECT {shared_cols_cast} FROM actual
         )
     """)
 
@@ -116,9 +117,9 @@ def _compare_tables_inner(
         CREATE TABLE extra_in_actual AS
         SELECT ROW_NUMBER() OVER () AS __ade_rn, *
         FROM (
-            SELECT {shared_cols_quoted} FROM actual
+            SELECT {shared_cols_cast} FROM actual
             EXCEPT ALL
-            SELECT {shared_cols_quoted} FROM expected
+            SELECT {shared_cols_cast} FROM expected
         )
     """)
 
