@@ -71,7 +71,7 @@ class Harness:
         with_profiling: bool = False,
     ):
         """
-        Runs the Terminal-Bench harness.
+        Runs the ADE-bench harness.
 
         Args:
             dataset_path: The path to the dataset.
